@@ -7,14 +7,14 @@ critères d'acceptation sont cochés.
 
 Légende : `[ ]` en attente · `[x]` accepté
 
-**M0 est ouvert** (voir `CLAUDE.md`, section "Jalon courant"). Ce document
-définit le périmètre prévu pour les jalons suivants, pas un engagement
-figé : un jalon peut encore être ajusté avant son ouverture si la relecture
-le justifie.
+**M0 est accepté.** Aucun jalon n'est ouvert pour l'instant (voir
+`CLAUDE.md`, section "Jalon courant"). Ce document définit le périmètre
+prévu pour les jalons suivants, pas un engagement figé : un jalon peut
+encore être ajusté avant son ouverture si la relecture le justifie.
 
 ---
 
-## M0 — Squelette
+## M0 — Squelette (accepté)
 
 Tout ce qui n'a rien à voir avec le produit, fait une fois et jamais
 retouché.
