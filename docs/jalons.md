@@ -44,15 +44,14 @@ ajoutée à l'écran d'accueil d'un téléphone, elle s'ouvre en plein écran
 sans barre d'adresse.
 
 **Acceptation**
-- [ ] `pnpm dev` démarre api, web et worker ensemble
-- [ ] `pnpm test`, `pnpm typecheck`, `pnpm lint` tous verts en local et en CI
-- [ ] Un import profond délibéré entre deux modules fait échouer `pnpm lint`
-- [ ] Le fichier SQLite est créé sur le volume Railway et survit à un redeploy
-- [ ] `better-sqlite3` charge dans l'image Docker
-- [ ] Les couleurs de marque et les deux polices sont chargées et
+- [x] `pnpm dev` démarre api, web et worker ensemble — vérifié localement (santé API, proxy Vite, mascotte visible à l'écran)
+- [ ] `pnpm test`, `pnpm typecheck`, `pnpm lint` tous verts en local et en CI — verts en local ; pas encore vérifié en CI (aucun push effectué)
+- [x] Un import profond délibéré entre deux modules fait échouer `pnpm lint` — vérifié manuellement (violation temporaire, échec confirmé, revert)
+- [ ] Le fichier SQLite est créé sur le volume Railway et survit à un redeploy — création et pragmas vérifiés localement ; la persistance sur le volume Railway reste à vérifier au déploiement réel
+- [ ] `better-sqlite3` charge dans l'image Docker — non vérifié : pas de démon Docker disponible dans cet environnement
+- [x] Les couleurs de marque et les deux polices sont chargées et
       utilisables via les tokens, vérifié par un test
-- [ ] Le manifeste est valide (vérifié par les outils de développement du
-      navigateur) et référence des icônes réelles à plusieurs résolutions
+- [x] Le manifeste est valide (JSON vérifié, icônes réelles 192/512 + maskable + apple-touch-icon, toutes servies avec succès) et référence des icônes réelles à plusieurs résolutions
 
 **Hors périmètre** — toute table métier, tout écran au-delà du placeholder,
 authentification, service worker, mode hors ligne.

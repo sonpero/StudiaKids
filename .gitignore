@@ -1,0 +1,22 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Playwright
+/playwright-report/
+/test-results/
+e2e/.data/
+e2e/.auth/
+
+# IDE
+.DS_Store
+.idea/

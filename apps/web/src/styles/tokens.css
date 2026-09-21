@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/* docs/ui.md, "Direction visuelle" — values copied verbatim from
+   docs/design/tokens.md, which is the source of truth for the palette. */
+@theme {
+  --color-canvas: #fff6e9;
+  --color-ink: #2b2140;
+  --color-ink-soft: #5a5270;
+  --color-mandarine: #ff7a4d;
+  --color-turquoise: #21c1b4;
+  --color-soleil: #ffc642;
+  --color-succes: #3fc66b;
+  --color-violet-nuit: #3a2b5c;
+  --color-peche: #ffe3d6;
+  --color-vert-clair: #c9f2d6;
+
+  /* Pastels réservés au codage des matières (docs/ui.md) — pastilles et
+     badges uniquement, jamais une action ou un état. */
+  --matiere-maths: #ffc2d4;
+  --matiere-francais: #c9bbff;
+  --matiere-histoire: #b8e9d0;
+
+  /* Referenced as font-[family-name:var(--font-display)], never the bare
+     font-[var(--font-display)]: Tailwind's font- prefix is ambiguous
+     between font-family and font-weight without the family-name: hint. */
+  --font-display: "Baloo 2", system-ui, sans-serif;
+  --font-text: "Lexend", system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-text);
+}
