@@ -112,7 +112,7 @@ HTTP, bundler, SDK LLM) sans validation explicite : ce choix a déjà été fait
 | Front | React 19 + Vite + Tailwind 4 + shadcn/ui + TanStack Query |
 | DB | SQLite (`better-sqlite3`) + Drizzle ORM, FTS5 si besoin de recherche |
 | Auth | argon2 + cookie de session signé, comptes seedés en CLI |
-| Fichiers | Volume Railway monté sur `DATA_DIR` |
+| Fichiers | Volume Railway, chemin lu depuis `RAILWAY_VOLUME_MOUNT_PATH` (repli `./data` en local) |
 | Jobs | table `jobs` + worker Node qui poll (pas de Redis/BullMQ) |
 | LLM | Vercel AI SDK (`generateObject`/`streamText`) + `@ai-sdk/anthropic`, schémas Zod |
 | Extraction | modèle vision uniquement — pas d'OCR local, pas de PDF/Word/PowerPoint (l'enfant ne dépose que des photos) |
@@ -368,10 +368,15 @@ L'app est incarnée par une mascotte, décrite intégralement dans `docs/ui.md`
 
 ## Fichiers
 
+Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH` (défini automatiquement
+par Railway quand un volume est monté), avec repli sur `./data` en local —
+jamais un chemin écrit en dur. Un seul volume, deux sous-dossiers créés au
+démarrage s'ils n'existent pas :
+
 ```
-DATA_DIR/studiakids.db
-DATA_DIR/uploads/{userId}/{courseId}/{pageIndex}.{ext}
-DATA_DIR/backups/studiakids-{date ISO}.db
+RAILWAY_VOLUME_MOUNT_PATH/db/studiakids.db
+RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.{ext}
+RAILWAY_VOLUME_MOUNT_PATH/backups/studiakids-{date ISO}.db
 ```
 
 Les fichiers uploadés ne sont jamais servis en statique. Toute lecture passe

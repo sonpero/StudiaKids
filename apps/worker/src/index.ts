@@ -1,12 +1,11 @@
-import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { openDatabase } from "./db/connection.js";
 import { runMigrations } from "./db/migrate.js";
+import { resolveDataDirs } from "./data-dirs.js";
 
-const dataDir = process.env.DATA_DIR ?? path.resolve(process.cwd(), ".data");
-if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+const { dbDir } = resolveDataDirs();
 
-const db = openDatabase(path.join(dataDir, "studiakids.db"));
+const db = openDatabase(path.join(dbDir, "studiakids.db"));
 runMigrations(db);
 
 // No job type exists yet (M0: no business module has shipped a job

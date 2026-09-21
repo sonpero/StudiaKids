@@ -198,7 +198,7 @@ ligne que ce produit ne franchit pas.
 | Donnée | Où | Durée | Pourquoi |
 |---|---|---|---|
 | Identifiant/mot de passe (hash argon2), prénom, niveau | `accounts` | Tant que le compte existe | Authentification, personnalisation |
-| Photos de cours | `DATA_DIR/uploads/`, table `pages` | **Tant que le cours existe** — décidé : le lecteur les affiche, le tuteur peut les citer | Fonctionnement du lecteur et du tuteur, pas seulement l'extraction |
+| Photos de cours | `RAILWAY_VOLUME_MOUNT_PATH/photos/`, table `pages` | **Tant que le cours existe** — décidé : le lecteur les affiche, le tuteur peut les citer | Fonctionnement du lecteur et du tuteur, pas seulement l'extraction |
 | Texte extrait, items, exercices | `extractions`, `items`, `exercises` | Tant que le cours existe | Fonctionnement du lecteur et des jeux |
 | Tentatives de jeu (correct/incorrect, horodatage) | `attempts` | Tant que le compte existe | Calcul des étoiles (`progress`) |
 | Conversations et messages du tuteur, y compris `distress` | `conversations`, `messages` | Tant que le cours existe | Continuité du chat, consultation possible par l'adulte titulaire |

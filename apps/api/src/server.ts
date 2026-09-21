@@ -1,17 +1,16 @@
-import { existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { buildApp } from "./app.js";
+import { resolveDataDirs } from "./data-dirs.js";
 
-const dataDir = process.env.DATA_DIR ?? path.resolve(process.cwd(), ".data");
-if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+const { dbDir, photosDir } = resolveDataDirs();
 
 const isProduction = process.env.NODE_ENV === "production";
 const webDistPath = fileURLToPath(new URL("../../web/dist", import.meta.url));
 
 const app = buildApp({
-  databasePath: path.join(dataDir, "studiakids.db"),
-  dataDir,
+  databasePath: path.join(dbDir, "studiakids.db"),
+  dataDir: photosDir,
   webDistPath: isProduction ? webDistPath : undefined,
 });
 

@@ -183,7 +183,8 @@ CREATE TABLE extractions (
 );
 ```
 
-Fichiers sur `DATA_DIR/uploads/{userId}/{courseId}/{pageIndex}.{ext}`.
+Fichiers sur `RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.{ext}`
+(`./data/photos/...` en local, `docs/donnees.md`).
 **Supprimer un cours supprime son répertoire de fichiers dans le même appel
 applicatif** que la suppression des lignes — jamais un nettoyage différé ou
 séparé, pour qu'une photo ne survive jamais à la suppression de son cours.

@@ -24,7 +24,7 @@ ou **à écarter**.
 | Front | React 19 + Vite 6 + Tailwind 4 (`@tailwindcss/vite`) + shadcn/ui + TanStack Query 5 | **recopiable** |
 | DB | SQLite via `better-sqlite3` 11 + Drizzle ORM 0.38, FTS5 | **recopiable** |
 | Auth | argon2 (`argon2` npm) + cookie de session signé, comptes créés en CLI | **recopiable tel quel** (le mécanisme ; le modèle de données change, voir §4) |
-| Fichiers | Volume Railway monté sur `DATA_DIR` | **recopiable** |
+| Fichiers | Volume Railway monté sur `DATA_DIR` | **à adapter** (chemin lu depuis `RAILWAY_VOLUME_MOUNT_PATH`, sous-dossiers `db/`/`photos/`, voir §5) |
 | Jobs | Table `jobs` + worker Node qui poll (pas de Redis/BullMQ) | **recopiable** |
 | LLM | Vercel AI SDK (`ai` 4.x) + `@ai-sdk/anthropic`, `generateObject`/`streamText`, modèle par défaut `claude-sonnet-4-5` | **recopiable** |
 | Extraction | `officeparser` (pdf/docx/pptx) + modèle vision pour les photos | **à adapter** — StudiaKids n'a besoin que du chemin "photo" (l'enfant ne dépose pas de PDF), le reste d'officeparser est à écarter |
@@ -243,13 +243,20 @@ Décidé, tranchant le point ouvert que cette section soulevait initialement :
   (`recoverStaleJobs`) : un redeploy Railway en plein job ne doit pas le
   perdre.
 
-**À adapter** : les chemins `uploads/{userId}/{documentId}/...` deviennent
-`uploads/{userId}/{courseId}/...` — seul le nom de la seconde partie change
-(document → cours), `userId` reste `userId` puisqu'un compte égale un
-enfant (voir §4). **Contrairement à StudIA**, les fichiers ne sont pas
-nettoyés une fois l'extraction faite : ils restent tant que le cours
-existe, parce que le lecteur les affiche et le tuteur peut les citer
-(`docs/securite.md`).
+**À adapter** :
+- Les chemins `uploads/{userId}/{documentId}/...` deviennent
+  `photos/{userId}/{courseId}/...` — renommé (uploads → photos) et
+  document → cours ; `userId` reste `userId` puisqu'un compte égale un
+  enfant (voir §4). **Contrairement à StudIA**, les fichiers ne sont pas
+  nettoyés une fois l'extraction faite : ils restent tant que le cours
+  existe, parce que le lecteur les affiche et le tuteur peut les citer
+  (`docs/securite.md`).
+- **Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH`** (positionné
+  automatiquement par Railway quand un volume est monté), repli sur
+  `./data` en local — décidé, StudiaKids n'utilise pas la variable
+  `DATA_DIR` propre à StudIA (qu'il aurait fallu positionner à la main dans
+  la config Railway). Deux sous-dossiers, `db/` et `photos/`, créés au
+  démarrage s'ils n'existent pas (`docs/donnees.md`, `docs/jalons.md` M0).
 
 **À écarter** : rien.
 

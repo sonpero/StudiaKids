@@ -26,7 +26,9 @@ retouché.
 - Fastify avec `/api/health`, sert `apps/web/dist` en production
 - Proxy de dev Vite `/api` vers Fastify
 - Connexion SQLite avec les pragmas requis, Drizzle, migrations au démarrage
-- Dockerfile, `railway.toml`, volume monté sur `DATA_DIR`
+- Dockerfile, `railway.toml`, volume Railway (chemin lu depuis
+  `RAILWAY_VOLUME_MOUNT_PATH`, sous-dossiers `db/`/`photos/` créés au
+  démarrage)
 - GitHub Actions : typecheck, lint, test à chaque push
 - `tokens.css` : les couleurs de marque (crème, encre, mandarine,
   turquoise, et le reste de la palette de `docs/design/tokens.md`) posées
@@ -47,8 +49,8 @@ sans barre d'adresse.
 - [x] `pnpm dev` démarre api, web et worker ensemble — vérifié localement (santé API, proxy Vite, mascotte visible à l'écran)
 - [ ] `pnpm test`, `pnpm typecheck`, `pnpm lint` tous verts en local et en CI — verts en local ; pas encore vérifié en CI (aucun push effectué)
 - [x] Un import profond délibéré entre deux modules fait échouer `pnpm lint` — vérifié manuellement (violation temporaire, échec confirmé, revert)
-- [ ] Le fichier SQLite est créé sur le volume Railway et survit à un redeploy — création et pragmas vérifiés localement ; la persistance sur le volume Railway reste à vérifier au déploiement réel
-- [ ] `better-sqlite3` charge dans l'image Docker — non vérifié : pas de démon Docker disponible dans cet environnement
+- [x] Une donnée et un fichier créés en production survivent à un redéploiement — vérifié via Docker (volume nommé monté sur `RAILWAY_VOLUME_MOUNT_PATH`, conteneur arrêté puis remplacé par un nouveau sur le même volume) : une ligne insérée en base et un fichier écrit dans `photos/` sont tous deux relus intacts après le "redeploy", `db/` et `photos/` créés automatiquement au démarrage. Persistance sur le volume Railway réel non testée (pas d'accès à un environnement Railway depuis ici), mais le mécanisme est identique
+- [x] `better-sqlite3` charge dans l'image Docker — vérifié : build de l'image (compilation native réussie dans le stage `deps`) et exécution réelle (connexion, écriture, lecture) dans deux conteneurs successifs
 - [x] Les couleurs de marque et les deux polices sont chargées et
       utilisables via les tokens, vérifié par un test
 - [x] Le manifeste est valide (JSON vérifié, icônes réelles 192/512 + maskable + apple-touch-icon, toutes servies avec succès) et référence des icônes réelles à plusieurs résolutions

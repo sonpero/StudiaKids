@@ -246,14 +246,18 @@ StudIA : toute modification passe par une validation explicite (`CLAUDE.md`).
 
 ## Fichiers hors base de données
 
+Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH`, repli sur `./data` en
+local. Un seul volume, deux sous-dossiers créés au démarrage s'ils
+n'existent pas (`docs/jalons.md`, M0) :
+
 ```
-DATA_DIR/studiakids.db
-DATA_DIR/uploads/{userId}/{courseId}/{pageIndex}.{ext}
-DATA_DIR/backups/studiakids-{date ISO}.db
+RAILWAY_VOLUME_MOUNT_PATH/db/studiakids.db
+RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.{ext}
+RAILWAY_VOLUME_MOUNT_PATH/backups/studiakids-{date ISO}.db
 ```
 
 Voir `docs/inventaire-studia.md`, §5, pour le détail du volume Railway et
-la règle "jamais servi en statique". Les fichiers sous `uploads/` sont
+la règle "jamais servi en statique". Les fichiers sous `photos/` sont
 supprimés dans le même appel applicatif que la suppression du cours ou du
 compte correspondant, jamais par un nettoyage séparé.
 
