@@ -89,21 +89,32 @@ de connexion. Fermer le navigateur et rouvrir l'app plus tard sans avoir à
 se reconnecter.
 
 **Acceptation**
-- [ ] Tests unitaires : hash et vérification du mot de passe, signature et
-      expiration du token de session
-- [ ] Tests d'intégration : connexion réussie, mauvais mot de passe,
-      identifiant inconnu, rate limit déclenché puis levé
-- [ ] `SESSION_SECRET` est lu depuis l'environnement, échec bruyant au
-      démarrage s'il est absent
-- [ ] Aucune route ne peut être ajoutée sans authentification par accident
-      (default-deny, testé explicitement)
-- [ ] **Une session réutilisée régulièrement ne présente jamais
+- [x] Tests unitaires : hash et vérification du mot de passe, signature et
+      expiration du token de session — `argon2-password-hasher.int.test.ts`
+      (round-trip, argon2id, mauvais mot de passe), `hmac-session-codec.unit.test.ts`
+      (aller-retour, signature/corps trafiqués, secret différent, ttl dépassé, token invalide)
+- [x] Tests d'intégration : connexion réussie, mauvais mot de passe,
+      identifiant inconnu, rate limit déclenché puis levé — `routes/auth.int.test.ts` ;
+      la levée du rate limit après la fenêtre de 15 min est couverte au niveau
+      unitaire pur dans `domain/rate-limit.unit.test.ts` ("slides the window")
+- [x] `SESSION_SECRET` est lu depuis l'environnement, échec bruyant au
+      démarrage s'il est absent — `app.auth.int.test.ts`, lu depuis
+      `process.env.SESSION_SECRET` dans `server.ts`
+- [x] Aucune route ne peut être ajoutée sans authentification par accident
+      (default-deny, testé explicitement) — `app.auth.int.test.ts` (route
+      `/api/*` ajoutée à l'app réelle sans l'exempter, 401 confirmé)
+- [x] **Une session réutilisée régulièrement ne présente jamais
       d'expiration** ; une session non réutilisée pendant plus de
       `SESSION_DURATION_DAYS` finit par expirer (les deux testés avec une
-      horloge injectée, `docs/modules/auth.md`)
-- [ ] Playwright : cycle complet connexion → accueil → déconnexion ; une
+      horloge injectée, `docs/modules/auth.md`) — `resolve-session.unit.test.ts`,
+      horloge avancée par pas de 300 jours sur plusieurs années avec un appel
+      entre chaque pas, puis sans appel intermédiaire au-delà du délai
+- [x] Playwright : cycle complet connexion → accueil → déconnexion ; une
       route protégée redirige vers la connexion si déconnecté ; la session
-      survit à la fermeture de l'onglet et à un rechargement
+      survit à la fermeture de l'onglet et à un rechargement — `e2e/login.spec.ts`
+      (pas de routeur : "route protégée" vérifié comme "aucun contenu protégé
+      n'apparaît jamais sans session valide", seul écran possible sans session
+      étant l'écran de connexion)
 
 **Hors périmètre** — inscription publique, réinitialisation de mot de passe
 par l'utilisateur, tout rôle "parent" avec vue de supervision (non demandé),
