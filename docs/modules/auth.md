@@ -44,6 +44,9 @@ type SessionPayload = { userId: string; sessionVersion: number };
 type LoginError =
   | { kind: "invalid-credentials" }
   | { kind: "rate-limited"; retryAfterSeconds: number };
+
+type CreateAccountError = { kind: "username-taken" };
+type ResetPasswordError = { kind: "unknown-account" };
 ```
 
 **`sessionVersion`**, repris tel quel de StudIA : stocké sur la ligne
@@ -86,7 +89,13 @@ interface SessionCodec {
 interface AccountRepository {
   findByUsername(username: string): Promise<(Account & { passwordHash: string; sessionVersion: number }) | null>;
   findById(id: string): Promise<(Account & { sessionVersion: number }) | null>;
-  upsertAccount(username: string, hash: string, firstName: string, grade: Grade, now: Date): Promise<void>;   // incrémente sessionVersion
+  // L'id est généré en application/ (règle CLAUDE.md : IDs générés en couche
+  // application, jamais par la base ni décidés dans infra/) et toujours
+  // fourni ici — insertAccount n'écrit jamais par-dessus une ligne existante.
+  insertAccount(id: string, username: string, hash: string, firstName: string, grade: Grade, now: Date): Promise<void>;
+  // Incrémente sessionVersion, invalidant toute session existante du compte.
+  updatePasswordHash(username: string, hash: string, now: Date): Promise<void>;
+  deleteAccount(id: string): Promise<void>;
 }
 ```
 
@@ -95,16 +104,24 @@ argon2id dans l'adaptateur.
 ## Cas d'usage
 
 - `authenticate(username, password, ip, now)` → `Result<{ token }, LoginError>`
-- `resolveSession(token, now)` → `Result<Account, "unauthenticated">` — rejette
-  si le `sessionVersion` du token diffère de celui stocké ; sur succès,
-  ré-émet le token avec une expiration glissée (voir ci-dessus)
-- `createOrResetAccount(username, password, firstName, grade, now)` — CLI
-  uniquement, jamais atteignable en HTTP
+- `resolveSession(token, now)` → `Result<{ account: Account; token: string }, "unauthenticated">`
+  — rejette si le `sessionVersion` du token diffère de celui stocké ; sur
+  succès, le `token` renvoyé est ré-émis avec une expiration glissée (voir
+  ci-dessus), à réécrire dans le cookie par l'appelant
+- `createAccount(username, password, firstName, grade, now)` →
+  `Result<{ id: string }, CreateAccountError>` — CLI uniquement, jamais
+  atteignable en HTTP ; génère l'id en application/ ; échoue sans rien
+  écrire si le compte existe déjà
+- `resetPassword(username, password, now)` → `Result<void, ResetPasswordError>`
+  — CLI uniquement ; incrémente `sessionVersion`, invalidant toutes les
+  sessions existantes du compte ; échoue si le compte n'existe pas
 - `deleteAccount(userId, now)` — CLI uniquement, supprime en cascade tout
   ce qui dépend du compte (cours, items, exercices, tentatives,
   conversations — voir `docs/securite.md`, "Suppression et droit à
   l'oubli"), y compris les fichiers sur le volume, jamais seulement les
-  lignes en base
+  lignes en base. Le module `auth` ne connaît que la ligne `accounts` : la
+  cascade sur les tables des autres modules (aucune n'existe encore à M1)
+  sera branchée par chacun d'eux quand elle apparaîtra.
 
 **Rate limiting**, repris tel quel de StudIA : fonction pure sur un journal
 de tentatives.
@@ -171,7 +188,10 @@ uniquement). Toute notion de profil multiple sous un même compte.
 - Hash et vérification, aller-retour ; rejet d'un mauvais mot de passe
 - Signature et lecture du token ; token expiré ou trafiqué renvoie `null`
 - Rate limit : 5 échecs bloquent, la fenêtre de 15 minutes glisse, un succès la vide
-- Un reset de mot de passe (CLI) invalide une session existante via `sessionVersion`
+- `createAccount` échoue avec `username-taken` sans rien écrire si le
+  compte existe déjà
+- `resetPassword` invalide une session existante via `sessionVersion` ;
+  échoue avec `unknown-account` si le compte n'existe pas
 - Identifiant inconnu et mauvais mot de passe prennent un temps comparable
 - **Une session valide, réutilisée régulièrement, ne présente jamais
   d'expiration** : un test avance une horloge injectée de plusieurs mois
