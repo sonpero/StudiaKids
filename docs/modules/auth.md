@@ -115,7 +115,7 @@ argon2id dans l'adaptateur.
 - `resetPassword(username, password, now)` → `Result<void, ResetPasswordError>`
   — CLI uniquement ; incrémente `sessionVersion`, invalidant toutes les
   sessions existantes du compte ; échoue si le compte n'existe pas
-- `deleteAccount(userId, now)` — CLI uniquement, supprime en cascade tout
+- `deleteAccount(userId)` — CLI uniquement, supprime en cascade tout
   ce qui dépend du compte (cours, items, exercices, tentatives,
   conversations — voir `docs/securite.md`, "Suppression et droit à
   l'oubli"), y compris les fichiers sur le volume, jamais seulement les
