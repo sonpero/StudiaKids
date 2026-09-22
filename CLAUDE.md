@@ -85,13 +85,13 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**M1 est ouvert.** Voir `docs/jalons.md` pour son périmètre, sa démo et ses
-critères d'acceptation. Le code applicatif peut désormais être écrit, pour
-le périmètre de M1 uniquement, test-first (voir "TDD" plus bas).
+**M1 est accepté** (tous ses critères d'acceptation cochés, démo vérifiée
+en CLI, en navigateur et via Playwright — voir `docs/jalons.md`). **Aucun
+jalon n'est ouvert pour l'instant** : M2 s'ouvrira explicitement le moment
+venu, pas automatiquement à la clôture de M1.
 
-Une fois M1 accepté (tous ses critères cochés, sa démo tournant), mettez à
-jour cette section dans le même commit pour ouvrir M2 (ou clore sans
-rouvrir, selon la même règle qu'à la clôture de M0).
+Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
+commit.
 
 ---
 

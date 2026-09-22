@@ -7,10 +7,10 @@ critères d'acceptation sont cochés.
 
 Légende : `[ ]` en attente · `[x]` accepté
 
-**M0 est accepté. M1 est ouvert** (voir `CLAUDE.md`, section "Jalon
-courant"). Ce document définit le périmètre prévu pour les jalons
-suivants, pas un engagement figé : un jalon peut encore être ajusté avant
-son ouverture si la relecture le justifie.
+**M0 et M1 sont acceptés.** Aucun jalon n'est ouvert pour l'instant (voir
+`CLAUDE.md`, section "Jalon courant"). Ce document définit le périmètre
+prévu pour les jalons suivants, pas un engagement figé : un jalon peut
+encore être ajusté avant son ouverture si la relecture le justifie.
 
 ---
 
@@ -60,7 +60,7 @@ authentification, service worker, mode hors ligne.
 
 ---
 
-## M1 — Comptes (ouvert)
+## M1 — Comptes (accepté)
 
 **Un compte égale un enfant** (décidé) : pas de notion de profil séparée.
 Un second enfant dans le même foyer a un second compte, créé par le même
