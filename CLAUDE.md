@@ -402,7 +402,7 @@ pnpm fixtures:record <module> <case>   # enregistre une vraie réponse modèle (
 pnpm typecheck      # tsc --noEmit sur tout le monorepo
 pnpm lint           # eslint + dependency-cruiser
 pnpm db:generate    # migration Drizzle depuis les changements de schéma
-pnpm accounts:create <username>          # CLI, crée un compte (prénom, niveau, mot de passe) ; échoue si le compte existe déjà
+pnpm accounts:create <username> <firstName> <grade>  # CLI, crée un compte (mot de passe demandé en interactif) ; échoue si le compte existe déjà
 pnpm accounts:reset-password <username>  # CLI, change le mot de passe d'un compte existant, invalide ses sessions
 pnpm accounts:delete <username>          # CLI, supprime un compte et tout ce qui en dépend en cascade
 pnpm tutor:history <username>       # CLI, exporte l'historique du tuteur d'un compte pour l'adulte titulaire (docs/securite.md)

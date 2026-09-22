@@ -7,7 +7,10 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:generate": "drizzle-kit generate --config drizzle.config.ts"
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "accounts:create": "tsx src/cli/create-account.ts",
+    "accounts:reset-password": "tsx src/cli/reset-password.ts",
+    "accounts:delete": "tsx src/cli/delete-account.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

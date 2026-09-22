@@ -69,8 +69,9 @@ script CLI.
 **Périmètre**
 - Table des comptes (identifiant/mot de passe argon2, prénom, niveau
   CP→6e, portés directement par le compte)
-- `pnpm accounts:create <username>` — CLI qui crée un compte (mot de
-  passe, prénom, niveau), échoue si le compte existe déjà
+- `pnpm accounts:create <username> <firstName> <grade>` — CLI qui crée un
+  compte (mot de passe demandé en interactif), échoue si le compte existe
+  déjà
 - `pnpm accounts:reset-password <username>` — CLI qui change le mot de
   passe d'un compte existant et invalide ses sessions
 - `pnpm accounts:delete <username>` — CLI, suppression en cascade
