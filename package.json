@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && pnpm -r run typecheck",
     "lint": "eslint . --max-warnings=0 && pnpm run lint:boundaries",
     "lint:boundaries": "depcruise --config .dependency-cruiser.cjs apps/*/src packages/*/src",
+    "test:e2e": "playwright test",
     "db:generate": "pnpm --filter @studiakids/api run db:generate",
     "accounts:create": "pnpm --filter @studiakids/api run accounts:create",
     "accounts:reset-password": "pnpm --filter @studiakids/api run accounts:reset-password",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@playwright/test": "^1.63.0",
     "@studiakids/core": "workspace:*",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.10",
