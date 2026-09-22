@@ -19,6 +19,8 @@ describe("GET /api/health", () => {
     const app = buildApp({
       databasePath: path.join(dir, "test.db"),
       dataDir: dir,
+      sessionSecret: "test-session-secret",
+      cookieSecure: false,
     });
 
     const res = await app.inject({ method: "GET", url: "/api/health" });

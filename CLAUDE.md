@@ -429,9 +429,14 @@ Une tâche est finie quand tout ceci tient :
 
 ## Travailler avec l'humain
 
-- Demandez avant de modifier quoi que ce soit dans `packages/contracts/`,
-  `packages/core/src/jobs/` ou `packages/core/src/shared/`. Les trois sont
-  frozen ; en changer un casse tout autre agent travaillant en parallèle.
+- `packages/core/src/jobs/` et `packages/core/src/shared/` sont frozen :
+  demandez avant d'y toucher, dans un sens ou dans l'autre (créer ou
+  modifier) — en changer un casse tout autre agent travaillant en parallèle.
+- `packages/contracts/` est assoupli par rapport aux deux ci-dessus :
+  créez ou modifiez-y un schéma sans demander tant qu'il découle
+  directement d'une spec de `docs/modules/`. Demandez uniquement si le
+  schéma n'est prévu par aucune spec, ou s'il change la forme d'un contrat
+  déjà consommé par un client (web ou worker).
 - Demandez avant de changer le schéma de base de données d'un module que
   vous ne possédez pas.
 - Si une exigence est ambiguë, demandez. Ne devinez pas et ne construisez

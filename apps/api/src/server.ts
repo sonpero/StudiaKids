@@ -12,6 +12,9 @@ const app = buildApp({
   databasePath: path.join(dbDir, "studiakids.db"),
   dataDir: photosDir,
   webDistPath: isProduction ? webDistPath : undefined,
+  sessionSecret: process.env.SESSION_SECRET ?? "",
+  cookieSecure: process.env.COOKIE_SECURE === "true",
+  sessionDurationDays: process.env.SESSION_DURATION_DAYS ? Number(process.env.SESSION_DURATION_DAYS) : undefined,
 });
 
 const port = Number(process.env.PORT ?? 3000);
