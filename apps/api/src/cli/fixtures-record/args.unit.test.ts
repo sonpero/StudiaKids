@@ -5,21 +5,28 @@ describe("parseArgs", () => {
   it("reads a photo case with its photo", () => {
     expect(parseArgs(["ingestion", "legible", "--photo", "page.jpg"])).toEqual({
       ok: true,
-      value: { module: "ingestion", fixtureCase: "legible", photoPath: "page.jpg", force: false, dryRun: false },
+      value: { module: "ingestion", fixtureCase: "legible", photoPath: "page.jpg", force: false, dryRun: false, show: false },
     });
   });
 
   it("reads --force and --dry-run in any order", () => {
     expect(parseArgs(["ingestion", "illegible", "--dry-run", "--photo", "f.jpg", "--force"])).toEqual({
       ok: true,
-      value: { module: "ingestion", fixtureCase: "illegible", photoPath: "f.jpg", force: true, dryRun: true },
+      value: { module: "ingestion", fixtureCase: "illegible", photoPath: "f.jpg", force: true, dryRun: true, show: false },
     });
   });
 
   it("reads the namer case, which takes no photo", () => {
     expect(parseArgs(["ingestion", "namer", "--dry-run"])).toEqual({
       ok: true,
-      value: { module: "ingestion", fixtureCase: "namer", photoPath: null, force: false, dryRun: true },
+      value: { module: "ingestion", fixtureCase: "namer", photoPath: null, force: false, dryRun: true, show: false },
+    });
+  });
+
+  it("reads --show", () => {
+    expect(parseArgs(["ingestion", "legible", "--dry-run", "--show", "--photo", "p.jpg"])).toEqual({
+      ok: true,
+      value: { module: "ingestion", fixtureCase: "legible", photoPath: "p.jpg", force: false, dryRun: true, show: true },
     });
   });
 

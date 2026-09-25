@@ -62,9 +62,10 @@ function report(exchanges: RecordedExchange[], adapterSucceeded: boolean, minimu
   if (!smoke.ok) fail("ARRÊT : le test de fumée a échoué, rien n'a été écrit.");
 }
 
-type RunOptions = { force: boolean; dryRun: boolean; apiKey: string; model: string };
+type RunOptions = { force: boolean; dryRun: boolean; show: boolean; apiKey: string; model: string };
 
-async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, { force, dryRun, apiKey, model }: RunOptions): Promise<void> {
+async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, options: RunOptions): Promise<void> {
+  const { force, dryRun, show, apiKey, model } = options;
   const original = new Uint8Array(readFileSync(photoPath));
   if (sniffImageType(original) !== "jpeg") fail("La photo doit être un vrai JPEG, comme ceux que le navigateur envoie.");
   const stripped = stripJpegMetadata(original);
@@ -103,6 +104,10 @@ async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, { force, d
   const expected = EXPECTED[fixtureCase];
   const got = result.value;
   console.log(`réponse : legible=${String(got.legible)}, isCoursePage=${String(got.isCoursePage)}, ${String(got.markdown.length)} caractères de Markdown`);
+  if (show) {
+    console.log(`--- Markdown ---\n${got.markdown}\n--- fin ---`);
+    if (got.legible && got.isCoursePage) await showNaming(got.markdown, apiKey, model);
+  }
   if (got.legible !== expected.legible || (expected.isCoursePage !== null && got.isCoursePage !== expected.isCoursePage)) {
     fail(`ARRÊT : le modèle a répondu legible=${String(got.legible)}, isCoursePage=${String(got.isCoursePage)}, ce qui ne correspond pas au cas "${fixtureCase}". Rien n'a été écrit.`);
   }
@@ -110,6 +115,17 @@ async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, { force, d
   if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
   const fixture = buildFixture({ module: "ingestion", fixtureCase, model, recordedAt: new Date().toISOString(), photo: `photos/${fixtureCase}.jpg`, exchanges });
   write({ [photoFile]: photo, [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
+}
+
+// --show on a photo case: what the namer would propose for this text. An
+// extra real call, never recorded (the namer case records its own).
+async function showNaming(markdown: string, apiKey: string, model: string): Promise<void> {
+  const raw: RawExchange[] = [];
+  const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) }));
+  const result = await namer.suggest({ markdown });
+  console.log("--- namer ---");
+  report(raw.map(sanitizeExchange), result.ok);
+  if (result.ok) console.log(`proposé : « ${result.value.title} », ${result.value.subject}`);
 }
 
 function recordedMarkdown(): string {
@@ -147,7 +163,7 @@ async function main(): Promise<void> {
   const model = process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
   console.log(`modèle : ${model}${args.value.dryRun ? " (--dry-run)" : ""}`);
 
-  const options = { force: args.value.force, dryRun: args.value.dryRun, apiKey, model };
+  const options = { force: args.value.force, dryRun: args.value.dryRun, show: args.value.show, apiKey, model };
   const { fixtureCase, photoPath } = args.value;
   if (fixtureCase === "namer") return recordNamer(options);
   if (photoPath === null) fail("--photo manquant.");

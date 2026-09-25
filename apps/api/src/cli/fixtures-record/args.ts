@@ -4,12 +4,13 @@ export const PHOTO_CASES = ["legible", "illegible", "not-a-course"] as const;
 export type PhotoCase = (typeof PHOTO_CASES)[number];
 export type FixtureCase = PhotoCase | "namer";
 
-export type RecordArgs = { module: "ingestion"; fixtureCase: FixtureCase; photoPath: string | null; force: boolean; dryRun: boolean };
+export type RecordArgs = { module: "ingestion"; fixtureCase: FixtureCase; photoPath: string | null; force: boolean; dryRun: boolean; show: boolean };
 
 export const USAGE =
-  "Usage : pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <fichier.jpg> [--force] [--dry-run]\n" +
-  "        pnpm fixtures:record ingestion namer [--force] [--dry-run]\n" +
-  "--dry-run : appel réel et test de fumée, rien n'est écrit.";
+  "Usage : pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <fichier.jpg> [--force] [--dry-run] [--show]\n" +
+  "        pnpm fixtures:record ingestion namer [--force] [--dry-run] [--show]\n" +
+  "--dry-run : appel réel et test de fumée, rien n'est écrit.\n" +
+  "--show : affiche le Markdown complet et la proposition du namer (appel supplémentaire pour un cas photo).";
 
 const isPhotoCase = (value: string): value is PhotoCase => (PHOTO_CASES as readonly string[]).includes(value);
 
@@ -21,10 +22,12 @@ export function parseArgs(argv: string[]): Result<RecordArgs, string> {
   let photoPath: string | null = null;
   let force = false;
   let dryRun = false;
+  let show = false;
   for (let i = 0; i < rest.length; i++) {
     const option = rest[i];
     if (option === "--force") force = true;
     else if (option === "--dry-run") dryRun = true;
+    else if (option === "--show") show = true;
     else if (option === "--photo") {
       const value = rest[++i];
       if (value === undefined || value.startsWith("--")) return err(USAGE);
@@ -32,5 +35,5 @@ export function parseArgs(argv: string[]): Result<RecordArgs, string> {
     } else return err(USAGE);
   }
   if ((fixtureCase === "namer") !== (photoPath === null)) return err(USAGE);
-  return ok({ module: "ingestion", fixtureCase, photoPath, force, dryRun });
+  return ok({ module: "ingestion", fixtureCase, photoPath, force, dryRun, show });
 }
