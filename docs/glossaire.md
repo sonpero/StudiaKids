@@ -30,6 +30,19 @@ usuel, ou un mot qui ne se traduit pas mot à mot).
   le nom de la colonne/propriété métier sur cette orthographe évite une
   traduction silencieuse à la frontière UI. Ce n'est pas une erreur si vous
   la recroisez à côté d'un `colour` StudIA dans `docs/inventaire-studia.md`.
+- **Tokens de design nommés en français**, en place depuis M0 et écrits
+  ici à l'ouverture de M2 : les noms de token de `tokens.css` reprennent
+  la palette de `docs/design/tokens.md` telle que la maquette la nomme
+  (`--color-mandarine`, `--color-turquoise`, `--color-soleil`,
+  `--color-succes`, `--color-peche`, `--color-vert-clair`,
+  `--color-violet-nuit`, `--matiere-*`). Ce sont des noms de design, pas
+  du vocabulaire métier : les traduire casserait la correspondance
+  directe avec la maquette, seule référence visuelle. Les rôles sans nom
+  de couleur restent en anglais (`--color-canvas`, `--color-ink`,
+  `--color-ink-soft`). L'exception suit le nom du token partout où il
+  est cité, y compris comme valeur stockée (`courses.color =
+  'matiere-maths'`) — jamais pour un identifiant métier (la matière
+  elle-même reste `french`, pas `francais`).
 
 ## Règle `grade`
 
@@ -113,9 +126,8 @@ Matières (`Subject`, liste fermée ; le libellé affiché reste en français) :
 | Anglais | `english` | `matiere-anglais` (provisoire) |
 | Autre | `other` | `matiere-autre` (provisoire) |
 
-Les noms de token `--matiere-*` sont en français : ce sont des noms de
-design repris de `docs/design/tokens.md` (comme `--color-mandarine`), pas
-des identifiants de code métier.
+Les noms de token `--matiere-*` sont en français : voir "Exceptions
+assumées" plus haut.
 
 ## Tâches de fond (`jobs`)
 

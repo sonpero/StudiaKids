@@ -62,7 +62,7 @@ jamais une action ou un état) : `--matiere-maths #FFC2D4`,
 `--matiere-francais #C9BBFF`, `--matiere-histoire #B8E9D0`, et, **provisoires
 depuis l'ouverture de M2** (`docs/design/tokens.md`, à valider
 visuellement) : `--matiere-geographie #BDE3FF`, `--matiere-sciences #E2F0A8`,
-`--matiere-anglais #F2C4F0`, `--matiere-autre #E6DFD3`. Un pastel par
+`--matiere-anglais #F2C4F0`, `--matiere-autre #D5DCE8`. Un pastel par
 valeur de la liste fermée des matières (`docs/modules/ingestion.md`,
 `Subject`), dérivé à l'extraction ; le cours stocke le **nom** du token,
 jamais sa valeur, pour que "uniquement les tokens" tienne jusqu'en base.

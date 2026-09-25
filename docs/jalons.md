@@ -156,7 +156,9 @@ suppression de compte qui efface aussi les photos. Détail dans
   cours existant"
 - `pnpm accounts:delete` supprime aussi les cours et les photos du compte
 - `pnpm fixtures:record` (enregistrement manuel de réponses brutes du
-  modèle, coûte de l'argent)
+  modèle, coûte de l'argent) ; les photos sources sont dépouillées de
+  leurs métadonnées par l'outil avant d'être écrites dans le dépôt, et la
+  clé d'API n'est lue que depuis l'environnement (`.env` ignoré par git)
 
 **Démo** — Depuis l'accueil, l'enfant prend une photo. Une photo floue, ou
 une photo qui n'est pas une page de cours, déclenche un message

@@ -65,12 +65,16 @@ complet entre le vocabulaire de prose (français) et les identifiants de
 code (anglais) vit dans `docs/glossaire.md` — toute création de nouveau
 terme de domaine y passe avant d'être utilisée dans une spec ou du code.
 
-**Deux exceptions assumées à cette règle**, documentées en détail dans
+**Trois exceptions assumées à cette règle**, documentées en détail dans
 `docs/glossaire.md` : les codes de niveau scolaire (`CP`, `CE1`, `CE2`,
-`CM1`, `CM2`, `6e`) ne sont pas traduits, et la couleur d'un cours
+`CM1`, `CM2`, `6e`) ne sont pas traduits ; la couleur d'un cours
 (`color`) utilise l'orthographe américaine plutôt que celle de StudIA
 (`colour`), parce que le code manipule des propriétés CSS/DOM qui
-s'écrivent `color`.
+s'écrivent `color` ; et les **tokens de design** gardent le nom français
+de la palette de `docs/design/tokens.md` (`--color-mandarine`,
+`--color-succes`, `--matiere-francais`...), y compris quand un
+identifiant de code les référence par leur nom (`matiere-maths` dans
+`courses.color`) — en place depuis M0, écrite à l'ouverture de M2.
 
 **`grade` est réservé au niveau scolaire.** Aucun score, pourcentage ou
 note ne s'appelle jamais `grade` dans ce projet — la progression de

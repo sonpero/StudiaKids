@@ -103,8 +103,12 @@ Fonctions pures de domaine :
 
 - `sniffImageType(bytes)` — type réel lu sur les premiers octets, jamais
   sur l'extension ni sur le type annoncé ; seul `jpeg` est accepté
-- `isAcceptable(bytes)` — JPEG réel et au plus 5 Mo (limite d'image du
-  modèle), jamais un fichier vide
+- `isAcceptable(bytes)` — JPEG réel et au plus 7 500 000 octets, jamais
+  un fichier vide. La limite de l'API Claude (10 Mo par image) porte sur
+  l'image **encodée en base64**, qui pèse 4/3 du fichier : 7 500 000
+  octets bruts donnent exactement 10 000 000 caractères base64. Un JPEG
+  réencodé à 2000 px en pèse normalement moins d'un dixième ; la limite
+  n'arrête que ce qui échouerait de toute façon à l'appel du modèle
 - `stripJpegMetadata(bytes)` — renvoie le même JPEG sans ses segments de
   métadonnées (APP1 à APP15, COM), image inchangée
 - `nextPageIndex(existing)` — ordre contigu, sans trou
