@@ -124,3 +124,9 @@ vocale (reconnaissance de la parole) — voir `docs/modules/tutor.md`.
 - Présentation des photos à côté du texte : côte à côte, en dessous, ou
   dans un onglet séparé au sein du même écran ? Non tranché, à décider
   avec `docs/design/` — pas encore couvert par une maquette existante.
+- **Observé sur un vrai appel d'extraction (M2, 2026-09-25)** : les listes
+  à tirets du cahier sortent en lignes « – … » précédées d'une espace et
+  séparées par un simple retour à la ligne — pas des listes Markdown. Un
+  rendu Markdown standard les fusionne en un seul paragraphe. À traiter
+  avant M3 : consigne d'extraction (listes `-`), ou rendu qui respecte les
+  retours à la ligne — à trancher.
