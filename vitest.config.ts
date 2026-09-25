@@ -10,15 +10,20 @@ const webAlias = {
   "@": path.resolve(import.meta.dirname, "apps/web/src"),
 };
 
+// Inline projects do NOT inherit root-level test options, so the network
+// guard is repeated per project; declared once at the root, it silently
+// applied to nothing (caught at M2 by packages/core/src/no-network.*.test.ts).
+const setupFiles = ["./tests/support/no-network.ts"];
+
 export default defineConfig({
   test: {
-    setupFiles: ["./tests/support/no-network.ts"],
     projects: [
       {
         resolve: { alias: webAlias },
         test: {
           name: "unit",
           environment: "node",
+          setupFiles,
           include: commonInclude.map((dir) => `${dir}/*.unit.test.{ts,tsx}`),
         },
       },
@@ -27,6 +32,7 @@ export default defineConfig({
         test: {
           name: "int",
           environment: "node",
+          setupFiles,
           include: commonInclude.map((dir) => `${dir}/*.int.test.{ts,tsx}`),
         },
       },
@@ -35,6 +41,7 @@ export default defineConfig({
         test: {
           name: "contract",
           environment: "node",
+          setupFiles,
           include: commonInclude.map((dir) => `${dir}/*.contract.test.{ts,tsx}`),
         },
       },
