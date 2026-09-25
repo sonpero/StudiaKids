@@ -166,13 +166,28 @@ construits par `createLanguageModel` (`packages/core/src/shared/`),
 `ai` 4.3.19 + `@ai-sdk/anthropic` 1.2.12 comme StudIA, modèle lu depuis
 `ANTHROPIC_MODEL` (défaut `claude-sonnet-5`).
 
-**Contournement à retirer lors d'une montée en `ai` v5+** : `ai` 4.x
-envoie `temperature: 0` quand l'appelant ne précise rien, et
-`claude-sonnet-5` rejette tout paramètre d'échantillonnage (400). Un
-middleware `wrapLanguageModel` dans `createLanguageModel` retire
-`temperature`, `topP` et `topK` de chaque appel ; il est testé sans
-réseau (`model-client.unit.test.ts`) et n'a plus lieu d'être dès que la
-bibliothèque cesse d'imposer une température par défaut.
+**Un seul point d'adaptation à `claude-sonnet-5`, à retirer lors d'une
+montée en `ai` v5+** : le `fetch` de `createLanguageModel` réécrit le
+corps de chaque requête, parce que `ai` 4.x / `@ai-sdk/anthropic` 1.2.12
+ne savent pas l'exprimer :
+
+- retrait de `temperature`, `top_p` et `top_k` : `ai` 4.x envoie
+  `temperature: 0` quand l'appelant ne précise rien, et `claude-sonnet-5`
+  rejette tout paramètre d'échantillonnage (400) ;
+- `thinking: { type: "disabled" }` : le thinking adaptatif, actif par
+  défaut, consomme `max_tokens` et fait courir un risque de troncature ;
+  le fournisseur ne transmet `thinking` que s'il est activé. Le `tool_choice`
+  forcé de `generateObject` reste accepté par `claude-sonnet-5` ;
+- `max_tokens` fixé à `DEFAULT_MAX_TOKENS` (16 000) au lieu du 4096 par
+  défaut du fournisseur : de la marge pour une page dense, tokenizer plus
+  lourd compris. À la suppression de cette réécriture, `max_tokens` passe
+  au réglage `maxTokens` des appelants, il ne disparaît pas.
+
+Testé sans réseau (`model-client.unit.test.ts`) sur le corps de requête
+réellement envoyé. `pnpm fixtures:record` affiche pour chaque appel la
+présence de blocs de thinking, l'acceptation du `tool_choice` forcé,
+`stop_reason`, `usage.input_tokens` / `output_tokens` et la latence : le
+premier enregistrement sert de test de fumée de cette adaptation.
 
 `PhotoExtractor` est le pendant du `VisionExtractor` de StudIA : même
 schéma de sortie (`markdown`/`legible`/`reason`), même prompt de base

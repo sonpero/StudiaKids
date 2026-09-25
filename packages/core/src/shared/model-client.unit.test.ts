@@ -1,7 +1,7 @@
 import { generateObject, generateText } from "ai";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createLanguageModel, DEFAULT_MODEL } from "./model-client.js";
+import { createLanguageModel, DEFAULT_MAX_TOKENS, DEFAULT_MODEL } from "./model-client.js";
 
 // Stands in for the network: records each request body and answers with a
 // minimal Anthropic Messages API response, so no test ever leaves the
@@ -72,5 +72,33 @@ describe("createLanguageModel", () => {
     expect(object).toEqual({ title: "Les fractions" });
     expect(bodies[0]).toMatchObject({ tool_choice: { type: "tool", name: "json" } });
     expect(bodies[0]).not.toHaveProperty("temperature");
+  });
+
+  // claude-sonnet-5 thinks adaptively by default, and thinking eats into
+  // max_tokens: a dense page could come back truncated. @ai-sdk/anthropic
+  // 1.2.12 only ever forwards thinking when it is "enabled".
+  it("disables thinking on every call", async () => {
+    const { fetch, bodies } = recordingFetch([{ type: "text", text: "ok" }]);
+    const model = createLanguageModel({ apiKey: "test-key", fetch });
+
+    await generateText({ model, prompt: "hi" });
+
+    expect(bodies[0]).toMatchObject({ thinking: { type: "disabled" } });
+  });
+
+  it("sets max_tokens explicitly, with room for a dense page, instead of the provider's 4096", async () => {
+    const { fetch, bodies } = recordingFetch([{ type: "text", text: "ok" }]);
+
+    await generateText({ model: createLanguageModel({ apiKey: "test-key", fetch }), prompt: "hi" });
+    await generateText({ model: createLanguageModel({ apiKey: "test-key", fetch, maxTokens: 2000 }), prompt: "hi" });
+
+    expect(DEFAULT_MAX_TOKENS).toBe(16_000);
+    expect(bodies.map((body) => body.max_tokens)).toEqual([16_000, 2000]);
+  });
+
+  it("goes through the global fetch when none is injected, so the test network guard still applies", async () => {
+    const model = createLanguageModel({ apiKey: "test-key" });
+
+    await expect(generateText({ model, prompt: "hi", maxRetries: 0 })).rejects.toThrow(/Network access is disabled in tests/);
   });
 });
