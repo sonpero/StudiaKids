@@ -48,6 +48,18 @@ module.exports = {
         path: "^packages/core/src/(?!jobs/|shared/)[^/]+/",
       },
     },
+    {
+      name: "mascot-is-self-contained",
+      comment:
+        "apps/web imports mascot/ straight into the browser bundle: it may import nothing outside its own folder, not another module, not an npm package, not a Node built-in (docs/modules/mascot.md).",
+      severity: "error",
+      from: {
+        path: "^packages/core/src/mascot/",
+      },
+      to: {
+        pathNot: "^packages/core/src/mascot/",
+      },
+    },
   ],
   options: {
     tsPreCompilationDeps: true,

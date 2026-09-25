@@ -111,6 +111,13 @@ Cette table est la spécification exécutable : un test paramétré vérifie
 Aucun. Ce module est entièrement pur, sans I/O, sans LLM, sans base de
 données — uniquement du `domain/`, pas d'`application/` ni d'`infra/`.
 
+**Autonome, garanti par la CI** : `apps/web` l'importe directement dans le
+bundle navigateur, donc `packages/core/src/mascot/` n'importe rien hors de
+son propre dossier — ni un autre module, ni un paquet npm, ni un module
+Node. Règle `dependency-cruiser` `mascot-is-self-contained`, dont la
+non-vacuité a été vérifiée par quatre violations délibérées (autre module,
+import de type seul, paquet npm, module Node) puis revert.
+
 ## Cas d'usage
 
 Aucun au sens "orchestration + ports" du reste du projet. `present` est
