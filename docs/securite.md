@@ -134,16 +134,24 @@ détail à corriger après coup.
 
 ## Sécurité de l'étape photo
 
-Le modèle vision reçoit l'image brute de ce que l'enfant a photographié —
-pas seulement "un cours", potentiellement n'importe quoi si l'enfant se
-trompe ou photographie autre chose par curiosité. `docs/modules/ingestion.md`
-ne détecte aujourd'hui que la lisibilité (`legible`/`reason`), pas la
-pertinence du contenu. **Recommandation à trancher avant M2** : étendre le
-schéma de sortie de l'extraction pour distinguer explicitement "illisible"
-de "ce n'est pas une page de cours", avec le même traitement côté produit
-(message de la mascotte, aucune génération) mais un signal différent côté
-suivi — une photo hors-sujet répétée peut indiquer un usage détourné de
-l'appareil photo à surveiller, une photo simplement floue non.
+Le modèle vision reçoit l'image de ce que l'enfant a photographié — pas
+seulement "un cours", potentiellement n'importe quoi si l'enfant se
+trompe ou photographie autre chose par curiosité.
+
+**Décidé à l'ouverture de M2** : le schéma de sortie de l'extraction
+distingue explicitement "illisible" (`legible: false`) de "ce n'est pas
+une page de cours" (`isCoursePage: false`), avec le même traitement côté
+produit (message de la mascotte, aucune génération, aucun nommage) mais
+un statut distinct (`not_a_course_page`, `docs/modules/ingestion.md`).
+Ce statut vit sur le cours, donc disparaît avec lui quand l'enfant
+reprend sa photo : **aucun compteur ni historique de ces photos n'est
+tenu** — ce serait de la télémétrie comportementale, exclue par les
+principes généraux ci-dessus.
+
+**Ce qui part chez le fournisseur de modèle est une image réencodée**
+par le navigateur (JPEG, 2000 px au plus), dépouillée de ses métadonnées
+côté serveur avant stockage et avant tout envoi — jamais le fichier
+d'origine de l'appareil photo, avec ses coordonnées GPS.
 
 ---
 
@@ -211,9 +219,10 @@ ajoutée en cours d'implémentation qui ne figure pas dans
 
 - Aucune donnée de géolocalisation
 - Aucun identifiant publicitaire, aucun cookie tiers, aucun pixel de suivi
-- Aucune métadonnée EXIF des photos au-delà de ce qui est nécessaire à
-  l'affichage (à dépouiller au stockage si le format d'origine les
-  embarque)
+- Aucune métadonnée des photos (EXIF dont GPS, XMP, IPTC, commentaires) :
+  le serveur n'accepte que du JPEG et en retire tous les segments de
+  métadonnées avant stockage, que le navigateur les ait déjà retirés en
+  réencodant ou non (`docs/modules/ingestion.md`)
 - Aucun enregistrement audio (la lecture à voix haute est une sortie de
   synthèse vocale locale au navigateur, jamais une entrée microphone ; la
   reconnaissance vocale des questions au tuteur est explicitement hors
@@ -248,6 +257,3 @@ de cours dans `docs/modules/ingestion.md`, vérifiée par un test dédié).
   (script CLI dédié, ou simple accès direct à la base documenté) reste à
   choisir avant M6 — cette spec penche pour un script CLI par cohérence
   avec le reste des commandes d'administration du projet.
-- Extension de la détection de photo ("ce n'est pas un cours") évoquée
-  plus haut : à spécifier précisément dans `docs/modules/ingestion.md` si
-  elle est retenue, avant M2.

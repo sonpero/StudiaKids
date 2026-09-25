@@ -21,8 +21,9 @@ poses et signaux nommés en prose ici et leurs identifiants anglais.
 (référence SVG existante, `docs/design/mascotte-etats.html`), plus
 `sorry` (photo illisible), `glitch` (échec technique) et `refusal`
 (question hors cours) — ces trois dernières sont spécifiées ici
-sémantiquement mais **leur SVG reste à ajouter dans `docs/design/`** ; ne
-pas en dessiner dans ce dépôt de cadrage.
+sémantiquement ; `sorry` et `glitch` ont des brouillons provisoires
+depuis M2 (décision validée), leur dessin définitif et celui de `refusal`
+restent à ajouter dans `docs/design/`.
 
 N'existe pas dans StudIA sous cette forme : `Fiche` y est choisie
 directement par chaque écran au cas par cas. Ici, centraliser est justifié
@@ -38,6 +39,7 @@ type Signal =
   | { type: "home"; hasExistingCourses: boolean }
   | { type: "extraction-in-progress" }
   | { type: "extraction-illegible"; reason: string }
+  | { type: "extraction-not-a-course-page" }
   | { type: "extraction-failed" }
   | { type: "generation-in-progress" }
   | { type: "generation-failed" }
@@ -74,6 +76,7 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `home` (avec cours) | `idle` |
 | `extraction-in-progress` | `waiting` |
 | `extraction-illegible` | `sorry` |
+| `extraction-not-a-course-page` | `sorry` — même dessin, phrase différente ("Je ne vois pas de leçon sur cette photo…") |
 | `extraction-failed` | `glitch` |
 | `generation-in-progress` | `waiting` |
 | `generation-failed` | `glitch` |
@@ -136,7 +139,8 @@ géré par l'écran tuteur directement, pas par `present()`.
   `joy`, `sorry` ni `glitch` — test qui protège la règle "aucune perte,
   jamais de jugement" au niveau du code, pas seulement de la revue humaine
 - Unitaire : `extraction-illegible` et `extraction-failed` produisent bien
-  deux poses distinctes (`sorry` vs `glitch`) — le test qui protège la
+  deux poses distinctes (`sorry` vs `glitch`) ; `extraction-illegible` et
+  `extraction-not-a-course-page` partagent la pose mais jamais la phrase — le test qui protège la
   distinction "résultat métier normal" vs "vrai bug technique"
 - Unitaire : **aucune phrase du catalogue ne contient un mot de la liste
   interdite** (`extraction`, `job`, `génération`, `backend`, `serveur`,
@@ -156,7 +160,7 @@ géré par l'écran tuteur directement, pas par `present()`.
 - Faut-il une pose spécifique pour "premier cours jamais créé" (onboarding) ?
   Le brief ne détaille pas d'écran d'onboarding séparé ; cette spec suppose
   que `idle` + l'invitation à photographier suffit.
-- Les SVG de `sorry`, `glitch` et `refusal` restent à ajouter dans
-  `docs/design/` avant, respectivement, M2 (les deux premières) et M6 (la
-  troisième) — ce document en fixe déjà la sémantique et le mapping, il ne
-  manque que le dessin.
+- Les SVG de `sorry` et `glitch` existent en **brouillons provisoires**
+  depuis M2 (dérivés des tracés d'`idle`, dette notée dans
+  `docs/jalons.md`) ; leur dessin définitif, et celui de `refusal` avant
+  M6, reste à ajouter dans `docs/design/`.

@@ -76,8 +76,55 @@ compatibles anglais/français ou déjà en anglais).
 | couleur | `color` | Voir "Exceptions assumées" ci-dessus. |
 | confirmé (bouton "Oui, c'est ça !") | `confirmed` | |
 | dernier accès | `lastAccessedAt` | |
-| illisible | `illegible` | Valeur de `extractionStatus` et raison de page (`illegibleReason`). |
+| titre | `title` | Proposé par le modèle, trois mots au plus. |
+| cours non confirmé | `unconfirmed` (`getUnconfirmedCourse`, `GET /api/courses/unconfirmed`) | Au plus un par compte. |
+| confirmer / refuser (un cours) | `confirmCourse` / `rejectCourse` | "Oui, c'est ça !" / "Je reprends la photo". |
+| relancer (après un échec technique) | `retryExtraction` | Jamais après `illegible` ni `not_a_course_page`. |
+| enregistrer un accès | `recordAccess` | |
+| page (photo d'un cours) | `Page` / table `pages` | |
+| plafond de pages | `MAX_PAGES_PER_COURSE` | 5. |
+| chemin stocké | `storedPath` | Relatif à la racine du volume, jamais absolu. |
+| empreinte | `sha256` | Calculée sur les octets stockés (métadonnées retirées). |
+| type réel (d'un fichier) | `sniffImageType` | Lu sur les octets, jamais sur l'extension ni sur le type annoncé. |
+| retirer les métadonnées | `stripJpegMetadata` | |
+| stockage de fichiers | `FileStore` | |
+| extraction (texte tiré des photos) | `Extraction` / table `extractions` | Mot interdit à l'écran (`docs/ui.md`, "Copie"). |
+| statut d'extraction | `extractionStatus` | Valeurs : `pending` (en attente), `running` (en cours), `illegible`, `not_a_course_page`, `ready`, `failed` (échec technique, dérivé, jamais stocké). |
+| extracteur de photo | `PhotoExtractor` | |
+| proposition de titre et de matière | `CourseNamer` | |
+| lisible | `legible` | |
+| illisible | `illegible` | Valeur de `extractionStatus`. |
+| page de cours (la photo en montre une) | `isCoursePage` (`is_course_page` en base) | |
+| pas une page de cours | `not_a_course_page` | Valeur de `extractionStatus`. |
+| inexploitable (illisible ou pas une page de cours) | `unusable` (`unusableReason`, `unusable_reason` en base) | |
 | prêt | `ready` | Valeur de `extractionStatus`. |
+| écran de validation | `ConfirmationScreen` | |
+| écran de capture | `CaptureScreen` | |
+
+Matières (`Subject`, liste fermée ; le libellé affiché reste en français) :
+
+| Terme de prose | Identifiant | Token de couleur |
+|---|---|---|
+| Maths | `maths` | `matiere-maths` |
+| Français | `french` | `matiere-francais` |
+| Histoire | `history` | `matiere-histoire` |
+| Géographie | `geography` | `matiere-geographie` (provisoire) |
+| Sciences | `science` | `matiere-sciences` (provisoire) |
+| Anglais | `english` | `matiere-anglais` (provisoire) |
+| Autre | `other` | `matiere-autre` (provisoire) |
+
+Les noms de token `--matiere-*` sont en français : ce sont des noms de
+design repris de `docs/design/tokens.md` (comme `--color-mandarine`), pas
+des identifiants de code métier.
+
+## Tâches de fond (`jobs`)
+
+| Terme de prose | Identifiant | Note |
+|---|---|---|
+| tâche de fond | `Job` / table `jobs` | Mot interdit à l'écran. |
+| lire les photos d'un cours | job `extract-course` | |
+| tentatives | `attempts` / `maxAttempts` | À ne pas confondre avec `Attempt` (`game-engine`), une réponse de l'enfant. |
+| dernière erreur | `lastError` | |
 
 ## Découpage et génération (`exercise-generator`)
 

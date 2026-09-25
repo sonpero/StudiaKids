@@ -29,15 +29,22 @@ ci-dessous.
 ## Domaine
 
 ```ts
-type ExtractionStatus = "pending" | "running" | "illegible" | "ready" | "failed";
+type ExtractionStatus =
+  | "pending" | "running" | "illegible" | "not_a_course_page" | "ready"
+  | "failed";               // jamais stocké : dérivé à la lecture, voir plus bas
+
+// Liste fermée : le modèle choisit, il n'invente pas. Libellés affichés en
+// français par l'écran ("Maths", "Français", "Histoire", "Géographie",
+// "Sciences", "Anglais", "Autre").
+type Subject = "maths" | "french" | "history" | "geography" | "science" | "english" | "other";
 
 type Course = {
   id: string;
   userId: string;
   title: string;            // proposé par le modèle, ≤ 3 mots, jamais édité
-  subject: string;          // proposée par le modèle, ≤ 3 mots
+  subject: Subject | null;  // proposée par le modèle, null jusqu'à l'extraction
   grade: Grade;             // hérité du compte à la création, jamais deviné
-  color: string;            // pastel dérivé de la matière, cf. docs/ui.md
+  color: string;            // nom du token pastel de la matière (ex. "matiere-maths"), jamais une valeur hexadécimale — cf. docs/ui.md
   extractionStatus: ExtractionStatus;
   confirmed: boolean;       // true une fois l'enfant a confirmé sur l'écran de validation
   pageCount: number;        // >= 1
@@ -51,8 +58,9 @@ type Page = {
   sha256: string;
   storedPath: string;
   sizeBytes: number;
-  legible: boolean | null;      // null tant que l'extraction n'a pas tourné
-  illegibleReason: string | null;
+  legible: boolean | null;      // null tant que l'extraction n'a pas tourné sur cette page
+  isCoursePage: boolean | null; // idem ; n'a de sens que si legible = true
+  unusableReason: string | null; // raison courte renvoyée par le modèle si la page est inexploitable
 };
 
 type Extraction = { courseId: string; markdown: string; extractedAt: string };
@@ -68,12 +76,47 @@ pages, contraire à la contrainte "aucun éditeur" de `docs/ui.md`. Sujet à
 revoir si l'usage réel montre que reprendre un cours de 4 pages à cause
 d'une seule photo floue frustre trop souvent — voir questions ouvertes.
 
+**Plafond de 5 pages par cours** (`MAX_PAGES_PER_COURSE`) : une leçon
+d'école primaire tient en une ou deux pages, cinq laisse de la marge sans
+ouvrir la porte à un cours de trente photos. L'écran de capture masque le
+bouton "Une autre page" dès la cinquième ; le serveur refuse la sixième
+de toute façon.
+
+**JPEG uniquement, métadonnées retirées.** Le navigateur réencode toujours
+la photo en JPEG (canvas, 2000 px maximum sur le grand côté) avant envoi :
+ça redresse la photo, la ramène sous la limite de taille d'image du
+modèle, et retire au passage ses métadonnées. Le serveur ne fait pas
+confiance au client pour autant : il vérifie le type réel sur les octets
+(PNG, WebP ou un faux `.jpg` sont refusés, quel que soit le type annoncé)
+et retire de tout fichier stocké les segments de métadonnées JPEG (EXIF
+dont GPS, XMP, IPTC, commentaires) — `docs/securite.md`, "Données non
+conservées". L'empreinte SHA-256 est calculée sur les octets réellement
+stockés.
+
+**Un seul cours non confirmé à la fois par compte.** Créer un cours
+supprime d'abord (lignes et fichiers) tout cours non confirmé existant du
+compte. L'accueil peut ainsi toujours ramener l'enfant vers le cours en
+attente (un seul, en bandeau), et une photo abandonnée ne survit jamais
+au cours suivant — pas de nettoyage différé à programmer.
+
 Fonctions pures de domaine :
 
-- `isAcceptable(sizeBytes, mimeType)` — 20 Mo par page, liste blanche de
-  types MIME image, jamais une vérification par extension seule
+- `sniffImageType(bytes)` — type réel lu sur les premiers octets, jamais
+  sur l'extension ni sur le type annoncé ; seul `jpeg` est accepté
+- `isAcceptable(bytes)` — JPEG réel et au plus 5 Mo (limite d'image du
+  modèle), jamais un fichier vide
+- `stripJpegMetadata(bytes)` — renvoie le même JPEG sans ses segments de
+  métadonnées (APP1 à APP15, COM), image inchangée
 - `nextPageIndex(existing)` — ordre contigu, sans trou
-- `allPagesLegible(pages)` — vrai seulement si chaque page a `legible: true`
+- `canAddPage(pageCount)` — faux à partir de `MAX_PAGES_PER_COURSE`
+- `outcomeOfPages(pages)` — `illegible` si une page a `legible: false`,
+  sinon `not_a_course_page` si une page a `isCoursePage: false`, sinon
+  `ready` quand toutes sont traitées ; l'illisibilité prime (on ne juge
+  pas le contenu d'une photo qu'on ne peut pas lire)
+- `subjectColor(subject)` — nom du token pastel, total sur `Subject`
+- `displayStatus(stored, latestJob)` — `failed` si le dernier job
+  `extract-course` du cours est `failed`, sinon le statut stocké (voir
+  "Statut `failed`" plus bas)
 
 ## Ports
 
@@ -85,22 +128,27 @@ interface FileStore {
 }
 
 interface PhotoExtractor {
-  extract(input: { bytes: Buffer }): Promise<Result<{ markdown: string; legible: boolean; reason?: string }, ExtractionError>>;
+  extract(input: { bytes: Buffer }): Promise<Result<{ markdown: string; legible: boolean; isCoursePage: boolean; reason?: string }, ExtractionError>>;
 }
 
 interface CourseNamer {
   // Un second appel, léger, séparé de l'extraction elle-même : proposer un
   // titre et une matière ne regarde que le texte déjà extrait, pas la
   // photo, et n'a pas besoin du modèle vision.
-  suggest(input: { markdown: string }): Promise<Result<{ title: string; subject: string }, ExtractionError>>;
+  suggest(input: { markdown: string }): Promise<Result<{ title: string; subject: Subject }, ExtractionError>>;
 }
+
+interface CourseRepository { /* chaque méthode prend userId et filtre dessus (CLAUDE.md, règle 1) */ }
 ```
 
 `PhotoExtractor` est le pendant du `VisionExtractor` de StudIA : même
-schéma de sortie (`markdown`/`legible`/`reason`), même prompt de base,
-recopiable tel quel (voir `docs/inventaire-studia.md`, §6).
-`legible: false` n'est **pas** une erreur, c'est un résultat métier normal
-qui bloque la suite du pipeline.
+schéma de sortie (`markdown`/`legible`/`reason`), même prompt de base
+(voir `docs/inventaire-studia.md`, §6), **plus un champ plat
+`isCoursePage`** : faux si la photo lisible ne montre pas une page de
+cours ou d'exercice scolaire (un jouet, un visage, une pièce...) —
+`docs/securite.md`, "Sécurité de l'étape photo". `legible: false` et
+`isCoursePage: false` ne sont **pas** des erreurs, ce sont des résultats
+métier normaux qui bloquent la suite du pipeline.
 
 **L'extraction préserve la hiérarchie de titres** (Markdown `#`/`##`) — le
 signal dont `exercise-generator` a besoin pour découper en items. Un
@@ -108,30 +156,45 @@ extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
 
 ## Cas d'usage
 
-- `createCourse(userId, now)` — crée la ligne cours avant toute photo,
-  `grade` copié depuis le compte, `title`/`subject`/`color` vides jusqu'à
-  extraction, `extractionStatus: 'pending'`
-- `addPage(userId, courseId, bytes, mimeType, now)` — valide, hash,
-  déduplique au sein du cours, stocke, renvoie la page
+- `createCourse(userId, now)` — supprime d'abord tout cours non confirmé
+  du compte (lignes et fichiers, comme `deleteCourse`), puis crée la
+  ligne cours avant toute photo, `grade` copié depuis le compte,
+  `title`/`subject`/`color` vides jusqu'à extraction,
+  `extractionStatus: 'pending'`
+- `addPage(userId, courseId, bytes, now)` — vérifie le type réel et la
+  taille, refuse au-delà de 5 pages, retire les métadonnées, hash,
+  déduplique au sein du cours, stocke, renvoie la page. Le type annoncé
+  par le client n'est jamais consulté.
 - `startExtraction(userId, courseId, now)` — enfile un job `extract-course`
-- `handleExtractionJob(payload, ctx)` — lit les pages dans l'ordre, appelle
-  `PhotoExtractor` par page, marque `legible`/`illegibleReason` sur
-  chaque page :
-  - si une page est illisible : `extractionStatus = 'illegible'`, pas de
-    ligne `extractions` créée, pas d'appel à `CourseNamer`
-  - si toutes les pages sont lisibles : concatène les Markdown dans
+- `handleExtractionJob(payload, ctx)` — passe le cours à `running`, lit
+  les pages dans l'ordre, appelle `PhotoExtractor` par page, marque
+  `legible`/`isCoursePage`/`unusableReason` sur chaque page, et
+  **s'arrête à la première page inexploitable** (les suivantes gardent
+  `null` : inutile de payer un appel modèle pour un cours qui sera repris
+  en entier) :
+  - si une page est illisible : `extractionStatus = 'illegible'` ; si
+    elle est lisible mais n'est pas une page de cours :
+    `extractionStatus = 'not_a_course_page'`. Dans les deux cas, pas de
+    ligne `extractions` créée, pas d'appel à `CourseNamer`, et le job se
+    termine avec succès (résultat métier, pas un échec à retenter)
+  - si toutes les pages sont exploitables : concatène les Markdown dans
     l'ordre, écrit `extractions`, appelle `CourseNamer` pour proposer
     `title`/`subject`, dérive `color` de la matière, `extractionStatus = 'ready'`
+  - rien n'est mis en file après : la génération est déclenchée à la main
+    (`docs/jalons.md`, M3), jamais par l'extraction
 - `confirmCourse(userId, courseId, now)` — l'enfant appuie sur "Oui, c'est
   ça !" : `confirmed = true`. Seul un cours `confirmed` est listé sur
   l'accueil et ouvrable dans le lecteur.
 - `rejectCourse(userId, courseId, now)` — l'enfant appuie sur "Je reprends
-  la photo" : équivaut à `deleteCourse`, rien n'est conservé (un cours
+  la photo", depuis l'écran de validation ou depuis le message d'une photo
+  inexploitable : équivaut à `deleteCourse`, rien n'est conservé (un cours
   jamais confirmé n'entre pas dans la politique de conservation ci-dessus)
 - `retryExtraction(userId, courseId, now)` — uniquement depuis `failed`
-  (échec technique, pas `illegible`)
+  (échec technique, pas `illegible` ni `not_a_course_page`)
 - `getCourse`, `listConfirmedCourses` (triés par `lastAccessedAt` décroissant,
-  pour la reprise sur l'accueil — `docs/modules/progress.md`), `readPageFile`
+  pour la reprise sur l'accueil — `docs/modules/progress.md`),
+  `getUnconfirmedCourse` (le cours en attente du compte, ou aucun — pour
+  le bandeau de l'accueil), `readPageFile`
 - `recordAccess(userId, courseId, now)` — met à jour `lastAccessedAt` ;
   appelé à l'ouverture du lecteur ou de l'écran jeux, jamais depuis
   l'accueil lui-même (l'ouvrir depuis la liste ne compte pas comme un accès
@@ -147,17 +210,25 @@ extractions.
 
 **Aucun appel LLM à l'intérieur d'une transaction.**
 
+**Statut `failed` : dérivé, jamais stocké** (même mécanisme que StudIA).
+Un échec technique est retenté automatiquement par le noyau `jobs` avec
+backoff ; le handler ne sait pas s'il vit sa dernière tentative. Seul le
+job le sait : `getCourse` et `getUnconfirmedCourse` lisent le dernier job
+`extract-course` du cours via l'`index.ts` de `jobs` et appliquent
+`displayStatus`. Tant que des tentatives restent, l'enfant voit
+`running` ("je regarde ta photo…"), jamais un échec intermédiaire.
+
 ## Persistance
 
 ```sql
 CREATE TABLE courses (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   title TEXT NOT NULL DEFAULT '',
-  subject TEXT NOT NULL DEFAULT '',
+  subject TEXT CHECK (subject IN ('maths','french','history','geography','science','english','other')),
   grade TEXT NOT NULL CHECK (grade IN ('CP','CE1','CE2','CM1','CM2','6e')),
   color TEXT NOT NULL DEFAULT '',
-  extraction_status TEXT NOT NULL CHECK (extraction_status IN ('pending','running','illegible','ready','failed')),
+  extraction_status TEXT NOT NULL CHECK (extraction_status IN ('pending','running','illegible','not_a_course_page','ready')),
   confirmed INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   last_accessed_at TEXT NOT NULL
@@ -171,7 +242,8 @@ CREATE TABLE pages (
   stored_path TEXT NOT NULL,
   size_bytes INTEGER NOT NULL,
   legible INTEGER,               -- NULL tant que non traité, 0/1 ensuite
-  illegible_reason TEXT,
+  is_course_page INTEGER,        -- idem
+  unusable_reason TEXT,
   PRIMARY KEY (course_id, page_index),
   UNIQUE (course_id, sha256)
 );
@@ -183,7 +255,13 @@ CREATE TABLE extractions (
 );
 ```
 
-Fichiers sur `RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.{ext}`
+`failed` n'apparaît pas dans le `CHECK` de `extraction_status` : il n'est
+jamais écrit (voir "Statut `failed`"). `courses.user_id` est en
+`ON DELETE CASCADE` pour que `pnpm accounts:delete` supprime les cours du
+compte avec lui (`docs/securite.md`, "Suppression et droit à l'oubli") —
+les fichiers, eux, sont supprimés par l'application dans le même appel.
+
+Fichiers sur `RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.jpg`
 (`./data/photos/...` en local, `docs/donnees.md`).
 **Supprimer un cours supprime son répertoire de fichiers dans le même appel
 applicatif** que la suppression des lignes — jamais un nettoyage différé ou
@@ -193,10 +271,11 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 
 | Route | Rôle |
 |---|---|
-| `POST /api/courses` | Crée un cours (vide), renvoie son id |
-| `POST /api/courses/:id/pages` | Multipart, une page. Répété par photo. |
+| `POST /api/courses` | Crée un cours (vide), renvoie son id ; supprime le cours non confirmé précédent |
+| `POST /api/courses/:id/pages` | Multipart, une page JPEG. Répété par photo, 5 au plus. |
 | `POST /api/courses/:id/extract` | Enfile l'extraction |
-| `GET /api/courses` | Liste des cours confirmés du compte, avec couleur ; inclut le nombre d'exercices prêts par cours (lu depuis `exercise-generator` via son `index.ts`, jamais une jointure directe sur ses tables), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts") |
+| `GET /api/courses` | Liste des cours confirmés du compte, avec couleur. **À partir de M3** : ajoute un champ optionnel, le nombre d'exercices prêts par cours (lu depuis `exercise-generator` via son `index.ts`, jamais une jointure directe sur ses tables), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts") — absent en M2, le module n'existant pas encore |
+| `GET /api/courses/unconfirmed` | Le cours non confirmé du compte (au plus un), ou `null` — bandeau de l'accueil |
 | `GET /api/courses/:id` | Détail, y compris statut d'extraction et propositions titre/matière |
 | `GET /api/courses/:id/pages/:index/file` | Lecture de fichier authentifiée |
 | `POST /api/courses/:id/confirm` | Bouton "Oui, c'est ça !" |
@@ -210,22 +289,36 @@ la route ci-dessus, qui vérifie l'appartenance au compte en premier.
 ## Hors périmètre
 
 Découpage en items. Annotation par type de jeu. Génération d'exercices.
-Tout format autre que la photo. Édition du texte extrait (aucun éditeur,
-cf. `docs/ui.md`). Remplacement d'une seule page parmi plusieurs.
+Tout format autre que la photo (et, côté serveur, tout format d'image
+autre que JPEG). Édition du texte extrait (aucun éditeur, cf.
+`docs/ui.md`). Remplacement d'une seule page parmi plusieurs. Tout
+compteur ou suivi des photos "pas une page de cours" au-delà de la vie du
+cours (`docs/securite.md` exclut la télémétrie comportementale).
 
 ## Tests clés
 
-- Unitaire : détection MIME y compris un `.jpg` qui est en fait un autre
-  format ; limites de taille ; ordre des pages ; rejet d'une page dupliquée
+- Unitaire : détection du type réel, y compris un `.jpg` qui est en fait
+  un PNG ou un WebP ; limites de taille ; ordre des pages ; rejet d'une
+  page dupliquée ; sixième page refusée ; un JPEG avec EXIF/GPS en ressort
+  sans aucun segment de métadonnées et avec des données d'image identiques ;
+  `outcomeOfPages` (l'illisibilité prime sur "pas un cours")
 - Contrat : fixture lisible renvoie un Markdown à hiérarchie de titres ;
-  fixture illisible renvoie `legible: false` et une raison ; une réponse
-  qui viole le schéma déclenche exactement un retry puis un échec de job
+  fixture illisible renvoie `legible: false` et une raison ; fixture "pas
+  un cours" renvoie `isCoursePage: false` ; une réponse qui viole le
+  schéma déclenche exactement un retry puis un échec de job. Fixtures
+  enregistrées sur de vraies photos par `pnpm fixtures:record`, jamais
+  écrites à la main
 - Intégration : l'upload écrit fichier et ligne ; le worker traite le job ;
   les transitions de statut sont visibles via l'API
 - Intégration : relancer le handler deux fois laisse exactement une
   extraction
-- Intégration : un cours avec une page illisible reste `illegible`, n'a
-  jamais de ligne `extractions`, et `CourseNamer` n'est jamais appelé
+- Intégration : un cours avec une page illisible reste `illegible` (ou
+  `not_a_course_page`), n'a jamais de ligne `extractions`, et
+  `CourseNamer` n'est jamais appelé
+- Intégration : créer un cours supprime le cours non confirmé précédent
+  du compte, fichiers compris, et ne touche jamais aux cours confirmés
+- Intégration : un job `extract-course` épuisé rend le cours `failed` à
+  la lecture ; un job encore en attente de retry le laisse `running`
 - **Intégration : supprimer un cours supprime aussi ses fichiers photo sur
   le disque, pas seulement ses lignes en base** — le test crée un cours
   avec au moins une page, vérifie que le fichier existe sur le volume,
@@ -236,7 +329,8 @@ cf. `docs/ui.md`). Remplacement d'une seule page parmi plusieurs.
   suppression d'un cours d'un autre compte
 - Playwright : upload de trois photos comme un seul cours, statut jusqu'à
   `ready`, écran de validation, confirmation, cours listé sur l'accueil ;
-  et le parcours photo illisible avec le message porté par la mascotte
+  le parcours photo illisible avec le message porté par la mascotte ; le
+  bouton "Une autre page" disparaît à la cinquième page
 
 ## Questions ouvertes
 
@@ -245,9 +339,8 @@ cf. `docs/ui.md`). Remplacement d'une seule page parmi plusieurs.
   jalon ultérieur, permettre de ne reprendre que la page en cause ? Pas
   nécessaire pour M2 si les leçons photographiées restent courtes (1 à 2
   pages), à observer à l'usage.
-- `CourseNamer` est un second appel modèle, séparé de l'extraction. Un
-  appel unique qui renverrait `markdown`/`legible`/`title`/`subject` en une
-  fois économiserait un aller-retour, mais coupler la détection de
-  lisibilité (qui doit bloquer tôt) à une proposition de titre (qui n'a de
-  sens que si le texte est bon) complique le schéma de sortie. À trancher
-  à l'implémentation selon la latence mesurée.
+- `CourseNamer` reste un second appel modèle, séparé de l'extraction
+  (décidé à l'ouverture de M2) : coupler la détection de lisibilité (qui
+  doit bloquer tôt) à une proposition de titre (qui n'a de sens que si le
+  texte est bon) compliquerait le schéma de sortie. À revoir seulement si
+  la latence mesurée le justifie.

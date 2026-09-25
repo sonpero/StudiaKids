@@ -85,10 +85,12 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**M1 est accepté** (tous ses critères d'acceptation cochés, démo vérifiée
-en CLI, en navigateur et via Playwright — voir `docs/jalons.md`). **Aucun
-jalon n'est ouvert pour l'instant** : M2 s'ouvrira explicitement le moment
-venu, pas automatiquement à la clôture de M1.
+**M2 — Ingestion : photographier un cours — est ouvert** (voir
+`docs/jalons.md`). M0 et M1 sont acceptés. Modules touchés :
+`ingestion` (spec `docs/modules/ingestion.md`), `mascot` (`present()`),
+et les noyaux `jobs` (créé dans ce jalon, copie de StudIA validée — spec
+`docs/modules/jobs.md`) et `shared` (fabrique de client modèle, validée).
+Hors de ces deux ajouts validés, `jobs/` et `shared/` restent frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.

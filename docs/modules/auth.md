@@ -121,7 +121,11 @@ argon2id dans l'adaptateur.
   l'oubli"), y compris les fichiers sur le volume, jamais seulement les
   lignes en base. Le module `auth` ne connaît que la ligne `accounts` : la
   cascade sur les tables des autres modules (aucune n'existe encore à M1)
-  sera branchée par chacun d'eux quand elle apparaîtra.
+  sera branchée par chacun d'eux quand elle apparaîtra. Depuis M2 : les
+  lignes suivent par `ON DELETE CASCADE` sur `user_id` (`courses`,
+  `jobs`, `docs/donnees.md`) ; les photos sont supprimées par la commande
+  CLI, qui compose `auth` et `ingestion` via leurs `index.ts` — `auth` ne
+  dépend jamais d'`ingestion`.
 
 **Rate limiting**, repris tel quel de StudIA : fonction pure sur un journal
 de tentatives.

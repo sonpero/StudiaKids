@@ -7,10 +7,10 @@ critères d'acceptation sont cochés.
 
 Légende : `[ ]` en attente · `[x]` accepté
 
-**M0 et M1 sont acceptés.** Aucun jalon n'est ouvert pour l'instant (voir
-`CLAUDE.md`, section "Jalon courant"). Ce document définit le périmètre
-prévu pour les jalons suivants, pas un engagement figé : un jalon peut
-encore être ajusté avant son ouverture si la relecture le justifie.
+**M0 et M1 sont acceptés. M2 est ouvert** (voir `CLAUDE.md`, section
+"Jalon courant"). Ce document définit le périmètre prévu pour les jalons
+suivants, pas un engagement figé : un jalon peut encore être ajusté avant
+son ouverture si la relecture le justifie.
 
 ---
 
@@ -123,33 +123,54 @@ multiple sous un même compte.
 
 ---
 
-## M2 — Ingestion : photographier un cours
+## M2 — Ingestion : photographier un cours (ouvert)
+
+Ajusté à l'ouverture (relecture croisée des specs, décisions validées) :
+photo "pas une page de cours" distinguée de la photo illisible, JPEG
+uniquement réencodé par le navigateur et dépouillé de ses métadonnées au
+stockage, plafond de 5 pages, un seul cours non confirmé à la fois,
+suppression de compte qui efface aussi les photos. Détail dans
+`docs/modules/ingestion.md`.
 
 **Périmètre**
-- Tables cours (`courses`), pages, extractions, jobs
-- Upload d'une ou plusieurs photos formant un même cours, depuis mobile ou
-  tablette (`<input type="file" accept="image/*" capture>`)
-- Extraction par modèle vision (`legible`/`reason`/`markdown` à hiérarchie
-  de titres préservée), aucun OCR local
-- Détection de photo inexploitable **avant** toute génération d'exercices,
-  message porté par la mascotte invitant à reprendre la photo
+- Tables cours (`courses`), pages, extractions, jobs (noyau `jobs` copié
+  de StudIA, `docs/modules/jobs.md`)
+- Upload d'une à cinq photos formant un même cours, depuis mobile ou
+  tablette (`<input type="file" accept="image/*" capture>`), chaque photo
+  réencodée en JPEG par le navigateur avant envoi ; le serveur n'accepte
+  que du JPEG (type réel vérifié sur les octets) et en retire toutes les
+  métadonnées avant stockage (`docs/securite.md`)
+- Extraction par modèle vision (`legible`/`isCoursePage`/`reason`/`markdown`
+  à hiérarchie de titres préservée), aucun OCR local
+- Détection de photo inexploitable — illisible **ou** pas une page de
+  cours — **avant** toute génération d'exercices, message porté par la
+  mascotte invitant à reprendre la photo
+- Écran de capture : miniatures des pages déjà prises, boutons "Une autre
+  page" (masqué à partir de 5 pages) et "C'est tout !"
 - Écran de validation de l'extraction, adapté à un enfant : la photo,
-  un titre/matière/niveau proposés en trois mots, deux boutons ("Oui, c'est
-  ça !" / "Je reprends la photo"), aucun éditeur de texte
-- Écran d'accueil : bouton "Photographier un cours" et liste "Reprendre un
+  un titre et une matière proposés (trois mots au plus) et le niveau du
+  compte (jamais deviné), deux boutons ("Oui, c'est ça !" / "Je reprends
+  la photo"), aucun éditeur de texte
+- Écran d'accueil : bouton "Photographier un cours", bandeau du cours non
+  confirmé s'il en existe un (un seul à la fois), et liste "Reprendre un
   cours existant"
+- `pnpm accounts:delete` supprime aussi les cours et les photos du compte
+- `pnpm fixtures:record` (enregistrement manuel de réponses brutes du
+  modèle, coûte de l'argent)
 
-**Démo** — Depuis l'accueil, l'enfant prend une photo. Une photo floue
-déclenche un message d'encouragement de la mascotte à recommencer, sans
-lancer aucune génération. Une photo lisible aboutit à l'écran de validation
-à deux boutons, puis le cours apparaît dans la liste "Reprendre un cours
+**Démo** — Depuis l'accueil, l'enfant prend une photo. Une photo floue, ou
+une photo qui n'est pas une page de cours, déclenche un message
+d'encouragement de la mascotte à recommencer, sans lancer aucune
+génération. Une photo lisible aboutit à l'écran de validation à deux
+boutons, puis le cours apparaît dans la liste "Reprendre un cours
 existant".
 
 **Acceptation**
 - [ ] Unitaire : la vérification de lisibilité est placée dans le pipeline
       avant toute étape de génération, jamais après
 - [ ] Contrat : une fixture "floue" renvoie `legible: false` et une raison ;
-      une fixture lisible renvoie un Markdown à hiérarchie de titres
+      une fixture lisible renvoie un Markdown à hiérarchie de titres ; une
+      fixture "pas un cours" renvoie `isCoursePage: false`
 - [ ] Intégration : l'upload écrit le fichier et la ligne ; le worker
       traite le job ; le statut est visible via l'API
 - [ ] Intégration : relancer le handler d'extraction deux fois laisse
@@ -158,12 +179,29 @@ existant".
       cours d'un autre compte (403, testé)
 - [ ] Intégration : supprimer un cours supprime aussi ses fichiers photo sur
       le disque, pas seulement ses lignes en base (`docs/securite.md`)
+- [ ] Sécurité : un fichier qui n'est pas réellement un JPEG est refusé
+      quel que soit son type annoncé ; un JPEG stocké ne contient plus
+      aucun segment de métadonnées (EXIF/GPS compris)
+- [ ] Intégration : une sixième page est refusée ; créer un cours supprime
+      le cours non confirmé précédent du compte, fichiers compris
+- [ ] Intégration : `accounts:delete` sur un compte qui a un cours avec
+      photo supprime ses lignes et son dossier de photos
 - [ ] Playwright : parcours complet photo → validation → cours visible sur
       l'accueil ; parcours photo illisible → message de la mascotte →
-      nouvelle tentative, sans cours créé entre-temps
+      nouvelle tentative, sans cours créé entre-temps ; le bouton "Une
+      autre page" disparaît à la cinquième page
+
+**Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons
+provisoires** dérivés des tracés de `idle`, en attendant leur dessin
+définitif dans `docs/design/` ; de même, les pastels de matière
+géographie, sciences, anglais et autre sont provisoires
+(`docs/design/tokens.md`), à valider visuellement.
 
 **Hors périmètre** — découpage en items, génération d'exercices, lecture à
-voix haute, tuteur, tout format autre que la photo (PDF, Word, PowerPoint).
+voix haute, tuteur, tout format autre que la photo (PDF, Word, PowerPoint),
+nombre de jeux prêts sur les cartes de l'accueil (M3), barre d'onglets
+(M3, quand un second écran existe), tout suivi ou compteur des photos
+"pas une page de cours" au-delà de la vie du cours.
 
 ---
 

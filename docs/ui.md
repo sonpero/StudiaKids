@@ -59,11 +59,13 @@ correspondre.
 
 Pastels réservés au codage des matières (pastilles/badges uniquement,
 jamais une action ou un état) : `--matiere-maths #FFC2D4`,
-`--matiere-francais #C9BBFF`, `--matiere-histoire #B8E9D0`, à compléter
-pour chaque matière rencontrée en pratique (sciences, anglais, etc.) selon
-le même principe — un pastel doux par matière, dérivé à la création du
-cours comme dans StudIA (`docs/inventaire-studia.md`, §1 : StudIA stocke
-une `colour` par document).
+`--matiere-francais #C9BBFF`, `--matiere-histoire #B8E9D0`, et, **provisoires
+depuis l'ouverture de M2** (`docs/design/tokens.md`, à valider
+visuellement) : `--matiere-geographie #BDE3FF`, `--matiere-sciences #E2F0A8`,
+`--matiere-anglais #F2C4F0`, `--matiere-autre #E6DFD3`. Un pastel par
+valeur de la liste fermée des matières (`docs/modules/ingestion.md`,
+`Subject`), dérivé à l'extraction ; le cours stocke le **nom** du token,
+jamais sa valeur, pour que "uniquement les tokens" tienne jusqu'en base.
 
 **Règle de contraste, non négociable** : texte encre sur tout fond coloré,
 jamais de blanc sur mandarine — reprise mot pour mot de
@@ -168,6 +170,33 @@ un autre depuis l'accueil. Pas de sélecteur de cours dans ces trois écrans :
 revenir à l'accueil est le seul moyen d'en changer, pour ne jamais perdre
 l'enfant dans une navigation à plusieurs niveaux.
 
+### Photographier un cours (M2)
+
+Décidé à l'ouverture de M2, pour ne pas laisser l'implémentation inventer
+ce parcours :
+
+- **Accueil** : bouton principal (mandarine) "Photographier un cours". Si
+  le compte a un cours non confirmé (au plus un,
+  `docs/modules/ingestion.md`), un bandeau au-dessus de la liste y ramène,
+  avec une phrase selon son état ("Je regarde encore ta photo…", "Ta photo
+  est prête !", "Oups, on reprend la photo ?"). Prendre une nouvelle photo
+  remplace ce cours en attente.
+- **Capture** : après chaque photo, les miniatures des pages déjà prises,
+  et deux boutons — "Une autre page" (turquoise, secondaire) et "C'est
+  tout !" (mandarine, principal). **"Une autre page" disparaît à la
+  cinquième page** (plafond de 5). "C'est tout !" lance la lecture des
+  photos.
+- **Attente** : mascotte `waiting` + phrase courte, l'enfant peut revenir
+  à l'accueil à tout moment (le bandeau le ramènera).
+- **Photo inexploitable** : mascotte `sorry`, une phrase selon le cas
+  (floue / pas une page de cours), un seul bouton "Je reprends la photo".
+- **Validation** : la photo, le titre et la matière proposés, le niveau du
+  compte (jamais deviné), "Oui, c'est ça !" / "Je reprends la photo".
+
+Pas de barre d'onglets en M2 : seul l'accueil existe, elle arrive avec le
+lecteur (M3). Pas de routeur non plus (navigation par état d'écran, comme
+StudIA et M1).
+
 ---
 
 ## Travail asynchrone
@@ -218,8 +247,10 @@ d'accueil, réagit dans le lecteur et les jeux, et accompagne le tuteur.
 référence SVG existante à reprendre littéralement
 (`docs/design/mascotte-etats.html` — un fruit rond jaune/mandarine, une
 feuille verte, deux yeux, des joues roses). Les trois dernières sont
-spécifiées sémantiquement ci-dessous mais **leur SVG reste à ajouter dans
-`docs/design/`** ; ce dépôt de cadrage n'en dessine aucun. Voir
+spécifiées sémantiquement ci-dessous ; `sorry` et `glitch` ont des
+brouillons provisoires depuis M2 (décision validée, dette notée dans
+`docs/jalons.md`), leur dessin définitif et celui de `refusal` restent à
+ajouter dans `docs/design/`. Voir
 `docs/glossaire.md` pour la correspondance avec les noms de pose utilisés
 en prose ci-dessous (repos, observation, écoute...).
 
@@ -229,8 +260,8 @@ en prose ci-dessous (repos, observation, écoute...).
 | `watching` | Pendant l'affichage d'un mot en dictée flash : yeux agrandis, bouche en "o", bras levé, corps penché — la mascotte regarde le mot avec l'enfant. | Dessinée |
 | `waiting` | Pendant que l'enfant écrit ou réfléchit, ou que l'app prépare quelque chose : yeux fermés, sourire calme, bras relâchés. | Dessinée |
 | `joy` | Bonne réponse ou réussite : bras levés, yeux fermés, bouche ouverte, pieds décollés, deux sauts. | Dessinée |
-| `sorry` | Photo détectée illisible avant génération — un "oups" doux, jamais une faute de l'enfant. | À dessiner avant M2 |
-| `glitch` | Échec technique réel, après épuisement des tentatives — distincte de `sorry` : ceci est un vrai problème, pas un résultat métier normal. | À dessiner avant M2 (le mécanisme peut être touché dès M2 par un échec d'extraction) |
+| `sorry` | Photo détectée inexploitable (illisible, ou pas une page de cours) avant génération — un "oups" doux, jamais une faute de l'enfant. | Brouillon provisoire (M2), dérivé des tracés d'`idle` ; dessin définitif attendu dans `docs/design/` (dette, `docs/jalons.md`) |
+| `glitch` | Échec technique réel, après épuisement des tentatives — distincte de `sorry` : ceci est un vrai problème, pas un résultat métier normal. | Idem |
 | `refusal` | Le tuteur ne peut pas répondre à une question hors cours. | À dessiner avant M6 |
 
 **Règle de robustesse.** Un état de mascotte inconnu ou non reconnu par le
@@ -300,7 +331,7 @@ jamais une exception ni un élément vide.
 | Génération d'exercices en cours, tuteur qui prépare sa réponse | `waiting` | Idem |
 | Affichage du mot en dictée flash | `watching` | Déjà dessinée (`flash.png`) |
 | Saisie de la réponse en dictée flash, ou toute saisie libre | `waiting` | Déjà dessinée (`saisie.png`) |
-| Photo détectée illisible | `sorry` | Résultat métier normal, jamais une faute de l'enfant |
+| Photo détectée illisible, ou pas une page de cours | `sorry` | Résultat métier normal, jamais une faute de l'enfant ; les deux cas se distinguent par la phrase, pas par le dessin |
 | Échec technique réel | `glitch` | Distincte de `sorry` — un vrai problème, pas une photo floue |
 | Bonne réponse à un jeu, série, fin de session | `joy` | Une seule pose de joie ; une réponse simple et un bonus de série se différencient par la phrase et l'intensité de l'animation, pas par un second dessin |
 | Réponse incorrecte à un jeu | `waiting` | Décision délibérée de réutiliser une pose calme plutôt qu'une huitième pose ; jamais `sorry`/`glitch`, qui qualifient un problème du système, pas une réponse d'enfant |

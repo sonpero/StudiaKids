@@ -63,12 +63,12 @@ compte, créé par le même script CLI.
 ```sql
 CREATE TABLE courses (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   title TEXT NOT NULL DEFAULT '',
-  subject TEXT NOT NULL DEFAULT '',
+  subject TEXT CHECK (subject IN ('maths','french','history','geography','science','english','other')),
   grade TEXT NOT NULL CHECK (grade IN ('CP','CE1','CE2','CM1','CM2','6e')),
   color TEXT NOT NULL DEFAULT '',
-  extraction_status TEXT NOT NULL CHECK (extraction_status IN ('pending','running','illegible','ready','failed')),
+  extraction_status TEXT NOT NULL CHECK (extraction_status IN ('pending','running','illegible','not_a_course_page','ready')),
   generation_status TEXT NOT NULL DEFAULT 'not_started' CHECK (generation_status IN
     ('not_started','splitting','insufficient_coverage','items_ready','generating','ready','failed')),
   confirmed INTEGER NOT NULL DEFAULT 0,
@@ -84,7 +84,8 @@ CREATE TABLE pages (
   stored_path TEXT NOT NULL,
   size_bytes INTEGER NOT NULL,
   legible INTEGER,               -- NULL tant que non traité, 0/1 ensuite
-  illegible_reason TEXT,
+  is_course_page INTEGER,        -- idem
+  unusable_reason TEXT,
   PRIMARY KEY (course_id, page_index),
   UNIQUE (course_id, sha256)
 );
@@ -96,10 +97,16 @@ CREATE TABLE extractions (
 );
 ```
 
+`failed` n'est jamais stocké dans `extraction_status` : il est dérivé à
+la lecture du dernier job `extract-course` du cours
+(`docs/modules/ingestion.md`, "Statut `failed`").
+
 `generation_status` est déclarée ici (elle vit sur la table `courses`,
 propriété d'`ingestion`) mais uniquement écrite par `exercise-generator` —
 même schéma de propriété que StudIA pour ses colonnes composées entre
-modules voisins.
+modules voisins. **Elle n'existe pas encore** : elle arrive avec la
+migration de M3 (`docs/modules/exercise-generator.md`), la migration de
+M2 ne crée que les colonnes d'`ingestion`.
 
 **Les photos (`pages`, et les fichiers qu'elles référencent) sont
 conservées tant que le cours existe** — décision actée, `docs/securite.md`
@@ -217,7 +224,7 @@ consultables par l'adulte titulaire du compte (`docs/securite.md`,
 ```sql
 CREATE TABLE jobs (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   payload_json TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('pending','running','done','failed')),
@@ -237,7 +244,10 @@ Types de job attendus : `extract-course` (`ingestion`), `split-items`,
 ce dernier déclenché par `tutor` via l'`index.ts` de
 `exercise-generator`). Mécanisme de queue et machine à états
 entièrement recopiés de StudIA (`docs/inventaire-studia.md`, §8),
-`user_id` colonne pour colonne comme dans StudIA.
+`user_id` colonne pour colonne comme dans StudIA — **à une divergence
+près, validée** : `ON DELETE CASCADE` sur `user_id`, absent de StudIA,
+sans quoi `pnpm accounts:delete` échouerait sur la contrainte de clé
+étrangère dès qu'un job existe pour le compte.
 
 `packages/core/src/jobs/` est frozen dès son écriture initiale, comme dans
 StudIA : toute modification passe par une validation explicite (`CLAUDE.md`).
