@@ -133,7 +133,13 @@ Fonctions pures de domaine :
   JPEG sans aucun segment APPn (APP0 à APP15 : JFIF, EXIF dont GPS, XMP,
   ICC, IPTC...) ni commentaire, segments d'image recopiés octet pour octet,
   données compressées après SOS jamais analysées. APP0 (JFIF) part aussi :
-  rien avant les données d'image n'est nécessaire pour les décoder
+  rien avant les données d'image n'est nécessaire pour les décoder.
+  **L'orientation EXIF part avec le reste** : une photo qui n'aurait pas
+  été réencodée par le canvas du navigateur (qui applique l'orientation
+  aux pixels) serait stockée, affichée et envoyée au modèle couchée ou à
+  l'envers. Le réencodage n'est donc pas une optimisation facultative :
+  l'écran de capture ne doit jamais envoyer le fichier d'origine, ce que
+  vérifie le scénario Playwright ci-dessous
 - `nextPageIndex(existing)` — ordre contigu, sans trou
 - `canAddPage(pageCount)` — faux à partir de `MAX_PAGES_PER_COURSE`
 - `outcomeOfPages(pages)` — `illegible` si une page a `legible: false`,
@@ -388,7 +394,10 @@ cours (`docs/securite.md` exclut la télémétrie comportementale).
 - Playwright : upload de trois photos comme un seul cours, statut jusqu'à
   `ready`, écran de validation, confirmation, cours listé sur l'accueil ;
   le parcours photo illisible avec le message porté par la mascotte ; le
-  bouton "Une autre page" disparaît à la cinquième page
+  bouton "Une autre page" disparaît à la cinquième page ; la photo envoyée
+  par l'écran de capture est toujours celle réencodée par le canvas, jamais
+  le fichier d'origine (JPEG aux dimensions renvoyées par
+  `nativePhotoSize`, vérifiées sur la requête d'upload)
 
 ## Questions ouvertes
 
