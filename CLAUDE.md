@@ -128,6 +128,15 @@ HTTP, bundler, SDK LLM) sans validation explicite : ce choix a déjà été fait
 | Tests | Vitest (unit/integration/contract) + Playwright (e2e) |
 | Déploiement | Un seul service Railway, Dockerfile multi-stage |
 
+**Version de Node : la CI fait foi.** CI et production tournent en Node 22
+(`engines`, `.node-version`, Dockerfile) ; le poste de développement local
+peut tourner en Node 24. Pour que ce décalage ne laisse passer aucune API
+propre à Node 24, `@types/node` est figé sur la version majeure 22
+(`pnpm.overrides` à la racine, vérifié par
+`packages/core/src/toolchain.unit.test.ts`) : c'est le typecheck, pas le
+runtime local, qui dit quelles API existent. Un comportement qui ne se
+reproduit qu'en local ne prouve rien tant que la CI ne l'a pas confirmé.
+
 N'ajoutez pas de dépendance sans une justification d'une ligne dans la
 description de la PR. Préférez la bibliothèque standard ou une dépendance
 déjà présente.
