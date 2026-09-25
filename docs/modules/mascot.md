@@ -54,6 +54,15 @@ type Presentation = { pose: MascotPose; line: string };  // MascotPose : docs/ui
 function present(signal: Signal, variantIndex: number): Presentation;
 ```
 
+**La raison renvoyée par le modèle n'est jamais affichée.** Le signal
+`extraction-illegible` porte `reason` (texte libre du modèle, non relu,
+potentiellement technique) mais la phrase reste celle du catalogue.
+
+**Aucune étoile gagnée n'est jamais dite.** `session-complete` avec
+`starsEarned: 0` produit une phrase de fin sans chiffre ("Bien joué, tu
+as fini !") : finir une session n'est jamais présenté comme une perte
+(`CLAUDE.md`, règle 7).
+
 **`variantIndex`, pas `Math.random()` interne.** Plusieurs phrases possibles
 existent par signal pour éviter la répétition ("Je regarde ta photo…", "Je
 jette un œil à ton cours…"), mais la fonction reste pure : l'appelant fait
@@ -149,7 +158,11 @@ géré par l'écran tuteur directement, pas par `present()`.
   silencieusement dans une future phrase ajoutée
 - Unitaire : `present` est déterministe — mêmes `signal` et
   `variantIndex`, même résultat, toujours (pas d'appel horloge ni aléatoire
-  interne)
+  interne) ; tout `variantIndex` (négatif, décimal, `NaN`, très grand)
+  retombe sur une des phrases du signal
+- Unitaire : aucune phrase n'attribue un sentiment ou une mémoire à la
+  mascotte ; la raison du modèle n'apparaît jamais ; zéro étoile n'est
+  jamais dit
 
 ## Questions ouvertes
 

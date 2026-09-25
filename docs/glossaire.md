@@ -188,6 +188,13 @@ Liste fermée, sept poses :
 
 `presenter` (la fonction qui choisit une pose) devient `present`, en verbe.
 
+| Terme de prose | Identifiant | Note |
+|---|---|---|
+| signal (ce qui se passe dans l'app) | `Signal` | Union fermée, `docs/modules/mascot.md`. |
+| présentation (pose + phrase) | `Presentation` | |
+| variante (de phrase) | `variantIndex` | Fourni par l'appelant, jamais tiré au hasard. |
+| présentation par défaut | `DEFAULT_PRESENTATION` | `idle` + "Coucou !", pour tout signal inconnu. |
+
 ## Tuteur (`tutor`)
 
 | Terme de prose | Identifiant | Définition |
