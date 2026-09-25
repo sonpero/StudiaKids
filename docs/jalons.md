@@ -200,6 +200,15 @@ existant".
       nouvelle tentative, sans cours créé entre-temps ; le bouton "Une
       autre page" disparaît à la cinquième page
 
+**Bloquant pour la clôture — fixtures réelles.** Les commits 6 à 9
+avancent sur des réponses modèle **synthétiques**, identifiées comme
+telles (`docs/modules/ingestion.md`). Tant que les vraies fixtures n'ont
+pas été enregistrées par `pnpm fixtures:record` sur de vraies photos :
+- le critère **A2** (contrat) reste bloqué : il ne peut être coché que sur
+  des réponses enregistrées ;
+- le **commit 10** (scénarios Playwright) reste bloqué ;
+- **M2 ne peut pas être clos**, quel que soit l'état des autres critères.
+
 **Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons
 provisoires** dérivés des tracés de `idle`, en attendant leur dessin
 définitif dans `docs/design/` ; de même, les pastels de matière

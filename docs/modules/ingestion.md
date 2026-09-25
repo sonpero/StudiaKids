@@ -95,8 +95,11 @@ appartient au niveau haute résolution de la doc Anthropic ("Claude 4.7 et
 ultérieurs") — `PHOTO_MAX_EDGE_PX = 2576` sur le bord et
 `PHOTO_MAX_VISUAL_TOKENS = 4784` tokens visuels (un par carré de 28 px).
 Pour une photo, c'est le budget de tokens qui décide, pas le bord : une
-photo 4:3 est ramenée vers 2212 × 1659. Ces valeurs restent **à confirmer
-par le premier enregistrement** (l'outil affiche `usage.input_tokens`,
+photo 4:3 est ramenée vers 2212 × 1659. Premier appel réel (`--dry-run`,
+2026-09-25, page de cours générée en 1659 × 2212, 4740 tokens visuels) :
+`input_tokens = 5782`, compatible avec le niveau haute résolution (au
+niveau standard, l'image seule plafonnerait à 1568). Ces valeurs restent
+néanmoins **à confirmer par le premier enregistrement** (l'outil affiche `usage.input_tokens`,
 qui doit tourner autour de 4784 pour une photo) ; changer
 `ANTHROPIC_MODEL` pour un modèle d'un autre niveau les rendrait fausses
 sans rien casser de visible, l'API se contentant de réduire l'image. Le serveur ne fait pas
