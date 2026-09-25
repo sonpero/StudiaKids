@@ -377,7 +377,8 @@ question de détresse et voir le bloc hors-fil s'afficher avec le 119 et le
       culpabilisation, secret, dissuasion de parler à un adulte,
       sollicitation d'information personnelle
 - [ ] Intégration : un compte ne peut ni ouvrir, ni lire l'historique d'une
-      conversation qui appartient à un autre compte (403, testé)
+      conversation qui appartient à un autre compte : 404, testé,
+      indiscernable d'un identifiant inconnu (`docs/securite.md`)
 - [ ] `pnpm tutor:history <username>` exporte l'historique complet
       d'un compte, y compris les échanges `distress`
 - [ ] Intégration : le message informant que l'historique est consultable

@@ -284,7 +284,8 @@ Recherche plein texte dans les items (pas demandée par le brief).
   de 8 items n'écrit aucun item et laisse `last_error` préfixé
   `INSUFFICIENT_COVERAGE:`
 - Sécurité : les items et exercices d'un autre compte sont absents des
-  listes et renvoient 403
+  listes et renvoient 404, indiscernable d'un identifiant inconnu
+  (`docs/securite.md`)
 
 ## Questions ouvertes
 

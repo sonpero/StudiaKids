@@ -104,8 +104,8 @@ vocale (reconnaissance de la parole) — voir `docs/modules/tutor.md`.
 - Intégration : la liste `photos` renvoyée correspond exactement aux pages
   du cours, dans l'ordre
 - Intégration : chaque appel réussi met à jour `lastAccessedAt` du cours
-- Sécurité : `GET /api/courses/:id/text` renvoie 403 pour le cours d'un
-  autre compte
+- Sécurité : `GET /api/courses/:id/text` renvoie 404 pour le cours d'un
+  autre compte, indiscernable d'un identifiant inconnu (`docs/securite.md`)
 - Playwright : le texte du cours s'affiche, les photos originales sont
   visibles et consultables ; la voix démarre par défaut pour un compte CP
   et pas pour un compte 6e sur le même cours ; le play/pause de la voix

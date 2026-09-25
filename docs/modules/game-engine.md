@@ -236,7 +236,8 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
   `starEligible: false`, tout en gardant `correct` fidèle au résultat
   réel
 - Intégration : `playExercise` refuse un exercice qui n'appartient pas au
-  compte appelant (403 au niveau route)
+  compte appelant (404 au niveau route, indiscernable d'un identifiant
+  inconnu, `docs/securite.md`)
 - Intégration : une soumission à plusieurs unités (appariement à 4 paires)
   écrit exactement 4 lignes `attempts` en une seule transaction
 - Unitaire : `nextExercise` ignore un exercice déjà réussi tant qu'il

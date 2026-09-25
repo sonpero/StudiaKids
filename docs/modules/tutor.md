@@ -393,7 +393,8 @@ limite.
   retentée une fois puis retombe sur `citations: []`, sans jamais annuler
   le texte déjà streamé
 - Intégration : un compte ne peut ni ouvrir ni lire l'historique d'une
-  conversation d'un autre compte (403)
+  conversation d'un autre compte (404, indiscernable d'un identifiant
+  inconnu, `docs/securite.md`)
 - Intégration : un message `issue='distress'` reste présent dans
   `GET /api/conversations/:id` (consultable), avec `outOfBand: true`
 - Éval (manuel, `pnpm eval`) : taux de bonnes classifications

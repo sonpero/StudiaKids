@@ -236,8 +236,8 @@ ajoutée en cours d'implémentation qui ne figure pas dans
   (règle n°1 de `CLAUDE.md`). **Une ressource d'un autre compte répond 404,
   exactement comme un identifiant inconnu** (même statut, même corps) :
   l'API ne révèle jamais qu'un identifiant existe ailleurs. Décidé à M2
-  pour les cours (`docs/modules/ingestion.md`) ; les specs des modules
-  suivants qui disent encore "403" sont à aligner avant leur jalon
+  pour les cours (`docs/modules/ingestion.md`), et appliqué à toutes les
+  specs de modules (lecteur, générateur, moteur de jeu, tuteur)
 
 ## Suppression et droit à l'oubli
 
