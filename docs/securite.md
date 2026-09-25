@@ -233,7 +233,11 @@ ajoutée en cours d'implémentation qui ne figure pas dans
   noyée dans le texte libre de la conversation, soumise à la même
   politique de rétention que le reste
 - Aucun partage de données entre comptes : `user_id` cloisonne strictement
-  (règle n°1 de `CLAUDE.md`)
+  (règle n°1 de `CLAUDE.md`). **Une ressource d'un autre compte répond 404,
+  exactement comme un identifiant inconnu** (même statut, même corps) :
+  l'API ne révèle jamais qu'un identifiant existe ailleurs. Décidé à M2
+  pour les cours (`docs/modules/ingestion.md`) ; les specs des modules
+  suivants qui disent encore "403" sont à aligner avant leur jalon
 
 ## Suppression et droit à l'oubli
 

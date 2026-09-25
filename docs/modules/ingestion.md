@@ -286,7 +286,11 @@ après un redémarrage du worker ne produit jamais deux extractions.
 
 **`not-found` couvre aussi le cours d'un autre compte** : le dépôt filtre
 toujours sur `userId` et ne peut pas distinguer les deux cas, par
-construction (`CLAUDE.md`, règle 1).
+construction (`CLAUDE.md`, règle 1). L'API répond **404 dans les deux
+cas**, même corps, même en-têtes (`docs/securite.md`) : c'est aussi le
+cas nominal d'un écran qui redemande un cours non confirmé remplacé
+entre-temps par une nouvelle photo (un seul cours non confirmé par
+compte).
 
 **Aucun appel LLM à l'intérieur d'une transaction.**
 
@@ -364,7 +368,8 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 | `DELETE /api/courses/:id` | Ligne, pages, fichiers |
 
 **Les fichiers ne sont jamais servis en statique.** Toute lecture passe par
-la route ci-dessus, qui vérifie l'appartenance au compte en premier.
+la route ci-dessus, qui vérifie l'appartenance au compte en premier (404
+sinon, comme pour un identifiant inconnu).
 
 ## Hors périmètre
 
@@ -405,8 +410,10 @@ cours (`docs/securite.md` exclut la télémétrie comportementale).
   appelle `deleteCourse`, puis vérifie que le fichier n'existe plus. C'est
   le test qui protège la garantie de suppression en cascade de
   `docs/securite.md`.
-- Sécurité : un compte obtient 403 sur la route fichier, le détail, et la
-  suppression d'un cours d'un autre compte
+- Sécurité : un compte obtient 404 sur chaque route d'un cours d'un autre
+  compte (fichier, détail, upload, extraction, confirmation, refus,
+  relance, suppression), avec une réponse identique à celle d'un
+  identifiant inconnu
 - Playwright : upload de trois photos comme un seul cours, statut jusqu'à
   `ready`, écran de validation, confirmation, cours listé sur l'accueil ;
   le parcours photo illisible avec le message porté par la mascotte ; le

@@ -184,7 +184,8 @@ existant".
 - [ ] Intégration : relancer le handler d'extraction deux fois laisse
       exactement une extraction
 - [ ] Sécurité : un compte ne peut ni lire, ni uploader sur, ni supprimer le
-      cours d'un autre compte (403, testé)
+      cours d'un autre compte : 404, testé, indiscernable d'un identifiant
+      inconnu (`docs/securite.md`)
 - [ ] Intégration : supprimer un cours supprime aussi ses fichiers photo sur
       le disque, pas seulement ses lignes en base (`docs/securite.md`)
 - [ ] Sécurité : un fichier qui n'est pas réellement un JPEG est refusé
