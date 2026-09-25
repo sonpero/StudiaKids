@@ -102,6 +102,10 @@ compatibles anglais/français ou déjà en anglais).
 | retirer les métadonnées | `stripJpegMetadata` | |
 | stockage de fichiers | `FileStore` | |
 | extraction (texte tiré des photos) | `Extraction` / table `extractions` | Mot interdit à l'écran (`docs/ui.md`, "Copie"). |
+| statut stocké (sans `failed`) | `StoredExtractionStatus` | `failed` n'est jamais écrit en base. |
+| issue des pages | `PagesOutcome` (`outcomeOfPages`) | `illegible`, `not_a_course_page`, `ready`, ou `in_progress` (encore des pages à traiter). |
+| statut affiché | `displayStatus` | Dérive `failed` du dernier job ; un résultat stocké gagne toujours. |
+| taille maximale d'une page | `MAX_PAGE_BYTES` | 7 500 000 octets. |
 | statut d'extraction | `extractionStatus` | Valeurs : `pending` (en attente), `running` (en cours), `illegible`, `not_a_course_page`, `ready`, `failed` (échec technique, dérivé, jamais stocké). |
 | extracteur de photo | `PhotoExtractor` | |
 | proposition de titre et de matière | `CourseNamer` | |

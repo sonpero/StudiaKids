@@ -107,6 +107,11 @@ dont GPS, XMP, IPTC, commentaires) — `docs/securite.md`, "Données non
 conservées". L'empreinte SHA-256 est calculée sur les octets réellement
 stockés.
 
+`FileStore` travaille par cours et non par fichier : supprimer un cours
+supprime son répertoire entier, pour qu'aucune photo ne lui survive. Le
+dépôt (`CourseRepository`) est défini par les cas d'usage qui l'appellent,
+chaque méthode prenant un `userId` (`CLAUDE.md`, règle 1).
+
 **Un seul cours non confirmé à la fois par compte.** Créer un cours
 supprime d'abord (lignes et fichiers) tout cours non confirmé existant du
 compte. L'accueil peut ainsi toujours ramener l'enfant vers le cours en
@@ -117,20 +122,25 @@ Fonctions pures de domaine :
 
 - `sniffImageType(bytes)` — type réel lu sur les premiers octets, jamais
   sur l'extension ni sur le type annoncé ; seul `jpeg` est accepté
-- `isAcceptable(bytes)` — JPEG réel et au plus 7 500 000 octets, jamais
-  un fichier vide. La limite de l'API Claude (10 Mo par image) porte sur
+- `isAcceptable(bytes)` — JPEG réel (`sniffImageType`) et au plus
+  7 500 000 octets (`MAX_PAGE_BYTES`) ; un fichier vide n'est jamais un
+  JPEG. La limite de l'API Claude (10 Mo par image) porte sur
   l'image **encodée en base64**, qui pèse 4/3 du fichier : 7 500 000
   octets bruts donnent exactement 10 000 000 caractères base64. Un JPEG
   réencodé à la taille native en pèse normalement bien moins ; la limite
   n'arrête que ce qui échouerait de toute façon à l'appel du modèle
-- `stripJpegMetadata(bytes)` — renvoie le même JPEG sans ses segments de
-  métadonnées (APP1 à APP15, COM), image inchangée
+- `stripJpegMetadata(bytes)` → `Result<bytes, 'malformed-jpeg'>` — le même
+  JPEG sans aucun segment APPn (APP0 à APP15 : JFIF, EXIF dont GPS, XMP,
+  ICC, IPTC...) ni commentaire, segments d'image recopiés octet pour octet,
+  données compressées après SOS jamais analysées. APP0 (JFIF) part aussi :
+  rien avant les données d'image n'est nécessaire pour les décoder
 - `nextPageIndex(existing)` — ordre contigu, sans trou
 - `canAddPage(pageCount)` — faux à partir de `MAX_PAGES_PER_COURSE`
 - `outcomeOfPages(pages)` — `illegible` si une page a `legible: false`,
   sinon `not_a_course_page` si une page a `isCoursePage: false`, sinon
-  `ready` quand toutes sont traitées ; l'illisibilité prime (on ne juge
-  pas le contenu d'une photo qu'on ne peut pas lire)
+  `ready` quand toutes sont traitées, sinon `in_progress` (y compris pour
+  un cours sans page) ; l'illisibilité prime (on ne juge pas le contenu
+  d'une photo qu'on ne peut pas lire)
 - `subjectColor(subject)` — nom du token pastel, total sur `Subject`
 - `displayStatus(stored, latestJob)` — `failed` si le dernier job
   `extract-course` du cours est `failed`, sinon le statut stocké (voir
@@ -140,9 +150,9 @@ Fonctions pures de domaine :
 
 ```ts
 interface FileStore {
-  put(userId: string, courseId: string, pageIndex: number, bytes: Buffer, ext: string): Promise<string>;
-  read(storedPath: string): Promise<Buffer>;
-  delete(storedPath: string): Promise<void>;
+  put(userId: string, courseId: string, pageIndex: number, bytes: Uint8Array): Promise<string>; // toujours .jpg
+  read(storedPath: string): Promise<Uint8Array>;
+  deleteCourse(userId: string, courseId: string): Promise<void>; // tout le répertoire du cours
 }
 
 interface PhotoExtractor {
