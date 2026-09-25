@@ -220,17 +220,25 @@ extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
 
 ## Cas d'usage
 
-- `createCourse(userId, now)` — supprime d'abord tout cours non confirmé
-  du compte (lignes et fichiers, comme `deleteCourse`), puis crée la
-  ligne cours avant toute photo, `grade` copié depuis le compte,
+- `createCourse(userId, grade, now)` — supprime d'abord tout cours non
+  confirmé du compte (lignes et fichiers, comme `deleteCourse`), puis crée
+  la ligne cours avant toute photo, `grade` passé par l'API depuis le
+  compte authentifié (jamais deviné, jamais fourni par le client),
   `title`/`subject`/`color` vides jusqu'à extraction,
   `extractionStatus: 'pending'`
 - `addPage(userId, courseId, bytes, now)` — vérifie le type réel et la
   taille, refuse au-delà de 5 pages, retire les métadonnées, hash,
   déduplique au sein du cours, stocke, renvoie la page. Le type annoncé
-  par le client n'est jamais consulté.
-- `startExtraction(userId, courseId, now)` — enfile un job `extract-course`
-- `handleExtractionJob(payload, ctx)` — passe le cours à `running`, lit
+  par le client n'est jamais consulté. Erreurs : `not-found`, `locked`
+  (le cours n'est plus `pending` : ses photos sont déjà lues),
+  `unsupported`, `too-large`, `too-many-pages`, `duplicate`.
+- `startExtraction(userId, courseId, now)` — enfile un job `extract-course`,
+  uniquement pour un cours `pending` avec au moins une page ; sans effet
+  si un job de ce cours attend déjà (double appui sur "C'est tout !")
+- `handleExtractionJob(payload, ctx)` — se termine sans rien faire si le
+  cours n'existe plus (refusé ou remplacé entre-temps) ou si son résultat
+  est déjà stocké (job rejoué après un crash : rien n'est repayé) ; sinon
+  passe le cours à `running`, remet à zéro les résultats de pages, lit
   les pages dans l'ordre, appelle `PhotoExtractor` par page, marque
   `legible`/`isCoursePage`/`unusableReason` sur chaque page, et
   **s'arrête à la première page inexploitable** (les suivantes gardent
@@ -247,12 +255,15 @@ extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
   - rien n'est mis en file après : la génération est déclenchée à la main
     (`docs/jalons.md`, M3), jamais par l'extraction
 - `confirmCourse(userId, courseId, now)` — l'enfant appuie sur "Oui, c'est
-  ça !" : `confirmed = true`. Seul un cours `confirmed` est listé sur
+  ça !" : `confirmed = true`, uniquement pour un cours `ready`
+  (`not-ready` sinon). Seul un cours `confirmed` est listé sur
   l'accueil et ouvrable dans le lecteur.
 - `rejectCourse(userId, courseId, now)` — l'enfant appuie sur "Je reprends
   la photo", depuis l'écran de validation ou depuis le message d'une photo
   inexploitable : équivaut à `deleteCourse`, rien n'est conservé (un cours
-  jamais confirmé n'entre pas dans la politique de conservation ci-dessus)
+  jamais confirmé n'entre pas dans la politique de conservation ci-dessus).
+  Refusé pour un cours confirmé (`already-confirmed`) : celui-là se
+  supprime par `deleteCourse`
 - `retryExtraction(userId, courseId, now)` — uniquement depuis `failed`
   (échec technique, pas `illegible` ni `not_a_course_page`)
 - `getCourse`, `listConfirmedCourses` (triés par `lastAccessedAt` décroissant,
@@ -267,10 +278,15 @@ extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
   et dans le même appel applicatif (jamais seulement la ligne SQL — voir
   Tests clés)
 
-**Le handler d'extraction doit être idempotent** : il supprime toute
-extraction existante pour le cours avant d'en écrire une nouvelle. Un job
-relancé deux fois après un redémarrage du worker ne doit pas produire deux
-extractions.
+**Le handler d'extraction doit être idempotent** : `completeExtraction`
+remplace toute extraction existante dans la même transaction qui passe le
+cours à `ready` (une extraction n'existe donc que pour un cours `ready`),
+et un cours déjà `ready` n'est jamais retraité. Un job relancé deux fois
+après un redémarrage du worker ne produit jamais deux extractions.
+
+**`not-found` couvre aussi le cours d'un autre compte** : le dépôt filtre
+toujours sur `userId` et ne peut pas distinguer les deux cas, par
+construction (`CLAUDE.md`, règle 1).
 
 **Aucun appel LLM à l'intérieur d'une transaction.**
 

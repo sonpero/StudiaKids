@@ -116,6 +116,9 @@ compatibles anglais/français ou déjà en anglais).
 | inexploitable (illisible ou pas une page de cours) | `unusable` (`unusableReason`, `unusable_reason` en base) | |
 | prêt | `ready` | Valeur de `extractionStatus`. |
 | écran de validation | `ConfirmationScreen` | |
+| vue d'un cours (statut affiché) | `CourseView` | `extractionStatus` peut y valoir `failed`. |
+| dépôt des cours | `CourseRepository` | |
+| verrouillé (plus de page possible) | `locked` | Le cours n'est plus `pending`. |
 | écran de capture | `CaptureScreen` | |
 
 Matières (`Subject`, liste fermée ; le libellé affiché reste en français) :
