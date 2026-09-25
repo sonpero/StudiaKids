@@ -9,6 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "1.2.12",
+    "ai": "4.3.19",
     "argon2": "^0.41.1",
     "drizzle-orm": "^0.38.4",
     "uuid": "^14.0.2",

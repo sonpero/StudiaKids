@@ -145,6 +145,21 @@ interface CourseNamer {
 interface CourseRepository { /* chaque méthode prend userId et filtre dessus (CLAUDE.md, règle 1) */ }
 ```
 
+### Client modèle
+
+Les adaptateurs réels (`ClaudePhotoExtractor`, `ClaudeCourseNamer`) sont
+construits par `createLanguageModel` (`packages/core/src/shared/`),
+`ai` 4.3.19 + `@ai-sdk/anthropic` 1.2.12 comme StudIA, modèle lu depuis
+`ANTHROPIC_MODEL` (défaut `claude-sonnet-5`).
+
+**Contournement à retirer lors d'une montée en `ai` v5+** : `ai` 4.x
+envoie `temperature: 0` quand l'appelant ne précise rien, et
+`claude-sonnet-5` rejette tout paramètre d'échantillonnage (400). Un
+middleware `wrapLanguageModel` dans `createLanguageModel` retire
+`temperature`, `topP` et `topK` de chaque appel ; il est testé sans
+réseau (`model-client.unit.test.ts`) et n'a plus lieu d'être dès que la
+bibliothèque cesse d'imposer une température par défaut.
+
 `PhotoExtractor` est le pendant du `VisionExtractor` de StudIA : même
 schéma de sortie (`markdown`/`legible`/`reason`), même prompt de base
 (voir `docs/inventaire-studia.md`, §6), **plus un champ plat
