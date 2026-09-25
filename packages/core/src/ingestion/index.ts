@@ -33,3 +33,8 @@ export type { NotFound } from "./application/errors.js";
 
 export { ClaudePhotoExtractor } from "./infra/claude-photo-extractor.js";
 export { ClaudeCourseNamer } from "./infra/claude-course-namer.js";
+export { SqliteCourseRepository, type IngestionDb } from "./infra/sqlite-course-repository.js";
+export { LocalFileStore } from "./infra/local-file-store.js";
+// Exported alongside the other modules' tables (drizzle-kit itself reads
+// infra/schema.ts by glob).
+export { coursesTable, pagesTable, extractionsTable } from "./infra/schema.js";

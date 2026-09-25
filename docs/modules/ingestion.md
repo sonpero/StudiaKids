@@ -406,6 +406,28 @@ dans l'environnement ou le `.env` (ignoré par git).
   réponse qui ne correspond pas au cas demandé : dans tous ces cas, rien
   n'est écrit.
 
+### Fixtures synthétiques (provisoires)
+
+Tant qu'aucune photo réelle n'est enregistrée, les tests de contrat lisent
+des **réponses synthétiques**, écrites à la main, dans
+`tests/fixtures/ingestion/synthetic/` : chaque fichier porte
+`"synthetic": true` et une note qui le dit, et le sélecteur unique
+`FIXTURE_SOURCE` (`tests/support/llm-fixtures.ts`) vaut `"synthetic"`.
+Leur enveloppe (réponse Messages API, `tool_use` forcé, `usage`) et la
+forme de leur Markdown sont calquées sur un vrai appel `--dry-run
+--show` du 2026-09-25 (deux `#` : en-tête de page puis titre ; parties
+numérotées en `##` ; pseudo-listes à tiret cadratin sur des lignes
+simples, qui ne sont pas des listes Markdown ; encadré « À retenir » en
+`##`), le contenu est inventé et la réponse réelle n'est pas commitée.
+
+**Ces tests de contrat valident le câblage, pas le format du modèle** :
+rejeu d'une réponse brute à travers l'adaptateur réel, validation Zod,
+chemin du retry unique. Ils ne prouvent rien de ce que le modèle répond
+vraiment. Ils seront **rebranchés sur les vraies fixtures**
+(`FIXTURE_SOURCE = "recorded"`, fichiers de `tests/fixtures/ingestion/`)
+avant que le critère A2 puisse être coché ; M2 ne peut pas être clos sur
+des fixtures synthétiques (`docs/jalons.md`).
+
 Les adaptateurs réels ont aussi des tests unitaires contre des réponses
 minimales écrites dans le test (forme de la requête, retry unique) : ce
 ne sont pas des fixtures de contrat, qui ne viennent que de cet outil.

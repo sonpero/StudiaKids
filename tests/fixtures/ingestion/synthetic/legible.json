@@ -1,0 +1,38 @@
+{
+  "synthetic": true,
+  "note": "SYNTHETIC: written by hand, not recorded from the model. Envelope and Markdown shape copied from a real claude-sonnet-5 dry run (2026-09-25); content invented. Validates wiring only, never the model's format (docs/modules/ingestion.md). Replace with pnpm fixtures:record before checking A2 (docs/jalons.md).",
+  "module": "ingestion",
+  "case": "legible",
+  "model": "claude-sonnet-5",
+  "recordedAt": null,
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 0,
+      "body": {
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "model": "claude-sonnet-5",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_fixture",
+            "name": "json",
+            "input": {
+              "markdown": "# Français – Leçon 3\n\n# Le verbe\n\n## 1. À quoi sert le verbe ?\n\nLe verbe indique ce que fait le sujet ou ce qu'il est.\n\nDans la phrase « Léa chante une chanson » :\n – chante est le verbe ;\n – Léa est le sujet.\n\n## 2. L'infinitif\n\nLe verbe se présente sous une forme qui ne change pas : l'infinitif.\n\nchanter, finir, prendre sont des infinitifs.\n\n## 3. Le verbe change avec le temps\n\nHier, Léa chantait. Aujourd'hui, Léa chante. Demain, Léa chantera.\n\n## À retenir\n\nLe verbe est le mot qui change quand on change le temps de la phrase.",
+              "legible": true,
+              "isCoursePage": true
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "usage": {
+          "input_tokens": 5782,
+          "output_tokens": 421
+        }
+      }
+    }
+  ]
+}
