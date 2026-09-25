@@ -390,6 +390,9 @@ dans l'environnement ou le `.env` (ignoré par git).
   de message est neutralisé. Jamais le corps des requêtes (la photo est
   déjà stockée à part).
 - Rien n'est écrasé sans `--force`.
+- `--dry-run` fait l'appel réel et affiche le test de fumée, mais n'écrit
+  rien (ni fixture, ni photo) : pour vérifier l'adaptation au modèle sans
+  produire de fixture.
 - Chaque appel est un test de fumée de l'adaptation à `claude-sonnet-5` :
   latence, `stop_reason`, `input_tokens` / `output_tokens`, présence de
   thinking, acceptation du `tool_use` forcé. Échec si HTTP ≠ 200, thinking

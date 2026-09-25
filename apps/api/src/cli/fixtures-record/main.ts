@@ -10,20 +10,19 @@ import {
   sniffImageType,
   stripJpegMetadata,
 } from "@studiakids/core";
+import { parseArgs, type PhotoCase } from "./args.js";
 import { assertWritable, buildFixture, jpegSize, sanitizeExchange, smokeReport, type RawExchange, type RecordedExchange } from "./recording.js";
 
-// pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <file.jpg> [--force]
-// pnpm fixtures:record ingestion namer [--force]   (names the text recorded by "legible")
-//
-// Manual, costs money, never run by `pnpm test`. Reads ANTHROPIC_API_KEY
-// (and optionally ANTHROPIC_MODEL) from the environment only.
+// See USAGE in args.ts and docs/modules/ingestion.md. Manual, costs money,
+// never run by `pnpm test`. Reads ANTHROPIC_API_KEY (and optionally
+// ANTHROPIC_MODEL) from the environment only. --dry-run makes the real
+// call and prints the smoke test, but writes nothing.
 
-const PHOTO_CASES = {
+const EXPECTED: Record<PhotoCase, { legible: boolean; isCoursePage: boolean | null }> = {
   legible: { legible: true, isCoursePage: true },
   illegible: { legible: false, isCoursePage: null },
   "not-a-course": { legible: true, isCoursePage: false },
-} as const;
-type PhotoCase = keyof typeof PHOTO_CASES;
+};
 
 const repoRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 const fixturesDir = path.join(repoRoot, "tests/fixtures/ingestion");
@@ -63,7 +62,9 @@ function report(exchanges: RecordedExchange[], adapterSucceeded: boolean, minimu
   if (!smoke.ok) fail("ARRÊT : le test de fumée a échoué, rien n'a été écrit.");
 }
 
-async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, force: boolean, apiKey: string, model: string): Promise<void> {
+type RunOptions = { force: boolean; dryRun: boolean; apiKey: string; model: string };
+
+async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, { force, dryRun, apiKey, model }: RunOptions): Promise<void> {
   const original = new Uint8Array(readFileSync(photoPath));
   if (sniffImageType(original) !== "jpeg") fail("La photo doit être un vrai JPEG, comme ceux que le navigateur envoie.");
   const stripped = stripJpegMetadata(original);
@@ -85,8 +86,10 @@ async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, force: boo
 
   const photoFile = path.join(fixturesDir, "photos", `${fixtureCase}.jpg`);
   const fixtureFile = path.join(fixturesDir, `${fixtureCase}.json`);
-  const writable = assertWritable([photoFile, fixtureFile], force);
-  if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  if (!dryRun) {
+    const writable = assertWritable([photoFile, fixtureFile], force);
+    if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  }
 
   const raw: RawExchange[] = [];
   const extractor = new ClaudePhotoExtractor(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) }));
@@ -97,12 +100,14 @@ async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, force: boo
   report(exchanges, result.ok, visualTokens);
   if (!result.ok) return;
 
-  const expected = PHOTO_CASES[fixtureCase];
+  const expected = EXPECTED[fixtureCase];
   const got = result.value;
+  console.log(`réponse : legible=${String(got.legible)}, isCoursePage=${String(got.isCoursePage)}, ${String(got.markdown.length)} caractères de Markdown`);
   if (got.legible !== expected.legible || (expected.isCoursePage !== null && got.isCoursePage !== expected.isCoursePage)) {
     fail(`ARRÊT : le modèle a répondu legible=${String(got.legible)}, isCoursePage=${String(got.isCoursePage)}, ce qui ne correspond pas au cas "${fixtureCase}". Rien n'a été écrit.`);
   }
 
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
   const fixture = buildFixture({ module: "ingestion", fixtureCase, model, recordedAt: new Date().toISOString(), photo: `photos/${fixtureCase}.jpg`, exchanges });
   write({ [photoFile]: photo, [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
 }
@@ -115,10 +120,12 @@ function recordedMarkdown(): string {
   return markdown;
 }
 
-async function recordNamer(force: boolean, apiKey: string, model: string): Promise<void> {
+async function recordNamer({ force, dryRun, apiKey, model }: RunOptions): Promise<void> {
   const fixtureFile = path.join(fixturesDir, "namer.json");
-  const writable = assertWritable([fixtureFile], force);
-  if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  if (!dryRun) {
+    const writable = assertWritable([fixtureFile], force);
+    if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  }
 
   const raw: RawExchange[] = [];
   const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) }));
@@ -127,26 +134,24 @@ async function recordNamer(force: boolean, apiKey: string, model: string): Promi
 
   report(exchanges, result.ok);
   if (result.ok) console.log(`proposé : « ${result.value.title} », ${result.value.subject}`);
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
   const fixture = buildFixture({ module: "ingestion", fixtureCase: "namer", model, recordedAt: new Date().toISOString(), exchanges });
   write({ [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
 }
 
 async function main(): Promise<void> {
-  const [moduleName, fixtureCase, ...rest] = process.argv.slice(2);
-  const force = rest.includes("--force");
-  const photoPath = rest[rest.indexOf("--photo") + 1];
-  const usage = "Usage : pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <fichier.jpg> [--force]\n        pnpm fixtures:record ingestion namer [--force]";
-
-  if (moduleName !== "ingestion" || !fixtureCase) fail(usage);
+  const args = parseArgs(process.argv.slice(2));
+  if (!args.ok) fail(args.error);
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) fail("ANTHROPIC_API_KEY absente de l'environnement.");
   const model = process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
-  console.log(`modèle : ${model}`);
+  console.log(`modèle : ${model}${args.value.dryRun ? " (--dry-run)" : ""}`);
 
-  if (fixtureCase === "namer") return recordNamer(force, apiKey, model);
-  if (!(fixtureCase in PHOTO_CASES)) fail(usage);
-  if (!rest.includes("--photo") || !photoPath) fail(usage);
-  return recordPhoto(fixtureCase as PhotoCase, photoPath, force, apiKey, model);
+  const options = { force: args.value.force, dryRun: args.value.dryRun, apiKey, model };
+  const { fixtureCase, photoPath } = args.value;
+  if (fixtureCase === "namer") return recordNamer(options);
+  if (photoPath === null) fail("--photo manquant.");
+  return recordPhoto(fixtureCase, photoPath, options);
 }
 
 main().catch((error: unknown) => {
