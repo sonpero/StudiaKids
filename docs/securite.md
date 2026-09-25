@@ -149,7 +149,7 @@ tenu** — ce serait de la télémétrie comportementale, exclue par les
 principes généraux ci-dessus.
 
 **Ce qui part chez le fournisseur de modèle est une image réencodée**
-par le navigateur (JPEG, 2000 px au plus), dépouillée de ses métadonnées
+par le navigateur (JPEG, à la taille native du modèle, jamais au-delà), dépouillée de ses métadonnées
 côté serveur avant stockage et avant tout envoi — jamais le fichier
 d'origine de l'appareil photo, avec ses coordonnées GPS.
 

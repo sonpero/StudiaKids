@@ -83,9 +83,23 @@ bouton "Une autre page" dès la cinquième ; le serveur refuse la sixième
 de toute façon.
 
 **JPEG uniquement, métadonnées retirées.** Le navigateur réencode toujours
-la photo en JPEG (canvas, 2000 px maximum sur le grand côté) avant envoi :
-ça redresse la photo, la ramène sous la limite de taille d'image du
-modèle, et retire au passage ses métadonnées. Le serveur ne fait pas
+la photo en JPEG (canvas) avant envoi, à la taille renvoyée par
+`nativePhotoSize` (`packages/contracts`) : la plus grande taille, à
+proportions conservées, que le modèle voit sans la réduire lui-même. Ça
+redresse la photo, évite d'envoyer des pixels que l'API jetterait (plus
+de poids et de latence, aucun gain), et retire au passage ses
+métadonnées.
+
+**Taille native, à confirmer par `pnpm fixtures:record`** : `claude-sonnet-5`
+appartient au niveau haute résolution de la doc Anthropic ("Claude 4.7 et
+ultérieurs") — `PHOTO_MAX_EDGE_PX = 2576` sur le bord et
+`PHOTO_MAX_VISUAL_TOKENS = 4784` tokens visuels (un par carré de 28 px).
+Pour une photo, c'est le budget de tokens qui décide, pas le bord : une
+photo 4:3 est ramenée vers 2212 × 1659. Ces valeurs restent **à confirmer
+par le premier enregistrement** (l'outil affiche `usage.input_tokens`,
+qui doit tourner autour de 4784 pour une photo) ; changer
+`ANTHROPIC_MODEL` pour un modèle d'un autre niveau les rendrait fausses
+sans rien casser de visible, l'API se contentant de réduire l'image. Le serveur ne fait pas
 confiance au client pour autant : il vérifie le type réel sur les octets
 (PNG, WebP ou un faux `.jpg` sont refusés, quel que soit le type annoncé)
 et retire de tout fichier stocké les segments de métadonnées JPEG (EXIF
@@ -107,7 +121,7 @@ Fonctions pures de domaine :
   un fichier vide. La limite de l'API Claude (10 Mo par image) porte sur
   l'image **encodée en base64**, qui pèse 4/3 du fichier : 7 500 000
   octets bruts donnent exactement 10 000 000 caractères base64. Un JPEG
-  réencodé à 2000 px en pèse normalement moins d'un dixième ; la limite
+  réencodé à la taille native en pèse normalement bien moins ; la limite
   n'arrête que ce qui échouerait de toute façon à l'appel du modèle
 - `stripJpegMetadata(bytes)` — renvoie le même JPEG sans ses segments de
   métadonnées (APP1 à APP15, COM), image inchangée
