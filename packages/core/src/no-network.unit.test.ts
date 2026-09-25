@@ -9,4 +9,8 @@ describe("network guard (unit project)", () => {
   it("makes any fetch() throw before it leaves the process", () => {
     expect(() => fetch("http://127.0.0.1:9/")).toThrow(/Network access is disabled in tests/);
   });
+
+  it("clears ANTHROPIC_API_KEY, so no real key can ever leave a test", () => {
+    expect(process.env.ANTHROPIC_API_KEY).toBeUndefined();
+  });
 });

@@ -48,6 +48,12 @@ sans barre d'adresse.
 **Acceptation**
 - [x] `pnpm dev` démarre api, web et worker ensemble — vérifié localement (santé API, proxy Vite, mascotte visible à l'écran)
 - [x] `pnpm test`, `pnpm typecheck`, `pnpm lint` tous verts en local et en CI — verts en local et en CI (GitHub Actions, run sur `7699ab2`)
+      — **corrigé a posteriori pendant M2 (`e13fb6e`)** : le garde-fou qui
+      fait échouer `fetch` (`CLAUDE.md`, TDD) était déclaré à la racine de
+      `vitest.config.ts` et n'était hérité par aucun projet de test ; "sans
+      réseau" n'était donc pas garanti lors de l'acceptation. Aucun code de
+      M0/M1 n'appelait le réseau, rien n'était à refaire. Le garde est
+      désormais posé par projet, testé, et vide aussi `ANTHROPIC_API_KEY`
 - [x] Un import profond délibéré entre deux modules fait échouer `pnpm lint` — vérifié manuellement (violation temporaire, échec confirmé, revert)
 - [x] Une donnée et un fichier créés en production survivent à un redéploiement — vérifié via Docker (volume nommé monté sur `RAILWAY_VOLUME_MOUNT_PATH`, conteneur arrêté puis remplacé par un nouveau sur le même volume) : une ligne insérée en base et un fichier écrit dans `photos/` sont tous deux relus intacts après le "redeploy", `db/` et `photos/` créés automatiquement au démarrage. Persistance sur le volume Railway réel non testée (pas d'accès à un environnement Railway depuis ici), mais le mécanisme est identique
 - [x] `better-sqlite3` charge dans l'image Docker — vérifié : build de l'image (compilation native réussie dans le stage `deps`) et exécution réelle (connexion, écriture, lecture) dans deux conteneurs successifs
