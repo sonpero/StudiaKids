@@ -413,7 +413,7 @@ pnpm dev            # api + web + worker en mode watch
 pnpm test           # unit + intégration + contrat, sans réseau
 pnpm test:e2e       # Playwright, LLM_ADAPTER=fixture
 pnpm eval           # évaluation LLM sur jeu d'or (coûte de l'argent, manuel)
-pnpm fixtures:record <module> <case>   # enregistre une vraie réponse modèle (coûte de l'argent, manuel)
+pnpm fixtures:record <module> <case> [--photo f.jpg] [--force]   # enregistre une vraie réponse modèle (coûte de l'argent, manuel, voir docs/modules/ingestion.md)
 pnpm typecheck      # tsc --noEmit sur tout le monorepo
 pnpm lint           # eslint + dependency-cruiser
 pnpm db:generate    # migration Drizzle depuis les changements de schéma

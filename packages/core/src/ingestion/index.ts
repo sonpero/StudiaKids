@@ -30,3 +30,6 @@ export { readPageFile, type ReadPageFileDeps } from "./application/read-page-fil
 export { recordAccess, type RecordAccessDeps } from "./application/record-access.js";
 export { deleteCourse, type DeleteCourseDeps } from "./application/delete-course.js";
 export type { NotFound } from "./application/errors.js";
+
+export { ClaudePhotoExtractor } from "./infra/claude-photo-extractor.js";
+export { ClaudeCourseNamer } from "./infra/claude-course-namer.js";

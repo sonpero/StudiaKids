@@ -371,6 +371,37 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 la route ci-dessus, qui vérifie l'appartenance au compte en premier (404
 sinon, comme pour un identifiant inconnu).
 
+## Enregistrement des fixtures
+
+`pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <fichier.jpg>`,
+puis `pnpm fixtures:record ingestion namer` (qui nomme le texte enregistré
+par `legible`). Manuel, payant, jamais lancé par `pnpm test` ; clé lue
+dans l'environnement ou le `.env` (ignoré par git).
+
+- La photo doit être un vrai JPEG **déjà à la taille native**
+  (`nativePhotoSize`) : c'est ce que le navigateur enverra, et c'est la
+  seule façon pour `input_tokens` de dire quelque chose de la résolution
+  native. Plus grande, l'outil refuse avant tout appel et donne la commande
+  `sips` qui la réduit.
+- Ses métadonnées sont retirées (`stripJpegMetadata`) avant l'envoi et
+  avant l'écriture dans `tests/fixtures/ingestion/photos/`.
+- **Le dépôt est public** : seul le corps des réponses HTTP est écrit,
+  aucun en-tête (identifiant d'organisation, request-id), et l'identifiant
+  de message est neutralisé. Jamais le corps des requêtes (la photo est
+  déjà stockée à part).
+- Rien n'est écrasé sans `--force`.
+- Chaque appel est un test de fumée de l'adaptation à `claude-sonnet-5` :
+  latence, `stop_reason`, `input_tokens` / `output_tokens`, présence de
+  thinking, acceptation du `tool_use` forcé. Échec si HTTP ≠ 200, thinking
+  présent, pas de `tool_use`, troncature (`max_tokens`), `input_tokens`
+  inférieur aux tokens visuels de la photo (image réduite côté API), ou
+  réponse qui ne correspond pas au cas demandé : dans tous ces cas, rien
+  n'est écrit.
+
+Les adaptateurs réels ont aussi des tests unitaires contre des réponses
+minimales écrites dans le test (forme de la requête, retry unique) : ce
+ne sont pas des fixtures de contrat, qui ne viennent que de cet outil.
+
 ## Hors périmètre
 
 Découpage en items. Annotation par type de jeu. Génération d'exercices.

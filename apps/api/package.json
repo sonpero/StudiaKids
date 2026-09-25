@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "accounts:create": "tsx src/cli/create-account.ts",
     "accounts:reset-password": "tsx src/cli/reset-password.ts",
-    "accounts:delete": "tsx src/cli/delete-account.ts"
+    "accounts:delete": "tsx src/cli/delete-account.ts",
+    "fixtures:record": "tsx --env-file-if-exists=../../.env src/cli/fixtures-record/main.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
