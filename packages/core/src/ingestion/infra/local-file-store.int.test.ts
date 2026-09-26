@@ -37,6 +37,29 @@ describe("LocalFileStore", () => {
     expect(existsSync(path.join(root, otherAccount))).toBe(true);
   });
 
+  it("deleteAccountFiles removes the account's whole photos directory, and no other account's", async () => {
+    const mine = await store.put("u1", "c1", 0, jpeg(1));
+    await store.put("u1", "c2", 0, jpeg(2));
+    const otherAccount = await store.put("u2", "c1", 0, jpeg(3));
+
+    await store.deleteAccountFiles("u1");
+
+    expect(existsSync(path.join(root, mine))).toBe(false);
+    expect(existsSync(path.join(root, "photos", "u1"))).toBe(false);
+    expect(existsSync(path.join(root, otherAccount))).toBe(true);
+  });
+
+  it("deleteAccountFiles on an account without any photo does not fail", async () => {
+    await expect(store.deleteAccountFiles("u1")).resolves.toBeUndefined();
+  });
+
+  it("deleteAccountFiles refuses an identifier that would reach the whole photos directory or beyond", async () => {
+    await store.put("u2", "c1", 0, jpeg(1));
+
+    for (const userId of ["", ".", "..", "../photos", "u1/../u2"]) await expect(store.deleteAccountFiles(userId)).rejects.toThrow();
+    expect(existsSync(path.join(root, "photos", "u2", "c1", "0.jpg"))).toBe(true);
+  });
+
   it("deleteCourse on a course without any photo does not fail", async () => {
     await expect(store.deleteCourse("u1", "never-had-photos")).resolves.toBeUndefined();
   });

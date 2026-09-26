@@ -7,6 +7,9 @@ export interface FileStore {
   read(storedPath: string): Promise<Uint8Array>;
   // Removes the whole course directory: a photo never outlives its course.
   deleteCourse(userId: string, courseId: string): Promise<void>;
+  // Removes the account's whole photos directory (accounts:delete), orphans
+  // included: a photo never outlives its account.
+  deleteAccountFiles(userId: string): Promise<void>;
 }
 
 export type ExtractionError = { kind: "model-error"; message: string };

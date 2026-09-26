@@ -45,4 +45,8 @@ export class LocalFileStore implements FileStore {
   async deleteCourse(userId: string, courseId: string): Promise<void> {
     await rm(path.join(this.volumeRoot, this.courseDir(userId, courseId)), { recursive: true, force: true });
   }
+
+  async deleteAccountFiles(userId: string): Promise<void> {
+    await rm(path.join(this.volumeRoot, PHOTOS, segment(userId)), { recursive: true, force: true });
+  }
 }

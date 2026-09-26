@@ -114,6 +114,11 @@ export function fakeFileStore(): FileStore & { files: Map<string, Uint8Array>; c
       calls.push(`deleteCourse ${userId}/${courseId}`);
       return Promise.resolve();
     },
+    deleteAccountFiles: (userId) => {
+      for (const path of [...files.keys()]) if (path.startsWith(`photos/${userId}/`)) files.delete(path);
+      calls.push(`deleteAccountFiles ${userId}`);
+      return Promise.resolve();
+    },
   };
 }
 

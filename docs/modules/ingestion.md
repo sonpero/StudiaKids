@@ -162,6 +162,7 @@ interface FileStore {
   put(userId: string, courseId: string, pageIndex: number, bytes: Uint8Array): Promise<string>; // toujours .jpg
   read(storedPath: string): Promise<Uint8Array>;
   deleteCourse(userId: string, courseId: string): Promise<void>; // tout le répertoire du cours
+  deleteAccountFiles(userId: string): Promise<void>; // tout photos/{userId}, pour accounts:delete
 }
 
 interface PhotoExtractor {
@@ -350,7 +351,11 @@ CREATE TABLE extractions (
 jamais écrit (voir "Statut `failed`"). `courses.user_id` est en
 `ON DELETE CASCADE` pour que `pnpm accounts:delete` supprime les cours du
 compte avec lui (`docs/securite.md`, "Suppression et droit à l'oubli") —
-les fichiers, eux, sont supprimés par l'application dans le même appel.
+les fichiers, eux, sont supprimés par l'application dans le même appel :
+la commande supprime d'abord tout `photos/{userId}` (`deleteAccountFiles`,
+y compris un fichier orphelin), puis la ligne `accounts`. Dans cet ordre,
+une interruption laisse un compte qu'on peut supprimer à nouveau, jamais
+des photos qui survivent à leur compte.
 
 Fichiers sur `RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.jpg`
 (`./data/photos/...` en local, `docs/donnees.md`).
