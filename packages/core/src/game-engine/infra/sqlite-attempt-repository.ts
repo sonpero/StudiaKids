@@ -31,6 +31,17 @@ export class SqliteAttemptRepository implements AttemptRepository {
     }
   }
 
+  listByUser(userId: string): Promise<AttemptRecord[]> {
+    return Promise.resolve(
+      this.db
+        .select({ exerciseId: attemptsTable.exerciseId, attemptedAt: attemptsTable.attemptedAt, correct: attemptsTable.correct, starEligible: attemptsTable.starEligible })
+        .from(attemptsTable)
+        .where(eq(attemptsTable.userId, userId))
+        .orderBy(attemptsTable.attemptedAt, attemptsTable.id)
+        .all(),
+    );
+  }
+
   listForExercises(userId: string, exerciseIds: string[]): Promise<AttemptRecord[]> {
     if (exerciseIds.length === 0) return Promise.resolve([]);
     return Promise.resolve(

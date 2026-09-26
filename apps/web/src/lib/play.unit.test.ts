@@ -26,9 +26,11 @@ describe("play API client", () => {
   });
 
   it("answerExercise posts the answer and the reread flag, and returns the units", async () => {
-    const fetchMock = stubFetch(200, { result: { units: [{ id: "0", correct: true }] } });
+    // M5: every answer also brings the new progress.
+    const progress = { total: 3, currentStreak: 1, bestStreak: 2, stars: 1, celebrate: null };
+    const fetchMock = stubFetch(200, { result: { units: [{ id: "0", correct: true }] }, progress });
 
-    expect(await answerExercise("e1", { value: true }, false)).toEqual({ units: [{ id: "0", correct: true }] });
+    expect(await answerExercise("e1", { value: true }, false)).toEqual({ units: [{ id: "0", correct: true }], progress });
     expect(fetchMock).toHaveBeenCalledWith("/api/exercises/e1/answer", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -51,8 +53,9 @@ describe("play API client", () => {
   });
 
   it("answerExercise returns the correction a wrong answer brings back", async () => {
-    stubFetch(200, { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" } });
+    const progress = { total: 3, currentStreak: 0, bestStreak: 2, stars: 0, celebrate: null };
+    stubFetch(200, { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" }, progress });
 
-    expect(await answerExercise("e1", { chosenOption: "Léa" }, false)).toEqual({ units: [{ id: "0", correct: false }], correction: { chosenOption: "chante" } });
+    expect(await answerExercise("e1", { chosenOption: "Léa" }, false)).toEqual({ units: [{ id: "0", correct: false }], correction: { chosenOption: "chante" }, progress });
   });
 });

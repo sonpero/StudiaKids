@@ -12,6 +12,8 @@ export function fakeAttemptRepository(): AttemptRepository & { rows: (Attempt & 
       rows.push(...attempts.map((attempt) => ({ ...attempt, userId, attemptedAt: now.toISOString() })));
       return Promise.resolve();
     },
+    listByUser: (userId) =>
+      Promise.resolve(rows.filter((row) => row.userId === userId).map(({ exerciseId, attemptedAt, correct, starEligible }): AttemptRecord => ({ exerciseId, attemptedAt, correct, starEligible }))),
     listForExercises: (userId, exerciseIds) =>
       Promise.resolve(
         rows

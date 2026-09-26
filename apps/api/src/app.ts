@@ -4,6 +4,7 @@ import staticPlugin from "@fastify/static";
 import {
   GeneratedExercises,
   IngestionCourseTexts,
+  listAttemptsForProgress,
   LocalFileStore,
   MAX_PAGE_BYTES,
   SqliteAttemptRepository,
@@ -26,6 +27,7 @@ import { generationRoutes } from "./routes/generation.js";
 import { healthRoutes } from "./routes/health.js";
 import { meRoutes } from "./routes/me.js";
 import { playRoutes } from "./routes/play.js";
+import { progressRoutes } from "./routes/progress.js";
 import { readerRoutes } from "./routes/reader.js";
 
 export interface BuildAppOptions {
@@ -94,12 +96,17 @@ export function buildApp(opts: BuildAppOptions) {
   void app.register(readerRoutes, { repo: courseRepository, clock: systemClock });
   const courseTexts = new IngestionCourseTexts(courseRepository);
   void app.register(generationRoutes, { courses: courseTexts, repo: itemRepository, jobQueue, clock: systemClock });
+  const attemptRepository = new SqliteAttemptRepository(db);
+  const progressAttempts = { listByUser: (userId: string) => listAttemptsForProgress({ attempts: attemptRepository }, userId) };
   void app.register(playRoutes, {
     exercises: new GeneratedExercises(itemRepository, courseTexts),
-    attempts: new SqliteAttemptRepository(db),
+    attempts: attemptRepository,
+    progressAttempts,
+    courses: courseRepository,
     idGenerator: uuidV7Generator,
     clock: systemClock,
   });
+  void app.register(progressRoutes, { attempts: progressAttempts });
   void app.register(healthRoutes);
 
   if (opts.webDistPath) {

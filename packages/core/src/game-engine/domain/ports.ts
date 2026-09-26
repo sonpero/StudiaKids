@@ -10,6 +10,8 @@ export interface AttemptRepository {
   // Every unit of one submission in one short transaction, all at `now`.
   record(userId: string, attempts: Attempt[], now: Date): Promise<void>;
   listForExercises(userId: string, exerciseIds: string[]): Promise<AttemptRecord[]>;
+  // Every attempt of the account, in order: what progress derives from (M5).
+  listByUser(userId: string): Promise<AttemptRecord[]>;
 }
 
 // exercise-generator's exercises, through its index only.

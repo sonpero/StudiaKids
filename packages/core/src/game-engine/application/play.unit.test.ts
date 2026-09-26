@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Exercise } from "../../exercise-generator/index.js";
 import { ok } from "../../shared/index.js";
 import { fakeAttemptRepository, fakeExerciseSource, sequentialIds } from "./fakes.js";
+import { listAttemptsForProgress } from "./list-attempts-for-progress.js";
 import { listPlayableExercises } from "./list-playable-exercises.js";
 import { playExercise } from "./play-exercise.js";
 
@@ -119,5 +120,16 @@ describe("playExercise, the correction", () => {
 
     expect(await playExercise(deps, "u1", "e-copy", { text: "chanté" }, { reread: false }, now)).toEqual(ok({ result: { units: [{ id: "0", correct: false }] }, correction: { text: "chanter" } }));
     expect(await playExercise(deps, "u1", "e-copy", { text: "chanter" }, { reread: false }, later)).toEqual(ok({ result: { units: [{ id: "0", correct: true }] } }));
+  });
+});
+
+// M5: what progress derives the stars from, through game-engine's index.
+describe("listAttemptsForProgress", () => {
+  it("gives every attempt of the account, never another's", async () => {
+    const deps = setup();
+    await playExercise(deps, "u1", "e-copy", { text: "chanter" }, { reread: false }, now);
+    await deps.attempts.record("u2", [{ id: "x", exerciseId: "e-theirs", type: "true_false", unitId: "0", correct: true, starEligible: true }], now);
+
+    expect(await listAttemptsForProgress(deps, "u1")).toEqual([{ exerciseId: "e-copy", attemptedAt: now.toISOString(), correct: true, starEligible: true }]);
   });
 });

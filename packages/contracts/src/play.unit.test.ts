@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GAME_TYPES } from "./games.js";
-import { answerRequestSchema, answerResponseSchema, GIVEN_ANSWER_SCHEMAS, playableExerciseSchema, playableListResponseSchema, playErrorSchema } from "./play.js";
+import { answerRequestSchema, answerResponseSchema, GIVEN_ANSWER_SCHEMAS, playableExerciseSchema, playableListResponseSchema, playErrorSchema, progressQuerySchema, progressSchema } from "./play.js";
 
 // docs/modules/game-engine.md (M4): what the Jouer screen receives — never
 // an answer — and what it sends back.
@@ -28,7 +28,8 @@ describe("given answers", () => {
 
   it("the request carries the answer and the reread flag; the response only units", () => {
     expect(answerRequestSchema.parse({ givenAnswer: { text: "x" }, reread: true })).toEqual({ givenAnswer: { text: "x" }, reread: true });
-    expect(answerResponseSchema.parse({ result: { units: [{ id: "0", correct: true }] } })).toEqual({ result: { units: [{ id: "0", correct: true }] } });
+    const right = { result: { units: [{ id: "0", correct: true }] }, progress: { total: 4, currentStreak: 1, bestStreak: 2, stars: 1, celebrate: "comeback" } };
+    expect(answerResponseSchema.parse(right)).toEqual(right);
     expect(playErrorSchema.safeParse({ error: "invalid_answer" }).success).toBe(true);
   });
 });
@@ -63,13 +64,33 @@ describe("playable exercises", () => {
 // briefly — sent only then, in the shape of a given answer.
 describe("the correction", () => {
   it("rides along with a wrong answer's result, in the shape of a given answer", () => {
-    const wrong = { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" } };
+    // M5: every answer's result also carries the new progress.
+    const progress = { total: 3, currentStreak: 0, bestStreak: 2, stars: 0, celebrate: null };
+    const wrong = { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" }, progress };
     expect(answerResponseSchema.parse(wrong)).toEqual(wrong);
-    const matching = { result: { units: [{ id: "0", correct: false }] }, correction: { pairs: [{ left: "Hier", right: "Léa chantait" }] } };
+    const matching = { result: { units: [{ id: "0", correct: false }] }, correction: { pairs: [{ left: "Hier", right: "Léa chantait" }] }, progress };
     expect(answerResponseSchema.parse(matching)).toEqual(matching);
   });
 
   it("is absent from a right answer's result", () => {
-    expect(answerResponseSchema.parse({ result: { units: [{ id: "0", correct: true }] } })).toEqual({ result: { units: [{ id: "0", correct: true }] } });
+    const right = { result: { units: [{ id: "0", correct: true }] }, progress: { total: 4, currentStreak: 1, bestStreak: 2, stars: 1, celebrate: "comeback" } };
+    expect(answerResponseSchema.parse(right)).toEqual(right);
+  });
+});
+
+// M5: counters derived from the attempts (docs/modules/progress.md).
+describe("progress", () => {
+  it("the counters, and since an instant the session's stars and right answers", () => {
+    expect(progressSchema.parse({ total: 12, currentStreak: 3, bestStreak: 7 })).toEqual({ total: 12, currentStreak: 3, bestStreak: 7 });
+    expect(progressSchema.parse({ total: 12, currentStreak: 3, bestStreak: 7, starsSince: 2, successesSince: 4 })).toMatchObject({ starsSince: 2, successesSince: 4 });
+    expect(progressQuerySchema.parse({ since: "2026-09-26T10:00:00.000Z" })).toEqual({ since: "2026-09-26T10:00:00.000Z" });
+    expect(progressQuerySchema.parse({})).toEqual({});
+  });
+
+  it("every answer's result carries the new progress; a celebration is one of two, or none", () => {
+    expect(answerResponseSchema.safeParse({ result: { units: [] } }).success).toBe(false);
+    const base = { result: { units: [] }, progress: { total: 0, currentStreak: 0, bestStreak: 0, stars: 0 } };
+    for (const celebrate of ["streak-bonus", "comeback", null]) expect(answerResponseSchema.safeParse({ ...base, progress: { ...base.progress, celebrate } }).success).toBe(true);
+    expect(answerResponseSchema.safeParse({ ...base, progress: { ...base.progress, celebrate: "dance" } }).success).toBe(false);
   });
 });

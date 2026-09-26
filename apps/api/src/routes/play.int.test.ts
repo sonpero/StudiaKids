@@ -110,7 +110,12 @@ describe("play routes", () => {
 
     expect(res.statusCode).toBe(200);
     // M4 closing decision: a wrong answer brings the right one back.
-    expect(res.json()).toEqual({ result: { units: [{ id: "0", correct: false }, { id: "1", correct: false }, { id: "2", correct: true }] }, correction: { pairs: MATCHING.pairs } });
+    // M5: every answer also brings the new progress (nothing earned here).
+    expect(res.json()).toEqual({
+      result: { units: [{ id: "0", correct: false }, { id: "1", correct: false }, { id: "2", correct: true }] },
+      correction: { pairs: MATCHING.pairs },
+      progress: { total: 0, currentStreak: 0, bestStreak: 0, stars: 0, celebrate: null },
+    });
     expect(attempts()).toEqual([
       { exercise_id: ids.matching, unit_id: "0", correct: 0, star_eligible: 1 },
       { exercise_id: ids.matching, unit_id: "1", correct: 0, star_eligible: 1 },
@@ -126,7 +131,8 @@ describe("play routes", () => {
 
     const res = await answer(ids.delayed_copy!, { givenAnswer: { text: "chanter" }, reread: true });
 
-    expect(res.json()).toEqual({ result: { units: [{ id: "0", correct: true }] } });
+    // M5: a helped answer earns nothing and leaves the streak where it was.
+    expect(res.json()).toEqual({ result: { units: [{ id: "0", correct: true }] }, progress: { total: 1, currentStreak: 1, bestStreak: 1, stars: 0, celebrate: null } });
     expect(attempts().filter((a) => a.exercise_id === ids.delayed_copy)).toEqual([{ exercise_id: ids.delayed_copy, unit_id: "0", correct: 1, star_eligible: 0 }]);
     const list = await app.inject({ method: "GET", url: `/api/courses/${courseId}/exercises`, headers: { cookie: lea } });
     expect(list.json()).toMatchObject({ nextExerciseId: ids.matching });

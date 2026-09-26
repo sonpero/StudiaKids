@@ -101,4 +101,19 @@ describe("SqliteAttemptRepository", () => {
 
     expect(() => db.run(sql`INSERT INTO attempts (id, user_id, exercise_id, type, unit_id, correct, star_eligible, attempted_at) VALUES ('x', 'u1', 'e1', 'quiz', '0', 1, 1, ${at})`)).toThrow();
   });
+
+  // M5: progress reads every attempt of an account, never another's.
+  it("lists every attempt of an account, in order, for progress; none of another account", async () => {
+    const { repo } = setup();
+    await repo.record("u1", [attempt("a1", "e1", "0", true), attempt("a2", "e1", "1", false)], now);
+    await repo.record("u1", [attempt("a3", "e1", "0", true)], new Date("2026-09-26T11:00:00.000Z"));
+    await repo.record("u2", [attempt("a4", "e2", "0", true)], now);
+
+    expect(await repo.listByUser("u1")).toEqual([
+      { exerciseId: "e1", attemptedAt: now.toISOString(), correct: true, starEligible: true },
+      { exerciseId: "e1", attemptedAt: now.toISOString(), correct: false, starEligible: true },
+      { exerciseId: "e1", attemptedAt: "2026-09-26T11:00:00.000Z", correct: true, starEligible: true },
+    ]);
+    expect(await repo.listByUser("nobody")).toEqual([]);
+  });
 });

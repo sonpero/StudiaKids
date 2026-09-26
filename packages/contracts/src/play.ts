@@ -32,7 +32,28 @@ const correctionSchema = z.union([
   GIVEN_ANSWER_SCHEMAS.true_false,
   GIVEN_ANSWER_SCHEMAS.mental_math,
 ]);
-export const answerResponseSchema = z.object({ result: comparisonResultSchema, correction: correctionSchema.optional() });
+// M5 (docs/modules/progress.md): derived from the attempts, never stored.
+export const progressSchema = z.object({
+  total: z.number().int(),
+  currentStreak: z.number().int(),
+  bestStreak: z.number().int(),
+  starsSince: z.number().int().optional().describe("Étoiles gagnées depuis `since` (récapitulatif de session)"),
+  successesSince: z.number().int().optional().describe("Bonnes réponses depuis `since`, aidées comprises"),
+});
+export type ProgressDto = z.infer<typeof progressSchema>;
+export const progressQuerySchema = z.object({ since: z.string().optional() });
+
+// After every answer, so that the counter moves without a reload.
+export const answerProgressSchema = z.object({
+  total: z.number().int(),
+  currentStreak: z.number().int(),
+  bestStreak: z.number().int(),
+  stars: z.number().int().describe("Étoiles gagnées par cette réponse, bonus compris"),
+  celebrate: z.enum(["streak-bonus", "comeback"]).nullable().describe("La mascotte danse : bonus de série ou réussite marquante"),
+});
+export type AnswerProgressDto = z.infer<typeof answerProgressSchema>;
+
+export const answerResponseSchema = z.object({ result: comparisonResultSchema, correction: correctionSchema.optional(), progress: answerProgressSchema });
 export type AnswerResponseDto = z.infer<typeof answerResponseSchema>;
 
 export const exerciseParamsSchema = z.object({ id: z.string() });

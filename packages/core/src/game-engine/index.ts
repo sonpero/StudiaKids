@@ -16,6 +16,7 @@ export type { Attempt, AttemptRepository, ExerciseSource } from "./domain/ports.
 
 export { playExercise, type PlayExerciseDeps } from "./application/play-exercise.js";
 export { listPlayableExercises, type ListPlayableExercisesDeps } from "./application/list-playable-exercises.js";
+export { listAttemptsForProgress } from "./application/list-attempts-for-progress.js";
 
 export { SqliteAttemptRepository, type GameEngineDb } from "./infra/sqlite-attempt-repository.js";
 export { GeneratedExercises } from "./infra/generated-exercises.js";
