@@ -11,9 +11,9 @@ export const CHILD_FIRST_NAME = "Léa";
 export const CHILD_GRADE = "CM1";
 const PASSWORD = "e2e-Child-Secret!";
 
-// Synthetic fixture photos: the worker's fixture adapter recognises each
-// case by its size (docs/modules/ingestion.md).
-export const photosDir = fileURLToPath(new URL("../../tests/fixtures/ingestion/synthetic/photos", import.meta.url));
+// The recorded fixtures' photos: the worker's fixture adapter recognises
+// each case by its size (docs/modules/ingestion.md).
+export const photosDir = fileURLToPath(new URL("../../tests/fixtures/ingestion/photos", import.meta.url));
 export const photo = (name: string) => path.join(photosDir, `${name}.jpg`);
 export const cameraPhoto = fileURLToPath(new URL("../fixtures/camera-rotated-gps.jpg", import.meta.url));
 

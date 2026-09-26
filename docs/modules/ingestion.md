@@ -448,27 +448,38 @@ dans l'environnement ou le `.env` (ignoré par git).
   réponse qui ne correspond pas au cas demandé : dans tous ces cas, rien
   n'est écrit.
 
-### Fixtures synthétiques (provisoires)
+### Fixtures enregistrées (depuis le 2026-09-26)
 
-Tant qu'aucune photo réelle n'est enregistrée, les tests de contrat lisent
-des **réponses synthétiques**, écrites à la main, dans
-`tests/fixtures/ingestion/synthetic/` : chaque fichier porte
-`"synthetic": true` et une note qui le dit, et le sélecteur unique
-`FIXTURE_SOURCE` (`tests/support/llm-fixtures.ts`) vaut `"synthetic"`.
-Leur enveloppe (réponse Messages API, `tool_use` forcé, `usage`) et la
-forme de leur Markdown sont calquées sur un vrai appel `--dry-run
---show` du 2026-09-25 (deux `#` : en-tête de page puis titre ; parties
-numérotées en `##` ; pseudo-listes à tiret cadratin sur des lignes
-simples, qui ne sont pas des listes Markdown ; encadré « À retenir » en
-`##`), le contenu est inventé et la réponse réelle n'est pas commitée.
+Les tests de contrat, le worker en `LLM_ADAPTER=fixture` et les
+scénarios Playwright lisent les **réponses réelles** de `claude-sonnet-5`
+enregistrées par `pnpm fixtures:record` dans `tests/fixtures/ingestion/`
+(`FIXTURE_SOURCE = "recorded"`, `tests/support/llm-fixtures.ts`) :
+`legible`, `illegible`, `not-a-course`, `namer`, avec leurs photos dans
+`photos/`. **Les photos sont des images générées** (PIL, police Arial)
+et non des photos de téléphone : une page de cahier « Le verbe »
+(1500×2000, en-tête de page, parties numérotées, listes à « – » et
+« • », encadré), sa version floue (1496×2000, flou gaussien de rayon 12 :
+le modèle la lisait encore à 6 et 9) et le dessin d'une voiture jouet
+(1492×2000). Le Markdown enregistré respecte la forme imposée (un seul
+`#`, en-tête en texte simple, listes `- `), vérifié par `--dry-run
+--show` avant l'enregistrement. L'évaluation du prompt sur de vraies
+photos de téléphone reste à faire (dette de M3, `docs/jalons.md`).
 
-**Ces tests de contrat valident le câblage, pas le format du modèle** :
-rejeu d'une réponse brute à travers l'adaptateur réel, validation Zod,
-chemin du retry unique. Ils ne prouvent rien de ce que le modèle répond
-vraiment. Ils seront **rebranchés sur les vraies fixtures**
-(`FIXTURE_SOURCE = "recorded"`, fichiers de `tests/fixtures/ingestion/`)
-avant que le critère A2 puisse être coché ; M2 ne peut pas être clos sur
-des fixtures synthétiques (`docs/jalons.md`).
+Deux exceptions, déclarées dans les fichiers eux-mêmes :
+
+- `schema-violation.json` est **dégradée volontairement** (`degradedFrom:
+  "legible.json"`) : l'enveloppe enregistrée du cas lisible, dont
+  l'entrée d'outil est remplacée par des réponses hors schéma. Une
+  violation de schéma ne s'enregistre pas à la demande ; c'est la seule
+  fixture enregistrée altérée à la main, pour le chemin du retry unique.
+- `photos/legible.2.jpg` et `photos/legible.3.jpg` sont des pages
+  supplémentaires générées, de la taille de `legible.jpg`, **jamais
+  envoyées au modèle** : elles servent aux scénarios à plusieurs pages,
+  où l'adaptateur fixture leur rend la réponse du cas `legible`.
+
+Les réponses synthétiques d'origine restent dans
+`tests/fixtures/ingestion/synthetic/`, marquées `"synthetic": true` ;
+seuls les tests de l'adaptateur fixture lui-même les utilisent encore.
 
 Les adaptateurs réels ont aussi des tests unitaires contre des réponses
 minimales écrites dans le test (forme de la requête, retry unique) : ce

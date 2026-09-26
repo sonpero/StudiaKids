@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 // real recordings exist (docs/jalons.md, M2: blocking for A2 and for
 // closing M2); switching to recorded fixtures is this one line plus the
 // file names, never a change to the tests' assertions' intent.
-export const FIXTURE_SOURCE: "synthetic" | "recorded" = "synthetic";
+export const FIXTURE_SOURCE: "synthetic" | "recorded" = "recorded";
 
 type Fixture = { synthetic?: boolean; exchanges: { status: number; body: unknown }[] };
 

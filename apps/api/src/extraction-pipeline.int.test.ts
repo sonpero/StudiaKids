@@ -11,7 +11,7 @@ import { openDatabase, type Db } from "./db/connection.js";
 import { runMigrations } from "./db/migrate.js";
 
 const workerDir = fileURLToPath(new URL("../../worker", import.meta.url));
-const photosDir = fileURLToPath(new URL("../../../tests/fixtures/ingestion/synthetic/photos", import.meta.url));
+const photosDir = fileURLToPath(new URL("../../../tests/fixtures/ingestion/photos", import.meta.url));
 const BOUNDARY = "----studiakids-pipeline-test";
 
 function extractCookie(setCookieHeader: string | string[] | undefined): string {
@@ -44,7 +44,7 @@ async function waitFor<T>(read: () => Promise<T>, done: (value: T) => boolean, t
 // Acceptance (docs/jalons.md, M2): upload through the API, the real worker
 // process (apps/worker, LLM_ADAPTER=fixture) handles the job, the status
 // is visible through the API. Both share one volume, as on Railway.
-describe("extraction pipeline: API, real worker, synthetic fixtures", () => {
+describe("extraction pipeline: API, real worker, recorded fixtures", () => {
   let volume: string;
   let db: Db;
   let app: ReturnType<typeof buildApp>;

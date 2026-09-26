@@ -1,9 +1,9 @@
 import { ClaudeCourseNamer, ClaudePhotoExtractor, createLanguageModel, FixtureCourseNamer, FixturePhotoExtractor, type CourseNamer, type PhotoExtractor } from "@studiakids/core";
 import { fileURLToPath } from "node:url";
 
-// Synthetic until real fixtures are recorded (docs/jalons.md, M2), same
-// switch as FIXTURE_SOURCE in tests/support/llm-fixtures.ts.
-const FIXTURES_DIR = fileURLToPath(new URL("../../../tests/fixtures/ingestion/synthetic", import.meta.url));
+// The recorded fixtures (pnpm fixtures:record), same switch as
+// FIXTURE_SOURCE in tests/support/llm-fixtures.ts.
+const FIXTURES_DIR = fileURLToPath(new URL("../../../tests/fixtures/ingestion", import.meta.url));
 
 export interface ModelAdapters {
   extractor: PhotoExtractor;

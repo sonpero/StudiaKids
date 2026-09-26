@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import { expect, photo, test } from "./support/child.js";
 
@@ -29,8 +31,13 @@ test("a blurred photo: the sorry mascot says so, never the model's reason, and t
 
   await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "sorry", { timeout: 20_000 });
   await expect(page.getByText(/un peu floue|bien lire/)).toBeVisible();
-  // The synthetic fixture's reason, which must never be displayed.
-  await expect(page.getByText("La photo est trop floue pour lire le texte.")).toHaveCount(0);
+  // The model's own reason, as recorded in the fixture: never displayed.
+  const recorded = JSON.parse(readFileSync(fileURLToPath(new URL("../tests/fixtures/ingestion/illegible.json", import.meta.url)), "utf8")) as {
+    exchanges: { body: { content: { input: { reason: string } }[] } }[];
+  };
+  const reason = recorded.exchanges[0]!.body.content[0]!.input.reason;
+  expect(reason.length).toBeGreaterThan(0);
+  await expect(page.getByText(reason)).toHaveCount(0);
   await retakeLeavesNoCourse(page);
 });
 

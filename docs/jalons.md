@@ -199,16 +199,14 @@ boutons, puis le cours apparaît dans la liste "Mes cours".
       nouvelle tentative, sans cours créé entre-temps ; le bouton "Une
       autre page" disparaît à la cinquième page
 
-**Bloquant pour la clôture — fixtures réelles.** Les commits 6 à 11
-avancent sur des réponses modèle **synthétiques**, identifiées comme
-telles (`docs/modules/ingestion.md`) ; les scénarios Playwright
-(commit 10) s'écrivent et passent sur ces fixtures synthétiques (décidé
-le 2026-09-26) et seront rejoués sur les vraies. Tant que les vraies
-fixtures n'ont pas été enregistrées par `pnpm fixtures:record` sur de
-vraies photos :
-- le critère **A2** (contrat) reste bloqué : il ne peut être coché que sur
-  des réponses enregistrées ;
-- **M2 ne peut pas être clos**, quel que soit l'état des autres critères.
+**Fixtures réelles — levé le 2026-09-26.** Les commits 6 à 11 ont
+avancé sur des réponses modèle synthétiques ; les réponses réelles sont
+depuis enregistrées par `pnpm fixtures:record`, **sur des images
+générées** (page de cahier, sa version floue, un dessin sans leçon — voir
+`docs/modules/ingestion.md`, "Fixtures enregistrées"), et
+`FIXTURE_SOURCE = "recorded"` : tests de contrat, worker et Playwright
+tournent sur elles. L'évaluation sur de vraies photos de téléphone est
+reportée en dette de M3.
 
 **Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons
 provisoires** dérivés des tracés de `idle`
@@ -242,6 +240,11 @@ nombre de jeux prêts sur les cartes de l'accueil (M3), barre d'onglets
   voix haute (Web Speech API), activé par défaut pour les niveaux CP et CE1
 - Déclenchement manuel de la génération depuis le lecteur ou l'accueil,
   jamais automatique après l'extraction
+
+**Dette héritée de M2** — un jeu d'évaluation du prompt d'extraction
+sur de **vraies photos de téléphone** (éclairage, angle, écriture
+manuscrite, pages de CP à 6e) : les fixtures de M2 ont été enregistrées
+sur des images générées. Manuel et payant (`pnpm eval`), jamais en CI.
 
 **Démo** — Depuis l'accueil, ouvrir un cours dans le lecteur, lire le texte
 (avec ou sans la voix), lancer la génération des exercices, voir sa
