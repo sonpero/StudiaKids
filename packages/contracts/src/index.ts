@@ -56,3 +56,18 @@ export {
   readerTextSchema,
   type ReaderTextDto,
 } from "./games.js";
+export {
+  GIVEN_ANSWER_SCHEMAS,
+  answerRequestSchema,
+  answerResponseSchema,
+  comparisonResultSchema,
+  exerciseParamsSchema,
+  playErrorSchema,
+  playableExerciseSchema,
+  playableListResponseSchema,
+  type AnswerRequest,
+  type ComparisonResultDto,
+  type GivenAnswer,
+  type PlayError,
+  type PlayableExerciseDto,
+} from "./play.js";
