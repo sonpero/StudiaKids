@@ -92,6 +92,37 @@ comparateur générique :
   plus direct de "jamais une égalité globale" : deux éléments adjacents
   inversés ne doivent pas annuler tout le reste de la séquence correcte.
 
+**Précisé à l'ouverture de M4** (là où la règle ci-dessus se taisait ;
+choix marqués *à valider*) :
+
+- `delayed_copy` et `cloze` : l'apostrophe typographique `’` vaut `'`
+  (le clavier d'un téléphone la substitue ; ce n'est pas de
+  l'orthographe) — *à valider*. `delayed_copy` reste exact pour tout le
+  reste, **casse comprise**.
+- `cloze` : une ponctuation finale saisie (« verbe. ») est ignorée —
+  *à valider*.
+- `mental_math` : espaces ignorés (« 1 000 »), virgule ou point décimal
+  acceptés — *à valider*.
+- `mcq`, `true_false`, `matching`, `reordering` se jouent **au tap**
+  (toucher un élément, puis sa cible ou sa place ; jamais de
+  glisser-déposer) : l'enfant choisit parmi des chaînes fournies,
+  comparées à l'identique. Unités : une par paire attendue (`matching`,
+  identifiée par son rang ; une paire absente ou fausse est incorrecte),
+  une par position (`reordering`), une par trou (`cloze`), une seule
+  sinon (identifiant `"0"`).
+
+### Vue jouable (décidée à l'ouverture de M4)
+
+Le navigateur ne reçoit **jamais la réponse** d'un exercice à jouer :
+`playableView(exercise, seed)`, fonction pure de `domain/`, renvoie ce que
+l'écran affiche — QCM sans `answer`, texte à trous avec le nombre de trous
+mais sans `blanks`, vrai/faux sans `answer`, calcul sans `answer`,
+appariement en deux colonnes mélangées, remise en ordre mélangée, dictée
+flash avec son mot (il doit être montré) et `displayDurationMs`. Le
+mélange est **déterministe** (graine : l'id de l'exercice) et **jamais
+l'ordre correct** (ni la colonne de droite dans l'ordre des paires). La
+correction se fait uniquement côté serveur.
+
 ### Copie différée, spécifications complètes (déjà décidées)
 
 **Nom affiché à l'enfant : "Dictée flash"**, vu dans `docs/design/flash.png`
@@ -125,6 +156,16 @@ flash) :
    l'étoile est retenue. La mascotte ne dit jamais que relire est une
    faute : c'est une option normale, juste sans étoile.
 
+**« Une relecture n'écrit jamais d'événement de réussite »** (critère de
+M4), lu ainsi à l'ouverture (*à valider*) : un **événement de réussite**
+est une tentative à la fois correcte **et** éligible à une étoile. Après
+une relecture, aucune tentative ne l'est — `correct` reste fidèle (retour
+immédiat, et `progress` ignore déjà les non-éligibles). Règle pure en
+`domain/` (`attemptsFor`), sous mutation testing.
+
+Aucun compte à rebours visible (règle 7 de `CLAUDE.md`) : le flash dure
+`displayDurationMs`, sans chiffre ni barre qui décompte.
+
 ## Ports
 
 Aucun port externe : ce module est entièrement pur en `domain/`. La seule
@@ -137,6 +178,13 @@ interface AttemptRepository {
   // route ne doit jamais laisser une soumission à moitié enregistrée.
   record(userId: string, attempts: NewAttempt[], now: Date): Promise<void>;
   listByUser(userId: string, since?: string): Promise<Attempt[]>;   // pour progress
+}
+
+// Les exercices viennent d'exercise-generator, par son index : jamais une
+// lecture directe de ses tables.
+interface ExerciseSource {
+  findExercise(userId: string, exerciseId: string): Promise<Exercise | null>;
+  listCourseExercises(userId: string, courseId: string): Promise<Result<{ exercise: Exercise; itemTitle: string }[], "not-found">>;
 }
 ```
 
@@ -154,7 +202,11 @@ interface AttemptRepository {
   5. Renvoie `result` — le retour immédiat (mascotte `joy` ou pose
      d'encouragement) est décidé côté écran à partir de ce résultat, pas
      recalculé
-- `listExercises(userId, itemId)` — pour l'écran "Jouer"
+- `listPlayableExercises(userId, courseId, grade)` — pour l'écran
+  "Jouer" : la vue jouable de chaque exercice du cours (ordre des items,
+  puis des types), le titre de son item, et `nextExerciseId`
+  (`nextExercise` ci-dessous) ; `not-found` pour un cours d'un autre
+  compte
 - `nextExercise(userId, courseId, now)` — **décidé, valeur de départ
   simple, révisable après les premiers essais** : le premier exercice, dans
   l'ordre des items puis des types au sein d'un item, qui n'a encore aucune
@@ -186,18 +238,24 @@ table `attempts` grandit.
 ```sql
 CREATE TABLE attempts (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   exercise_id TEXT NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   unit_id TEXT NOT NULL,             -- '0' pour un exercice à réponse unique
   correct INTEGER NOT NULL,
   star_eligible INTEGER NOT NULL DEFAULT 1,
-  given_answer_json TEXT NOT NULL,  -- utile pour un historique/débogage, jamais relu pour la correction
   attempted_at TEXT NOT NULL
 );
 CREATE INDEX idx_attempts_user ON attempts(user_id, attempted_at);
 CREATE INDEX idx_attempts_exercise ON attempts(exercise_id);
 ```
+
+**Minimisation (décidé à l'ouverture de M4, `docs/securite.md`)** : la
+réponse saisie par l'enfant n'est **jamais** stockée — ni texte, ni choix ;
+une tentative garde le résultat, le type de jeu, l'exercice, l'unité,
+l'éligibilité et l'horodatage. La colonne `given_answer_json` d'abord
+prévue est retirée. `user_id` en `ON DELETE CASCADE` : `accounts:delete`
+efface les tentatives (testé).
 
 **Append-only.** Aucune ligne n'est jamais modifiée ou supprimée après
 écriture (sauf cascade sur suppression de l'exercice parent). C'est le
@@ -208,7 +266,11 @@ que les `reviews` de StudIA, jamais un compteur incrémenté directement.
 
 | Route | Rôle |
 |---|---|
-| `POST /api/exercises/:id/answer` | `{ givenAnswer, reread? }` → `{ result }` |
+| `GET /api/courses/:id/exercises` | `{ exercises: PlayableExercise[], nextExerciseId }` — vue jouable, jamais de réponse |
+| `POST /api/exercises/:id/answer` | `{ givenAnswer, reread? }` → `{ result }` ; `givenAnswer` validé par le schéma du type de l'exercice (`400 invalid_answer` sinon) |
+
+404 uniforme pour un cours ou un exercice d'un autre compte
+(`docs/securite.md`).
 
 `GET /api/items/:id/exercises` est déjà exposée par
 `docs/modules/exercise-generator.md` ; ce module ne la duplique pas.

@@ -268,6 +268,34 @@ ton cours… » (chargement du lecteur), « Fermer » (photo agrandie), « 2 sur
 prêts » / « 1 jeu prêt » (carte). La pose `joy` est dessinée depuis M3,
 recopiée de `docs/design/mascotte-etats.html`.
 
+### Jouer (M4)
+
+Décidé à l'ouverture de M4 (textes *à valider*, sauf « Dictée flash »,
+déjà décidé) :
+
+- **Barre d'onglets** en bas : **Accueil**, **Lire**, **Jouer** (Tuteur
+  en M6), avec icône et libellé, pour le cours en cours. Une carte
+  « Mes cours » qui a des jeux prêts ouvre **Jouer** ; sinon **Lire**.
+- **Écran Jouer** : la liste des jeux du cours, chacun avec son nom de
+  jeu et le titre de son item ; le prochain conseillé porte « À toi de
+  jouer ! ». Noms : « Quiz » (QCM), « Vrai ou faux », « Relie les
+  paires », « Remets dans l'ordre », « Texte à trous », « Calcul flash »,
+  « Dictée flash ». Chargement « Je cherche tes jeux… » ; vide « Pas
+  encore de jeux pour ce cours. » avec « Créer mes jeux » ; erreur
+  `glitch` + « Réessaie ».
+- **Un jeu** : consigne courte, réponse au **tap** (appariement : toucher
+  un élément de gauche puis sa réponse à droite ; remise en ordre :
+  toucher les éléments dans l'ordre, un nouveau toucher retire), bouton
+  « Valider ». Retour immédiat par la mascotte (`present`, signal
+  `game-answer`) : bonne réponse `joy`, sinon `waiting` et une phrase
+  calme — jamais `sorry` ni `glitch`. Puis « Jeu suivant » et, après une
+  réponse incomplète ou fausse, « Encore une fois ».
+- **Dictée flash** : le mot seul sur fond `--color-violet-nuit`, mascotte
+  `watching`, pendant `displayDurationMs` — **sans compte à rebours
+  visible** ; puis le champ « Écris le mot » (mascotte `waiting`,
+  `autocorrect`/`autocapitalize`/`autocomplete`/`spellcheck` désactivés),
+  « Je relis le mot » (un second flash, sans étoile) et « Valider ».
+
 ---
 
 ## Travail asynchrone

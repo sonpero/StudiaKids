@@ -162,13 +162,12 @@ ne touche jamais aux items déjà présents) — voir
 ```sql
 CREATE TABLE attempts (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   exercise_id TEXT NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   unit_id TEXT NOT NULL,             -- '0' pour un exercice à réponse unique
   correct INTEGER NOT NULL,
   star_eligible INTEGER NOT NULL DEFAULT 1,
-  given_answer_json TEXT NOT NULL,
   attempted_at TEXT NOT NULL
 );
 CREATE INDEX idx_attempts_user ON attempts(user_id, attempted_at);

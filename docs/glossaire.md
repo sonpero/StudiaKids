@@ -203,6 +203,12 @@ assumées" plus haut.
 | unité (d'une comparaison) | `UnitResult` | Une unité par sous-réponse pour un exercice composite. |
 | éligible à une étoile | `starEligible` | `false` uniquement pour une tentative avec relecture en copie différée. |
 | relire / relecture | `reread` (option `{ reread?: boolean }`) | |
+| événement de réussite | tentative `correct && starEligible` | Ce qu'une relecture n'écrit jamais (critère de M4). |
+| vue jouable | `PlayableExercise`, `playableView` | Ce que l'écran reçoit pour jouer : jamais la réponse. |
+| source d'exercices | `ExerciseSource` | Port de `game-engine` vers `exercise-generator`. |
+| prochain exercice | `nextExercise`, `nextExerciseId` | Le premier exercice sans réussite éligible. |
+| barre d'onglets | `TabBar` | Accueil, Lire, Jouer (Tuteur en M6). |
+| réponse donnée | `givenAnswer` | Validée puis comparée, **jamais stockée**. |
 
 ## Poses de la mascotte (`mascot`)
 

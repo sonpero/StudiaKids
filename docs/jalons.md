@@ -420,7 +420,16 @@ M4), étoiles et progression (M5), tuteur (M6).
 
 ---
 
-## M4 — Moteur de jeu
+## M4 — Moteur de jeu (ouvert)
+
+Ouvert le 2026-09-26, en session autonome (plan au journal de session,
+décisions d'Alexandre) : aucune nouvelle dépendance, aucun appel au
+modèle — M4 joue les exercices déjà générés ; appariement et remise en
+ordre **au tap** (toucher un élément, puis sa cible ou sa place), jamais au
+glisser-déposer ; une tentative stocke le résultat, le type de jeu,
+l'exercice et l'horodatage, **jamais la réponse saisie** ; le navigateur
+ne reçoit jamais la réponse d'un exercice à jouer (vue jouable). Détail et
+choix *à valider* dans `docs/modules/game-engine.md`.
 
 **Périmètre**
 - Les sept types de jeu : copie différée, QCM, appariement, remise en
@@ -434,8 +443,11 @@ M4), étoiles et progression (M5), tuteur (M6).
   autocapitalize, autocomplete et spellcheck désactivés, une relecture du
   mot possible sans gain d'étoile
 - Chaque réponse est stockée comme un événement de tentative (correct,
-  type de jeu, horodatage), scopé au compte — la dérivation en étoiles
-  visibles est hors périmètre de ce jalon (M5)
+  type de jeu, exercice, horodatage), scopé au compte, jamais la réponse
+  saisie — la dérivation en étoiles visibles est hors périmètre de ce
+  jalon (M5)
+- Barre d'onglets Accueil / Lire / Jouer (`docs/ui.md`) ; une carte
+  « Mes cours » qui a des jeux prêts ouvre Jouer
 
 **Démo** — L'enfant choisit un cours, joue un QCM, obtient un retour
 immédiat, enchaîne un vrai/faux et un appariement, puis fait une copie
