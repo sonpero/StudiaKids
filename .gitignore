@@ -11,6 +11,9 @@ dist/
 *.db-wal
 *.db-journal
 
+# Local data (pnpm dev, CLI): the database and a child's photos, never committed
+/data/
+
 # Playwright
 /playwright-report/
 /test-results/

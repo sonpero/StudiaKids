@@ -257,8 +257,10 @@ StudIA : toute modification passe par une validation explicite (`CLAUDE.md`).
 
 ## Fichiers hors base de données
 
-Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH`, repli sur `./data` en
-local. Un seul volume, deux sous-dossiers créés au démarrage s'ils
+Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH`, repli sur le dossier
+`data/` **à la racine du dépôt** en local (résolu depuis le code, jamais
+depuis le dossier courant : sous `pnpm dev`, l'API, le worker et la CLI
+partagent ainsi la même base et les mêmes photos ; ignoré par git). Un seul volume, deux sous-dossiers créés au démarrage s'ils
 n'existent pas (`docs/jalons.md`, M0) :
 
 ```
