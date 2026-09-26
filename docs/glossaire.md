@@ -204,6 +204,7 @@ assumées" plus haut.
 | éligible à une étoile | `starEligible` | `false` uniquement pour une tentative avec relecture en copie différée. |
 | relire / relecture | `reread` (option `{ reread?: boolean }`) | |
 | événement de réussite | tentative `correct && starEligible` | Ce qu'une relecture n'écrit jamais (critère de M4). |
+| tentative aidée | `starEligible: false` | Tentative après relecture en dictée flash : `correct` fidèle, jamais éligible aux étoiles (validé à la clôture de M4). |
 | vue jouable | `PlayableExercise`, `playableView` | Ce que l'écran reçoit pour jouer : jamais la réponse. |
 | source d'exercices | `ExerciseSource` | Port de `game-engine` vers `exercise-generator`. |
 | prochain exercice | `nextExercise`, `nextExerciseId` | Le premier exercice sans réussite éligible. |

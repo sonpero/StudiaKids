@@ -89,12 +89,9 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**M4 — Moteur de jeu — est ouvert** (voir `docs/jalons.md`), le
-26/09/2026. M0 à M3 sont acceptés (la démo de M3 est reportée à celle de
-M4). Modules touchés : `game-engine` (spec `docs/modules/game-engine.md`,
-créé dans ce jalon), `exercise-generator` (lecture d'un exercice par son
-id pour `game-engine`), `mascot` (pose `watching`). Aucun appel au modèle
-dans ce jalon. `jobs/` et `shared/` restent frozen.
+**Aucun jalon n'est ouvert.** M0 à M4 sont acceptés (M3 et M4 le
+26/09/2026, validés par une même démo sur téléphone). M5 n'est pas
+ouvert. `jobs/` et `shared/` restent frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.

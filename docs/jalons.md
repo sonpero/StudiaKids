@@ -378,9 +378,10 @@ progression, revenir plus tard et constater qu'elle est terminée.
       création, panne et erreur du lecteur), sur fixtures enregistrées,
       desktop et mobile (Pixel 7 émulé), en CI
 
-**Démo — non faite, reportée** (décidé le 2026-09-26) : **validée par la
-démo de M4**, où les exercices sont vus en jouant. Case non cochée à ce
-titre.
+**Démo — validée le 26/09/2026 sur téléphone**, avec celle de M4 (elle
+vaut pour les deux jalons : les exercices générés sont vus en jouant).
+Le détail des cours et jeux testés, et d'éventuels exercices douteux, n'a
+pas été transmis.
 
 **Évaluation.** `pnpm eval` sur 11 pages générées (CP → 6e, six matières,
 dégradations de photo) : consignes v4 retenues — ancrage 95,5 %,
@@ -420,7 +421,7 @@ M4), étoiles et progression (M5), tuteur (M6).
 
 ---
 
-## M4 — Moteur de jeu (ouvert)
+## M4 — Moteur de jeu (accepté)
 
 Ouvert le 2026-09-26, en session autonome (plan au journal de session,
 décisions d'Alexandre) : aucune nouvelle dépendance, aucun appel au
@@ -455,19 +456,76 @@ différée complète : timer, écran de flash violet, saisie, relecture
 optionnelle, validation.
 
 **Acceptation**
-- [ ] Unitaire : un test par type de jeu avec un cas correct et un cas
+- [x] Unitaire : un test par type de jeu avec un cas correct et un cas
       incorrect ; au moins un test prouve qu'une différence non pertinente
       pour le type (ex. ordre des paires dans un appariement) n'affecte pas
-      le résultat
-- [ ] Unitaire : une relecture du mot en copie différée n'écrit jamais
-      d'événement de réussite
-- [ ] Intégration : chaque réponse écrit un événement de tentative scopé au
-      compte courant ; aucune écriture ne modifie l'exercice original
-- [ ] Playwright : un scénario par type de jeu (sept au total), plus un
-      scénario dédié au parcours de copie différée complet
-- [ ] Accessibilité : les champs de saisie de copie différée ont bien
+      le résultat — `game-engine/domain/compare.unit.test.ts` : les sept
+      types, chacun correct, incorrect et avec au moins une différence non
+      pertinente (ordre des paires, place de l'option, voisins inversés,
+      casse/accents/ponctuation en texte à trous, espaces et virgule en
+      calcul, apostrophe) ; `checkAnswer` refuse une réponse d'une autre
+      forme — mutation testé (53 mutants tués)
+- [x] Unitaire : une relecture du mot en copie différée n'écrit jamais
+      d'événement de réussite — `game-engine/domain/play.unit.test.ts`
+      (« after a reread: still faithful, never star-eligible — so never a
+      success event »), mutation testé ; la tentative correcte après
+      relecture est enregistrée **correcte, marquée « aidée »**
+      (`star_eligible = false`, lecture validée à la clôture) ; aussi
+      `application/play.unit.test.ts`, `routes/play.int.test.ts`,
+      `e2e/games.spec.ts`
+- [x] Intégration : chaque réponse écrit un événement de tentative scopé au
+      compte courant ; aucune écriture ne modifie l'exercice original —
+      `apps/api/src/routes/play.int.test.ts` (« compares, writes one
+      attempt per unit, never the answer nor a change to the exercise »,
+      404 d'un autre compte sans écriture) ;
+      `game-engine/infra/sqlite-attempt-repository.int.test.ts` (quatre
+      paires = quatre lignes, lecture par compte, refus de l'exercice d'un
+      autre compte, aucune colonne de réponse, cascades ; 9 mutations
+      tuées) ; `application/play.unit.test.ts` (« never modifies the
+      exercise »)
+- [x] Playwright : un scénario par type de jeu (sept au total), plus un
+      scénario dédié au parcours de copie différée complet —
+      `e2e/games.spec.ts` (Quiz, Vrai ou faux, Relie les paires, Remets
+      dans l'ordre, Texte à trous, Calcul flash, Dictée flash, **Dictée
+      flash complète** : flash violet sans décompte, relecture sans étoile,
+      validation ; plus la bonne réponse après une erreur et la barre
+      d'onglets), sur fixtures enregistrées, desktop et mobile (Pixel 7
+      émulé), en CI
+- [x] Accessibilité : les champs de saisie de copie différée ont bien
       `autocorrect`, `autocapitalize`, `autocomplete` et `spellcheck`
-      désactivés, vérifié sur l'attribut, pas seulement observé au clavier
+      désactivés, vérifié sur l'attribut, pas seulement observé au clavier —
+      `e2e/games.spec.ts` (« Dictée flash, complete… », quatre
+      `toHaveAttribute`) ; `apps/web/src/screens/GameScreen.typed.unit.test.tsx`
+
+**Démo — validée le 26/09/2026 sur téléphone**, pour M3 et M4 ensemble.
+Le détail des cours et jeux testés, et d'éventuels exercices douteux, n'a
+pas été transmis.
+
+**Décidé à la clôture** : tolérances des comparateurs validées ;
+dictée flash sensible à la casse (conforme à la spec) ; une carte qui a
+des jeux prêts ouvre Jouer ; **après une réponse fausse, la bonne réponse
+s'affiche brièvement, portée par la mascotte** (ajouté avant la clôture,
+tests d'abord).
+
+**Dettes reportées, avec leur jalon cible**
+- **Étoiles au rejeu d'un exercice réussi** — **tranché à l'ouverture de
+  M5**. Piste d'Alexandre : une étoile au premier succès, puis une seule
+  autre si le rejeu a lieu un autre jour
+- **Rotation de `nextExercise`** (l'enfant retombe sur l'item raté) —
+  **M5**, après les premiers essais
+- **Séances de dictée flash** (« Mot 3 sur 8 », `docs/design/flash.png`)
+  — **M5** ou après les premiers essais
+- **Textes et noms de jeux « à valider »** de `docs/ui.md` ("Jouer (M4)")
+  et durée d'affichage de la bonne réponse (4 s) — **ouverture de M5**
+- **Animations de la mascotte** (joie, respiration, `prefers-reduced-motion`)
+  — **M5** ; poses `sorry` / `glitch` et pastels de matière toujours
+  provisoires — validation à l'œil, **M5**
+- **Onglet Tuteur** — **M6**
+- **Fixture enregistrée de calcul mental** (le scénario écrit l'exercice
+  en base) — prochaine session d'enregistrement
+- Dettes de M3 inchangées : section Exercices au découpage, consigne
+  « entre 8 et 40 items » vs seuil 6, juge v1 de l'évaluation, jeu
+  d'évaluation sur vraies photos, worker sans clé API
 
 **Hors périmètre** — étoiles et séries visibles à l'écran, danse de la joie
 de la mascotte sur un écran dédié (une réaction immédiate suffit ici),

@@ -93,16 +93,15 @@ comparateur générique :
   inversés ne doivent pas annuler tout le reste de la séquence correcte.
 
 **Précisé à l'ouverture de M4** (là où la règle ci-dessus se taisait ;
-choix marqués *à valider*) :
+**validé à la clôture de M4**) :
 
 - `delayed_copy` et `cloze` : l'apostrophe typographique `’` vaut `'`
   (le clavier d'un téléphone la substitue ; ce n'est pas de
-  l'orthographe) — *à valider*. `delayed_copy` reste exact pour tout le
-  reste, **casse comprise**.
-- `cloze` : une ponctuation finale saisie (« verbe. ») est ignorée —
-  *à valider*.
+  l'orthographe). `delayed_copy` reste exact pour tout le reste, **casse
+  comprise** (confirmé à la clôture de M4, conforme à la spec).
+- `cloze` : une ponctuation finale saisie (« verbe. ») est ignorée.
 - `mental_math` : espaces ignorés (« 1 000 »), virgule ou point décimal
-  acceptés — *à valider*.
+  acceptés ; notation scientifique et « +10 » refusées.
 - `mcq`, `true_false`, `matching`, `reordering` se jouent **au tap**
   (toucher un élément, puis sa cible ou sa place ; jamais de
   glisser-déposer) : l'enfant choisit parmi des chaînes fournies,
@@ -157,11 +156,13 @@ flash) :
    faute : c'est une option normale, juste sans étoile.
 
 **« Une relecture n'écrit jamais d'événement de réussite »** (critère de
-M4), lu ainsi à l'ouverture (*à valider*) : un **événement de réussite**
-est une tentative à la fois correcte **et** éligible à une étoile. Après
-une relecture, aucune tentative ne l'est — `correct` reste fidèle (retour
-immédiat, et `progress` ignore déjà les non-éligibles). Règle pure en
-`domain/` (`attemptsFor`), sous mutation testing.
+M4), lu ainsi à l'ouverture et **validé à la clôture** : un **événement
+de réussite** est une tentative à la fois correcte **et** éligible à une
+étoile. Une tentative correcte après relecture est enregistrée comme
+correcte avec la marque **« aidée »** — `star_eligible = false`, la seule
+façon d'être non éligible — et n'est donc jamais éligible aux étoiles
+(`progress` ignore déjà les non-éligibles). Règle pure en `domain/`
+(`attemptsFor`), sous mutation testing.
 
 Aucun compte à rebours visible (règle 7 de `CLAUDE.md`) : le flash dure
 `displayDurationMs`, sans chiffre ni barre qui décompte.
@@ -326,10 +327,12 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
 
 - ~~Montrer la bonne réponse après une erreur~~ — **tranché** à la
   clôture de M4 : oui, brièvement, portée par la mascotte.
-- `delayed_copy` sensible à la casse (spec) alors que le défaut proposé
-  pour les tolérances non tranchées était « casse ignorée » : la spec a
-  été appliquée ; à confirmer.
+- ~~`delayed_copy` sensible à la casse~~ — **confirmé** à la clôture de
+  M4 : casse exigée, conforme à la spec.
 
+- **Étoiles au rejeu : tranché à l'ouverture de M5.** Piste d'Alexandre
+  (clôture de M4) : une étoile au premier succès, puis une seule autre si
+  le rejeu a lieu un autre jour.
 - Un exercice déjà réussi peut-il être rejoué **volontairement** (pas via
   `nextExercise`, mais si l'enfant revient dessus depuis une liste) pour
   gagner à nouveau une étoile ? Le brief ne l'interdit pas explicitement

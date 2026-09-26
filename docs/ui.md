@@ -275,7 +275,8 @@ déjà décidé) :
 
 - **Barre d'onglets** en bas : **Accueil**, **Lire**, **Jouer** (Tuteur
   en M6), avec icône et libellé, pour le cours en cours. Une carte
-  « Mes cours » qui a des jeux prêts ouvre **Jouer** ; sinon **Lire**.
+  « Mes cours » qui a des jeux prêts ouvre **Jouer** ; sinon **Lire**
+  (validé à la clôture de M4).
 - **Écran Jouer** : la liste des jeux du cours, chacun avec son nom de
   jeu et le titre de son item ; le prochain conseillé porte « À toi de
   jouer ! ». Noms : « Quiz » (QCM), « Vrai ou faux », « Relie les
