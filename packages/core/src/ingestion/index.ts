@@ -37,6 +37,8 @@ export { ClaudeCourseNamer } from "./infra/claude-course-namer.js";
 export { FixturePhotoExtractor, FixtureCourseNamer } from "./infra/fixture-adapters.js";
 export { SqliteCourseRepository, type IngestionDb } from "./infra/sqlite-course-repository.js";
 export { LocalFileStore } from "./infra/local-file-store.js";
+// Reused by exercise-generator, which already depends on ingestion.
+export { generateWithRetry } from "./infra/generate-with-retry.js";
 // Exported alongside the other modules' tables (drizzle-kit itself reads
 // infra/schema.ts by glob).
 export { coursesTable, pagesTable, extractionsTable } from "./infra/schema.js";
