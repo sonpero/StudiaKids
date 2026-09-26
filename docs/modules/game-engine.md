@@ -275,6 +275,14 @@ que les `reviews` de StudIA, jamais un compteur incrémenté directement.
 `GET /api/items/:id/exercises` est déjà exposée par
 `docs/modules/exercise-generator.md` ; ce module ne la duplique pas.
 
+## Écran (M4)
+
+Voir `docs/ui.md`, "Jouer (M4)". La liste vient de
+`GET /api/courses/:id/exercises` ; « Jeu suivant » prend le suivant dans
+cette liste (l'ordre du cours), `nextExerciseId` ne sert qu'à marquer
+« À toi de jouer ! ». Le retour immédiat ne montre pas la bonne réponse
+(non prévu par la spec — question ouverte).
+
 ## Hors périmètre
 
 Génération d'exercices. Calcul des étoiles, des séries et des bonus
@@ -309,6 +317,12 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
   plus le parcours complet de copie différée avec relecture
 
 ## Questions ouvertes
+
+- Après une réponse fausse, montrer la bonne réponse (pédagogiquement
+  utile) ? Le contrat actuel ne renvoie que les unités correctes ou non.
+- `delayed_copy` sensible à la casse (spec) alors que le défaut proposé
+  pour les tolérances non tranchées était « casse ignorée » : la spec a
+  été appliquée ; à confirmer.
 
 - Un exercice déjà réussi peut-il être rejoué **volontairement** (pas via
   `nextExercise`, mais si l'enfant revient dessus depuis une liste) pour

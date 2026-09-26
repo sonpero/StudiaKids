@@ -296,6 +296,17 @@ déjà décidé) :
   `autocorrect`/`autocapitalize`/`autocomplete`/`spellcheck` désactivés),
   « Je relis le mot » (un second flash, sans étoile) et « Valider ».
 
+Précisé à l'implémentation (M4, textes *à valider*) : consignes « Touche
+un élément, puis sa réponse. » (la paire s'affiche sous l'élément :
+« Hier → Léa chantait ») et « Touche les éléments dans le bon ordre. »
+(liste « Ton ordre », numérotée) ; champs « Trou 1 », « Ta réponse »,
+« Écris le mot » ; boutons « Valider », « Jeu suivant » (le suivant de la
+liste, retour au premier après le dernier), « Encore une fois » (après une
+réponse fausse ou incomplète), « Tous les jeux ». Après une relecture, la
+saisie en cours est gardée. Une seule mascotte à l'écran : celle du
+retour remplace celle de la saisie. Le lecteur masque son propre bouton
+« Accueil » sous la barre d'onglets.
+
 ---
 
 ## Travail asynchrone
