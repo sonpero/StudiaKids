@@ -456,11 +456,11 @@ modification de prompt) mais son contenu golden-set est propre à StudIA.
    Web App Manifest et des icônes pour un lancement plein écran depuis
    l'écran d'accueil, mais explicitement pas de service worker ni de mode
    hors ligne (`CLAUDE.md`, `docs/ui.md`).
-2. StudIA ne lance pas Playwright en CI (manuel uniquement). Le brief insiste
-   sur le TDD avec Playwright pour les parcours bout en bout : faut-il
-   l'intégrer à la CI de StudiaKids (avec le coût de temps que cela
-   implique), ou rester sur le même compromis que StudIA ? **Toujours
-   ouvert.**
+2. StudIA ne lance pas Playwright en CI (manuel uniquement). **Décidé
+   (2026-09-26) : StudiaKids le lance en CI**, dans un job `e2e` séparé
+   (`.github/workflows/ci.yml`), desktop et mobile émulé sur Chromium,
+   sur les fixtures enregistrées (`LLM_ADAPTER=fixture`, aucun appel au
+   modèle) ; le rapport d'un run en échec est gardé 7 jours.
 3. **Décidé** : un compte CLI égale un enfant unique, aucune notion de
    profil séparée. `userId` suffit à scoper toute la donnée applicative,
    exactement comme `user_id` dans StudIA (`docs/modules/auth.md`).
