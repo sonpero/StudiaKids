@@ -111,6 +111,11 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                       <span className="text-[14.5px] text-[var(--color-ink-soft)]">
                         {course.subject ? subjectLabel(course.subject) : ""} · {course.grade}
                       </span>
+                      {course.exerciseCount > 0 && (
+                        <span className="text-[14.5px] font-bold text-[var(--color-ink)]">
+                          {course.exerciseCount === 1 ? "1 jeu prêt" : `${String(course.exerciseCount)} jeux prêts`}
+                        </span>
+                      )}
                     </span>
                   </button>
                 </li>

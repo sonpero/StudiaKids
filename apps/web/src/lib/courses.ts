@@ -7,6 +7,7 @@ import {
   unconfirmedCourseResponseSchema,
   type CourseDto,
   type CourseError,
+  type CourseListItemDto,
   type ExtractionStatus,
 } from "@studiakids/contracts";
 import { HttpError } from "./http-error.js";
@@ -21,7 +22,7 @@ function expectOk(res: Response, what: string): Response {
   return res;
 }
 
-export async function listCourses(): Promise<CourseDto[]> {
+export async function listCourses(): Promise<CourseListItemDto[]> {
   const res = expectOk(await fetch("/api/courses"), "GET /api/courses");
   return courseListResponseSchema.parse(await res.json()).courses;
 }

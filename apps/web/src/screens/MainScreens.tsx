@@ -4,6 +4,7 @@ import { useCapture } from "../lib/use-capture.js";
 import { CaptureScreen } from "./CaptureScreen.js";
 import { CourseScreen } from "./CourseScreen.js";
 import { COURSES_QUERY_KEY, HomeScreen } from "./HomeScreen.js";
+import { GenerationPanel } from "./GenerationPanel.js";
 import { ReaderScreen } from "./ReaderScreen.js";
 
 export interface MainScreensProps {
@@ -49,7 +50,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
   }
 
   if (screen.name === "reader") {
-    return <ReaderScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} />;
+    return <ReaderScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} footer={<GenerationPanel courseId={screen.courseId} onPhoto={startCapture} />} />;
   }
 
   if (screen.name === "capture") {

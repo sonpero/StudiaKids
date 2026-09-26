@@ -72,14 +72,13 @@ test("reading aloud never starts by itself, starts on « Écouter » and stops o
   await expect(page.getByRole("button", { name: "Écouter" })).toBeVisible();
 });
 
-// fixme until M3 commit 13 « web: create the games » (seen failing: the cards cannot be opened yet).
-test.fixme("« Créer mes jeux »: the mascot prepares the games, then says they are ready; the home card counts them @mobile", async ({ page, child: _child }) => {
+test("« Créer mes jeux »: the mascot prepares the games, then says they are ready; the home card counts them @mobile", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible");
   await openCourse(page, /Le verbe/);
 
   await page.getByRole("button", { name: "Créer mes jeux" }).click();
 
-  await expect(page.getByText(/Je prépare tes jeux…|Tes jeux sont prêts !/)).toBeVisible();
+  await expect(page.getByText(/Je prépare tes jeux…|Tes jeux arrivent…|Tes jeux sont prêts !/)).toBeVisible();
   await expect(page.getByText("Tes jeux sont prêts !")).toBeVisible({ timeout: 30_000 });
   await expect(mascot(page)).toHaveAttribute("data-pose", "joy");
   await expect(page.getByRole("button", { name: "Créer mes jeux" })).toHaveCount(0);
@@ -87,8 +86,7 @@ test.fixme("« Créer mes jeux »: the mascot prepares the games, then says they
   await expect(page.getByRole("button", { name: /Le verbe/ })).toContainText(/\d+ jeux prêts/);
 });
 
-// fixme until M3 commit 13 « web: create the games » (seen failing: the cards cannot be opened yet).
-test.fixme("leaving while the games are being made: they keep coming, and the home card shows them later", async ({ page, child: _child }) => {
+test("leaving while the games are being made: they keep coming, and the home card shows them later", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible");
   await openCourse(page, /Le verbe/);
   await page.getByRole("button", { name: "Créer mes jeux" }).click();
@@ -100,23 +98,22 @@ test.fixme("leaving while the games are being made: they keep coming, and the ho
   }).toPass({ timeout: 30_000 });
 });
 
-// fixme until M3 commit 13 « web: create the games » (seen failing: the cards cannot be opened yet).
-test.fixme("a lesson too short: the mascot is sorry and proposes to take another photo", async ({ page, child: _child }) => {
+test("a lesson too short: the mascot is sorry and proposes to take another photo", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible-short");
-  await openCourse(page, /./);
+  // The fixture namer titles every course « Le verbe »; this child has only this one.
+  await openCourse(page, /Le verbe/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   await page.getByRole("button", { name: "Créer mes jeux" }).click();
 
   await expect(page.getByText(/pas assez à apprendre sur cette photo/)).toBeVisible({ timeout: 30_000 });
   await expect(mascot(page)).toHaveAttribute("data-pose", "sorry");
-  await expect(page.getByRole("button", { name: /photo/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Prendre une autre photo" })).toBeVisible();
 });
 
 // Decided at M2: a technical failure is simulated by page.route on the
 // status read, never by waiting out the jobs kernel's real backoff.
-// fixme until M3 commit 13 « web: create the games » (seen failing: the cards cannot be opened yet).
-test.fixme("a technical failure of the games shows the glitch mascot, and « On réessaie » starts them again", async ({ page, child: _child }) => {
+test("a technical failure of the games shows the glitch mascot, and « On réessaie » starts them again", async ({ page, child: _child }) => {
   let failed = true;
   let restarted = false;
   await page.route(/\/api\/courses\/[^/]+\/generation-status$/, async (route) => {

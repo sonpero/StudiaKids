@@ -1,10 +1,11 @@
 import { Glitch } from "./Glitch.js";
 import { Idle } from "./Idle.js";
+import { Joy } from "./Joy.js";
 import { Sorry } from "./Sorry.js";
 import { Waiting } from "./Waiting.js";
 
 // docs/ui.md, "Contrat d'API du composant". The full closed list of seven
-// poses; `watching`, `joy` and `refusal` get their component when a screen
+// poses; `watching` and `refusal` get their component when a screen
 // needs them (docs/modules/mascot.md).
 export type MascotPose = "idle" | "watching" | "waiting" | "joy" | "sorry" | "glitch" | "refusal";
 
@@ -23,6 +24,8 @@ export function Mascot({ pose }: MascotProps) {
       return <Sorry />;
     case "glitch":
       return <Glitch />;
+    case "joy":
+      return <Joy />;
     default:
       return <Idle />;
   }
