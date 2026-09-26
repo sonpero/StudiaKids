@@ -32,6 +32,15 @@ describe("anchoringProblem", () => {
     expect(anchoringProblem({ type: "reordering", elements: ["chanterons", "chante.", "chantera"] }, course)).toMatch(/absent/);
   });
 
+  // Regression (eval v2): « 9 » and « 10 » first appear earlier in the
+  // course (9 + 4, 7 + 3 = 10); the sequence itself is written in order.
+  it("reordering: elements that also appear earlier still follow the course's own sequence", () => {
+    const counting = "9 + 4 = 13. 7 + 3 = 10. Je pars de 8 et j'avance de 5 : 9, 10, 11, 12, 13.";
+    expect(anchoringProblem({ type: "reordering", elements: ["9", "10", "11", "12", "13"] }, counting)).toBeNull();
+    expect(anchoringProblem({ type: "reordering", elements: ["13", "12", "11"] }, counting)).not.toBeNull();
+    expect(anchoringProblem({ type: "reordering", elements: ["8", "8", "9"] }, counting)).not.toBeNull();
+  });
+
   it("matching: both sides of every pair are in the course", () => {
     expect(anchoringProblem({ type: "matching", pairs: [{ left: "le donjon", right: "la tour la plus haute" }, { left: "le pont-levis", right: "se lève en cas d'attaque" }, { left: "murailles", right: "fossé" }] }, course)).toBeNull();
     expect(anchoringProblem({ type: "matching", pairs: [{ left: "le donjon", right: "la chapelle" }, { left: "fossé", right: "murailles" }, { left: "Léa", right: "chante" }] }, course)).not.toBeNull();

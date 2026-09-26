@@ -16,11 +16,12 @@ export function normalize(text: string): string {
     .trim();
 }
 
-// Where a normalized phrase first appears as whole words, or -1.
-function position(phrase: string, course: string): number {
+// Where a normalized phrase first appears as whole words at or after
+// `from`, or -1.
+function position(phrase: string, course: string, from = 0): number {
   const needle = normalize(phrase);
   if (needle === "") return -1;
-  const index = ` ${course} `.indexOf(` ${needle} `);
+  const index = ` ${course} `.indexOf(` ${needle} `, from);
   return index;
 }
 
@@ -83,9 +84,16 @@ export function anchoringProblem(content: ExerciseContent, courseText: string): 
     case "matching":
       return content.pairs.some((pair) => absent(pair.left) || absent(pair.right)) ? "appariement : un élément absent du cours" : null;
     case "reordering": {
-      const positions = content.elements.map((element) => position(element, course));
-      if (positions.some((at) => at < 0)) return "remise en ordre : un élément absent du cours";
-      return positions.every((at, i) => i === 0 || at > positions[i - 1]!) ? null : "remise en ordre : un ordre que le cours ne donne pas";
+      if (content.elements.some(absent)) return "remise en ordre : un élément absent du cours";
+      // Each element is searched after the previous one: the same word may
+      // also appear earlier in the course, outside the sequence.
+      let from = 0;
+      for (const element of content.elements) {
+        const at = position(element, course, from);
+        if (at < 0) return "remise en ordre : un ordre que le cours ne donne pas";
+        from = at + 1;
+      }
+      return null;
     }
     case "mental_math": {
       const result = evaluate(content.question);
