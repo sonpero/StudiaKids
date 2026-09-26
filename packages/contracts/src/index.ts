@@ -70,4 +70,5 @@ export {
   type GivenAnswer,
   type PlayError,
   type PlayableExerciseDto,
+  type PlayableListDto,
 } from "./play.js";

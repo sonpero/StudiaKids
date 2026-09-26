@@ -27,8 +27,10 @@ export interface HomeScreenProps {
   onPhoto: (file: File) => void;
   onLogout: () => void;
   onOpenCourse?: (courseId: string) => void;
-  // A confirmed course, from its card: the reader (M3).
+  // A confirmed course, from its card: Jouer when its games are ready,
+  // otherwise the reader (docs/ui.md, "Jouer (M4)").
   onReadCourse?: (courseId: string) => void;
+  onPlayCourse?: (courseId: string) => void;
   onResumeCapture?: (course: CourseDto) => void;
 }
 
@@ -36,7 +38,7 @@ const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
-export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onResumeCapture }: HomeScreenProps) {
+export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onPlayCourse, onResumeCapture }: HomeScreenProps) {
   const courses = useQuery({ queryKey: COURSES_QUERY_KEY, queryFn: listCourses });
   const [openedAt] = useState(() => Date.now());
   const unconfirmed = useQuery({
@@ -98,7 +100,7 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                 <li key={course.id}>
                   <button
                     type="button"
-                    onClick={() => onReadCourse?.(course.id)}
+                    onClick={() => (course.exerciseCount > 0 ? onPlayCourse?.(course.id) : onReadCourse?.(course.id))}
                     className="flex min-h-[56px] w-full items-center gap-3 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white p-3 text-left shadow-[0_4px_0_var(--color-ink)]"
                   >
                     <span

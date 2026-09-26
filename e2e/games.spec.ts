@@ -25,8 +25,7 @@ async function expectRight(page: Page): Promise<void> {
   await expect(page.getByRole("button", { name: "Jeu suivant" })).toBeVisible();
 }
 
-// fixme until M4 commit 9 « web: games played by tapping » (seen failing: no Jouer screen yet).
-test.fixme("Quiz: tap the right option, validate, the mascot is happy @mobile", async ({ page, child: _child }) => {
+test("Quiz: tap the right option, validate, the mascot is happy @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Quiz.*Le verbe « chante »/);
 
@@ -37,8 +36,7 @@ test.fixme("Quiz: tap the right option, validate, the mascot is happy @mobile", 
   await expectRight(page);
 });
 
-// fixme until M4 commit 9 « web: games played by tapping » (seen failing: no Jouer screen yet).
-test.fixme("Vrai ou faux: a wrong answer gets a calm mascot, never sorry nor glitch; « Encore une fois », then right @mobile", async ({ page, child: _child }) => {
+test("Vrai ou faux: a wrong answer gets a calm mascot, never sorry nor glitch; « Encore une fois », then right @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Vrai ou faux.*Définition de l'infinitif/);
 
@@ -157,8 +155,7 @@ test.fixme("Dictée flash, complete: timed violet flash without countdown, a fie
   expect(attemptsOf(child.username, "delayed_copy")).toEqual([{ correct: 1, star_eligible: 0 }]);
 });
 
-// fixme until M4 commit 8 « web: tab bar and the Jouer screen » (seen failing: no Jouer screen yet).
-test.fixme("the tab bar: Lire opens the course's text, Jouer its games, Accueil the home", async ({ page, child: _child }) => {
+test("the tab bar: Lire opens the course's text, Jouer its games, Accueil the home", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await page.goto("/");
   await page.getByRole("button", { name: /Le verbe/ }).first().click();

@@ -1,6 +1,6 @@
 import { present, type Signal } from "@studiakids/mascot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
 import { generationPollInterval, getGenerationStatus, startGeneration } from "../lib/generation.js";
@@ -8,6 +8,8 @@ import { generationPollInterval, getGenerationStatus, startGeneration } from "..
 export interface GenerationPanelProps {
   courseId: string;
   onPhoto: (file: File) => void;
+  // The Jouer screen reads its list again once the games are ready.
+  onReady?: () => void;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
@@ -19,7 +21,7 @@ const secondary =
 // docs/ui.md, "Lire un cours et créer ses jeux (M3)": the games are never
 // made by themselves, never shown as made before the jobs are over, and
 // the child may leave at any time — nothing here blocks on them.
-export function GenerationPanel({ courseId, onPhoto }: GenerationPanelProps) {
+export function GenerationPanel({ courseId, onPhoto, onReady }: GenerationPanelProps) {
   const queryClient = useQueryClient();
   const queryKey = ["generation", courseId];
   const [startedAt] = useState(() => Date.now());
@@ -33,6 +35,11 @@ export function GenerationPanel({ courseId, onPhoto }: GenerationPanelProps) {
     mutationFn: () => startGeneration(courseId),
     onSuccess: (status) => queryClient.setQueryData(queryKey, status),
   });
+
+  const isReady = progress.data?.status === "ready";
+  useEffect(() => {
+    if (isReady) onReady?.();
+  }, [isReady, onReady]);
 
   const say = (signal: Signal) => {
     const { pose, line } = present(signal, variant);

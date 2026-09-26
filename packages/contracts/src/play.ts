@@ -46,3 +46,4 @@ export const playableListResponseSchema = z.object({
   exercises: z.array(playableExerciseSchema),
   nextExerciseId: z.string().nullable().describe("Le prochain exercice conseillé, null sans exercice"),
 });
+export type PlayableListDto = z.infer<typeof playableListResponseSchema>;

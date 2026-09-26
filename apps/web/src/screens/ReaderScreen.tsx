@@ -11,6 +11,8 @@ export interface ReaderScreenProps {
   onHome: () => void;
   // « Créer mes jeux » and its progress, under the text (docs/modules/reader.md).
   footer?: ReactNode;
+  // Under the tab bar, its « Accueil » tab replaces this button.
+  showHomeButton?: boolean;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
@@ -32,7 +34,7 @@ const lesson: Components = {
 
 // docs/modules/reader.md, "Écran": the lesson's text, its photos, the voice
 // on the child's tap. No empty state: a confirmed course always has a text.
-export function ReaderScreen({ courseId, onHome, footer }: ReaderScreenProps) {
+export function ReaderScreen({ courseId, onHome, footer, showHomeButton = true }: ReaderScreenProps) {
   const reading = useQuery({ queryKey: ["reader", courseId], queryFn: () => getCourseText(courseId) });
   const speech = useSpeech();
   const [enlarged, setEnlarged] = useState<number | null>(null);
@@ -105,9 +107,11 @@ export function ReaderScreen({ courseId, onHome, footer }: ReaderScreenProps) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 py-6 text-center">
       {content}
-      <button type="button" onClick={onHome} className={`${quiet} mt-auto`}>
-        Accueil
-      </button>
+      {showHomeButton && (
+        <button type="button" onClick={onHome} className={`${quiet} mt-auto`}>
+          Accueil
+        </button>
+      )}
     </main>
   );
 }
