@@ -399,8 +399,10 @@ Les fichiers uploadés ne sont jamais servis en statique. Toute lecture passe
 par une route authentifiée qui vérifie que le cours appartient au compte
 demandeur. Chaque page est hachée en SHA-256, unique par cours : la même
 photo ne peut pas être ajoutée deux fois au même cours, mais peut
-légitimement apparaître dans deux cours différents. **Les photos originales
-sont conservées tant que le cours existe** (le lecteur les affiche, le
+légitimement apparaître dans deux cours différents. **Les photos du cours
+sont conservées tant que le cours existe** (telles que stockées :
+réencodées par le navigateur et sans métadonnées, jamais le fichier
+d'origine de l'appareil) (le lecteur les affiche, le
 tuteur peut les citer) et supprimées uniquement en cascade avec le cours —
 voir `docs/modules/ingestion.md` et `docs/securite.md`.
 
@@ -411,7 +413,7 @@ voir `docs/modules/ingestion.md` et `docs/securite.md`.
 ```bash
 pnpm dev            # api + web + worker en mode watch
 pnpm test           # unit + intégration + contrat, sans réseau
-pnpm test:e2e       # Playwright, LLM_ADAPTER=fixture
+pnpm test:e2e       # Playwright (desktop + mobile émulé, Chromium), worker lancé par le globalSetup avec LLM_ADAPTER=fixture
 pnpm eval           # évaluation LLM sur jeu d'or (coûte de l'argent, manuel)
 pnpm fixtures:record <module> <case> [--photo f.jpg] [--force] [--dry-run] [--show]   # enregistre une vraie réponse modèle (coûte de l'argent, manuel, voir docs/modules/ingestion.md)
 pnpm typecheck      # tsc --noEmit sur tout le monorepo

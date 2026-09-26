@@ -158,8 +158,8 @@ suppression de compte qui efface aussi les photos. Détail dans
   compte (jamais deviné), deux boutons ("Oui, c'est ça !" / "Je reprends
   la photo"), aucun éditeur de texte
 - Écran d'accueil : bouton "Photographier un cours", bandeau du cours non
-  confirmé s'il en existe un (un seul à la fois), et liste "Reprendre un
-  cours existant"
+  confirmé s'il en existe un (un seul à la fois), et liste "Mes cours"
+  (les cours confirmés, à reprendre)
 - `pnpm accounts:delete` supprime aussi les cours et les photos du compte
 - `pnpm fixtures:record` (enregistrement manuel de réponses brutes du
   modèle, coûte de l'argent) ; les photos sources sont dépouillées de
@@ -170,8 +170,7 @@ suppression de compte qui efface aussi les photos. Détail dans
 une photo qui n'est pas une page de cours, déclenche un message
 d'encouragement de la mascotte à recommencer, sans lancer aucune
 génération. Une photo lisible aboutit à l'écran de validation à deux
-boutons, puis le cours apparaît dans la liste "Reprendre un cours
-existant".
+boutons, puis le cours apparaît dans la liste "Mes cours".
 
 **Acceptation**
 - [ ] Unitaire : la vérification de lisibilité est placée dans le pipeline
@@ -200,13 +199,15 @@ existant".
       nouvelle tentative, sans cours créé entre-temps ; le bouton "Une
       autre page" disparaît à la cinquième page
 
-**Bloquant pour la clôture — fixtures réelles.** Les commits 6 à 9
+**Bloquant pour la clôture — fixtures réelles.** Les commits 6 à 11
 avancent sur des réponses modèle **synthétiques**, identifiées comme
-telles (`docs/modules/ingestion.md`). Tant que les vraies fixtures n'ont
-pas été enregistrées par `pnpm fixtures:record` sur de vraies photos :
+telles (`docs/modules/ingestion.md`) ; les scénarios Playwright
+(commit 10) s'écrivent et passent sur ces fixtures synthétiques (décidé
+le 2026-09-26) et seront rejoués sur les vraies. Tant que les vraies
+fixtures n'ont pas été enregistrées par `pnpm fixtures:record` sur de
+vraies photos :
 - le critère **A2** (contrat) reste bloqué : il ne peut être coché que sur
   des réponses enregistrées ;
-- le **commit 10** (scénarios Playwright) reste bloqué ;
 - **M2 ne peut pas être clos**, quel que soit l'état des autres critères.
 
 **Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons

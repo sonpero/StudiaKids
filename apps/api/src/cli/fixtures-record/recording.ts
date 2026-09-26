@@ -5,23 +5,18 @@ export type RecordedExchange = { status: number; latencyMs: number; body: unknow
 
 export type RawExchange = { status: number; latencyMs: number; headers: Record<string, string>; bodyText: string };
 
-// Frame header markers (SOF0..SOF15 minus DHT, JPG and DAC).
-const SOF_MARKERS = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+// Moved to ingestion's domain (the fixture adapter matches photos on it);
+// re-exported for this tool's callers.
+export { jpegSize } from "@studiakids/core";
 
-export function jpegSize(bytes: Uint8Array): { width: number; height: number } | null {
-  let offset = 2;
-  while (offset + 3 < bytes.length) {
-    if (bytes[offset] !== 0xff) return null;
-    const marker = bytes[offset + 1] ?? 0;
-    const length = ((bytes[offset + 2] ?? 0) << 8) | (bytes[offset + 3] ?? 0);
-    if (SOF_MARKERS.has(marker)) {
-      const at = offset + 5;
-      return { height: ((bytes[at] ?? 0) << 8) | (bytes[at + 1] ?? 0), width: ((bytes[at + 2] ?? 0) << 8) | (bytes[at + 3] ?? 0) };
-    }
-    if (marker === 0xda) return null;
-    offset += 2 + length;
-  }
-  return null;
+export type PhotoSize = { width: number; height: number };
+
+// The fixture adapter tells cases apart by photo size (docs/modules/
+// ingestion.md): a new photo must not take the size of another case's
+// photo. Its own case's previous photo does not count (re-recording).
+export function dimensionCollision(size: PhotoSize, fixtureCase: string, existing: (PhotoSize & { fixtureCase: string })[]): string | null {
+  const clash = existing.find((photo) => photo.fixtureCase !== fixtureCase && photo.width === size.width && photo.height === size.height);
+  return clash ? clash.fixtureCase : null;
 }
 
 // The repository is public: only the response body is kept, never a

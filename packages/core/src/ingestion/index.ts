@@ -12,7 +12,7 @@ export type {
 } from "./domain/ports.js";
 export { SUBJECTS, subjectColor, type Subject } from "./domain/subject.js";
 export { MAX_PAGES_PER_COURSE, canAddPage, nextPageIndex } from "./domain/pages.js";
-export { MAX_PAGE_BYTES, isAcceptable, sniffImageType, stripJpegMetadata, type ImageType } from "./domain/photo.js";
+export { MAX_PAGE_BYTES, isAcceptable, jpegSize, sniffImageType, stripJpegMetadata, type ImageType } from "./domain/photo.js";
 export { outcomeOfPages, displayStatus, type PagesOutcome } from "./domain/extraction.js";
 
 export { createCourse, type CreateCourseDeps } from "./application/create-course.js";

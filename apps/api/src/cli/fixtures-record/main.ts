@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { nativePhotoSize } from "@studiakids/contracts";
@@ -11,7 +11,7 @@ import {
   stripJpegMetadata,
 } from "@studiakids/core";
 import { parseArgs, type PhotoCase } from "./args.js";
-import { assertWritable, buildFixture, jpegSize, sanitizeExchange, smokeReport, type RawExchange, type RecordedExchange } from "./recording.js";
+import { assertWritable, buildFixture, dimensionCollision, jpegSize, sanitizeExchange, smokeReport, type PhotoSize, type RawExchange, type RecordedExchange } from "./recording.js";
 
 // See USAGE in args.ts and docs/modules/ingestion.md. Manual, costs money,
 // never run by `pnpm test`. Reads ANTHROPIC_API_KEY (and optionally
@@ -30,6 +30,17 @@ const fixturesDir = path.join(repoRoot, "tests/fixtures/ingestion");
 function fail(message: string): never {
   console.error(message);
   process.exit(1);
+}
+
+function recordedPhotoSizes(): (PhotoSize & { fixtureCase: string })[] {
+  const dir = path.join(fixturesDir, "photos");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((file) => file.endsWith(".jpg"))
+    .flatMap((file) => {
+      const size = jpegSize(new Uint8Array(readFileSync(path.join(dir, file))));
+      return size ? [{ ...size, fixtureCase: file.slice(0, file.indexOf(".")) }] : [];
+    });
 }
 
 function recordingFetch(exchanges: RawExchange[]): typeof fetch {
@@ -81,6 +92,13 @@ async function recordPhoto(fixtureCase: PhotoCase, photoPath: string, options: R
     fail(
       `Photo ${String(size.width)}x${String(size.height)} : plus grande que la taille native. Réduisez-la d'abord à ` +
         `${String(target.width)}x${String(target.height)}, par exemple :\n  sips -z ${String(target.height)} ${String(target.width)} "${photoPath}" --out photo-native.jpg`,
+    );
+  }
+  const clash = dimensionCollision(size, fixtureCase, recordedPhotoSizes());
+  if (clash) {
+    fail(
+      `Photo ${String(size.width)}x${String(size.height)} : même taille que la photo du cas "${clash}". Les fixtures reconnaissent ` +
+        `une photo à sa taille (docs/modules/ingestion.md) : recadrez-la de quelques pixels, par exemple :\n  sips -c ${String(size.height)} ${String(size.width - 2)} "${photoPath}" --out photo-recadree.jpg`,
     );
   }
   const visualTokens = Math.ceil(size.width / 28) * Math.ceil(size.height / 28);

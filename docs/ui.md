@@ -175,18 +175,23 @@ l'enfant dans une navigation à plusieurs niveaux.
 Décidé à l'ouverture de M2, pour ne pas laisser l'implémentation inventer
 ce parcours :
 
-- **Accueil** : bouton principal (mandarine) "Photographier un cours". Si
+- **Accueil** : "Salut {prénom} !", bouton principal (mandarine)
+  "Photographier un cours", puis la liste des cours confirmés, titrée
+  **"Mes cours"** (`docs/design/accueil.png`, décidé le 2026-09-26). Si
   le compte a un cours non confirmé (au plus un,
   `docs/modules/ingestion.md`), un bandeau au-dessus de la liste y ramène,
   avec une phrase selon son état ("Je regarde encore ta photo…", "Ta photo
-  est prête !", "Oups, on reprend la photo ?"). Prendre une nouvelle photo
-  remplace ce cours en attente.
+  est prête !", "Oups, on reprend la photo ?" ; pour un échec technique,
+  *à valider* : "Oh, quelque chose a coincé."). Prendre une nouvelle photo
+  remplace ce cours en attente. **"Se déconnecter" reste sur l'accueil,
+  discret** (petit bouton texte en bas, jamais à côté de l'action
+  principale), bien que la maquette ne le montre pas.
 - **Capture** : après chaque photo, les miniatures des pages déjà prises,
   et deux boutons — "Une autre page" (turquoise, secondaire) et "C'est
   tout !" (mandarine, principal). **"Une autre page" disparaît à la
   cinquième page** (plafond de 5). "C'est tout !" lance la lecture des
   photos. Chaque photo est **toujours réencodée par le navigateur**
-  (canvas, JPEG, à la taille renvoyée par `nativePhotoSize` de
+  (canvas, JPEG qualité 0,85, à la taille renvoyée par `nativePhotoSize` de
   `packages/contracts`) avant envoi, jamais le fichier d'origine :
   c'est ce qui redresse la photo et retire ses métadonnées
   (`docs/modules/ingestion.md`).
@@ -194,8 +199,24 @@ ce parcours :
   à l'accueil à tout moment (le bandeau le ramènera).
 - **Photo inexploitable** : mascotte `sorry`, une phrase selon le cas
   (floue / pas une page de cours), un seul bouton "Je reprends la photo".
+- **Échec technique** (`failed`, après épuisement des tentatives) :
+  mascotte `glitch`, phrase du catalogue (`extraction-failed` :
+  "Oh, quelque chose a coincé. On réessaie ?"), un bouton principal
+  **"On réessaie"** qui relance la lecture (`POST .../retry`) et un bouton
+  secondaire "Je reprends la photo" — *libellés des boutons à valider*.
 - **Validation** : la photo, le titre et la matière proposés, le niveau du
   compte (jamais deviné), "Oui, c'est ça !" / "Je reprends la photo".
+- **Cours remplacé entre-temps** (un écran redemande un cours non
+  confirmé que le compte a remplacé par une nouvelle photo, l'API répond
+  404) : **retour silencieux à l'accueil, sans message** (décidé le
+  2026-09-26).
+- **Refus d'une photo à l'envoi** (capture), phrases portées par la
+  mascotte `sorry`, *toutes à valider* : trop lourde (`too_large`) "Cette
+  photo est trop lourde. On en prend une autre ?" ; pas une photo
+  utilisable (`unsupported`) "Je n'arrive pas à ouvrir cette photo. On en
+  prend une autre ?" ; déjà prise (`duplicate`) "Tu as déjà pris cette
+  page !" ; échec de l'envoi lui-même (réseau, erreur inattendue),
+  mascotte `glitch` : "Oh, la photo n'est pas partie. On réessaie ?".
 
 Pas de barre d'onglets en M2 : seul l'accueil existe, elle arrive avec le
 lecteur (M3). Pas de routeur non plus (navigation par état d'écran, comme

@@ -468,15 +468,32 @@ Le worker enregistre `extract-course` au démarrage
 (`extractCourseJobHandler`, qui porte le schéma Zod du payload). Avec
 `LLM_ADAPTER=fixture` (e2e, test du pipeline), il prend
 `FixturePhotoExtractor` et `FixtureCourseNamer` au lieu des adaptateurs
-Claude : aucune requête réseau. La réponse d'une photo est choisie par le
-**SHA-256 de ses octets sans métadonnées**, comparé à celui des photos de
-référence `photos/<cas>.jpg` du répertoire de fixtures (aujourd'hui
-`tests/fixtures/ingestion/synthetic/photos/` : `legible`, `illegible`,
-`not-a-course`, images synthétiques générées localement, sans rapport
-avec une vraie page). Une photo sans fixture fait échouer l'appel
+Claude : aucune requête réseau. La réponse d'une photo est choisie par
+**sa taille** (largeur × hauteur lues dans l'en-tête JPEG, `jpegSize`),
+comparée à celle des photos de référence `photos/<cas>.jpg` — et
+`photos/<cas>.<n>.jpg` pour des pages supplémentaires du même cas — du
+répertoire de fixtures (aujourd'hui
+`tests/fixtures/ingestion/synthetic/photos/` : `legible` et
+`legible.2`/`legible.3` en 300×400, `illegible` en 304×400,
+`not-a-course` en 308×400, images synthétiques générées localement).
+**Pourquoi la taille et pas l'empreinte** (décidé le 2026-09-26) : l'écran
+de capture réencode chaque photo par un canvas, ce qui change tous ses
+octets ; une photo de fixture étant déjà à la taille native,
+`nativePhotoSize` la laisse à sa taille, qui survit donc au réencodage.
+Conséquence : **deux cas ne partagent jamais une taille** — l'adaptateur
+refuse de démarrer sur un répertoire ambigu, et `pnpm fixtures:record`
+refuse une photo dont la taille (à la taille native, qu'il exige) est
+celle de la photo d'un autre cas déjà enregistré, en demandant de la
+recadrer de quelques pixels. Une photo sans fixture fait échouer l'appel
 (`model-error`), jamais une réponse inventée. Le namer rend toujours
 `namer.json`. Toute autre valeur de `LLM_ADAPTER` que `fixture` ou
 `real` est refusée au démarrage.
+
+**Sans `ANTHROPIC_API_KEY`, le worker démarre quand même** (décidé le
+2026-09-26) et l'écrit en erreur dans ses logs : `docker-start.mjs`
+arrête le conteneur entier, API comprise, quand le worker s'arrête. Chaque
+lecture échoue alors par les tentatives du noyau `jobs`, et l'enfant voit
+l'écran d'échec technique.
 
 ## Hors périmètre
 
@@ -527,7 +544,15 @@ cours (`docs/securite.md` exclut la télémétrie comportementale).
   bouton "Une autre page" disparaît à la cinquième page ; la photo envoyée
   par l'écran de capture est toujours celle réencodée par le canvas, jamais
   le fichier d'origine (JPEG aux dimensions renvoyées par
-  `nativePhotoSize`, vérifiées sur la requête d'upload)
+  `nativePhotoSize`, vérifiées sur la requête d'upload). Sur fixtures
+  synthétiques, rejoués sur les vraies une fois enregistrées. **Mise en
+  place (décidé le 2026-09-26)** : le worker (`LLM_ADAPTER=fixture`) est
+  lancé par le `globalSetup` de Playwright sur le même volume que l'API ;
+  **un compte par scénario** (un seul cours non confirmé par compte) ;
+  l'échec technique est simulé par `page.route` sur la lecture du statut
+  (`failed`), jamais en attendant le vrai backoff du noyau `jobs` ; un
+  projet mobile (émulation d'appareil sur Chromium, sans autre
+  navigateur) joue au moins le parcours complet et la capture
 
 ## Questions ouvertes
 

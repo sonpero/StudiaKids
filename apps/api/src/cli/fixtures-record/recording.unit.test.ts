@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { assertWritable, buildFixture, jpegSize, sanitizeExchange, smokeReport, type RecordedExchange } from "./recording.js";
+import { assertWritable, buildFixture, dimensionCollision, jpegSize, sanitizeExchange, smokeReport, type RecordedExchange } from "./recording.js";
 
 const segment = (marker: number, payload: number[]) => [0xff, marker, (payload.length + 2) >> 8, (payload.length + 2) & 0xff, ...payload];
 
@@ -121,5 +121,27 @@ describe("assertWritable", () => {
     expect(assertWritable([existing, path.join(dir, "new.jpg")], false)).toEqual({ ok: false, error: [existing] });
     expect(assertWritable([existing], true)).toEqual({ ok: true, value: undefined });
     expect(assertWritable([path.join(dir, "new.jpg")], false)).toEqual({ ok: true, value: undefined });
+  });
+});
+
+// Decision (M2): the fixture adapter tells cases apart by photo size, so two
+// cases must never share one.
+describe("dimensionCollision", () => {
+  const existing = [
+    { fixtureCase: "legible", width: 1200, height: 1600 },
+    { fixtureCase: "illegible", width: 1202, height: 1600 },
+  ];
+
+  it("names the other case whose photo has exactly the same size", () => {
+    expect(dimensionCollision({ width: 1202, height: 1600 }, "not-a-course", existing)).toBe("illegible");
+  });
+
+  it("allows a size no other case uses, and re-recording a case over its own photo", () => {
+    expect(dimensionCollision({ width: 1204, height: 1600 }, "not-a-course", existing)).toBeNull();
+    expect(dimensionCollision({ width: 1200, height: 1600 }, "legible", existing)).toBeNull();
+  });
+
+  it("the same numbers swapped are a different size (portrait vs landscape)", () => {
+    expect(dimensionCollision({ width: 1600, height: 1200 }, "not-a-course", existing)).toBeNull();
   });
 });
