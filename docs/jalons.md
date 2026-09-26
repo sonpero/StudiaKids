@@ -380,8 +380,7 @@ progression, revenir plus tard et constater qu'elle est terminée.
 
 **Démo — validée le 26/09/2026 sur téléphone**, avec celle de M4 (elle
 vaut pour les deux jalons : les exercices générés sont vus en jouant).
-Le détail des cours et jeux testés, et d'éventuels exercices douteux, n'a
-pas été transmis.
+Les cours et les jeux ont été testés ; aucun exercice douteux signalé.
 
 **Évaluation.** `pnpm eval` sur 11 pages générées (CP → 6e, six matières,
 dégradations de photo) : consignes v4 retenues — ancrage 95,5 %,
@@ -498,8 +497,7 @@ optionnelle, validation.
       `toHaveAttribute`) ; `apps/web/src/screens/GameScreen.typed.unit.test.tsx`
 
 **Démo — validée le 26/09/2026 sur téléphone**, pour M3 et M4 ensemble.
-Le détail des cours et jeux testés, et d'éventuels exercices douteux, n'a
-pas été transmis.
+Les cours et les jeux ont été testés ; aucun exercice douteux signalé.
 
 **Décidé à la clôture** : tolérances des comparateurs validées ;
 dictée flash sensible à la casse (conforme à la spec) ; une carte qui a
