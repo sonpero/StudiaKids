@@ -460,3 +460,22 @@ Une tâche est finie quand tout ceci tient :
   pas sur une hypothèse silencieuse.
 - Rapportez ce que vous n'avez PAS fait aussi clairement que ce que vous
   avez fait.
+
+## Décisions que Claude Code prend seul
+
+Claude Code tranche seul, note sa décision dans le journal de session
+et dans la spec concernée, et continue sans attendre :
+- nommage, codes HTTP, codes d'erreur, structure des tests ;
+- infrastructure de test (setup, comptes, fixtures, interception) ;
+- textes d'interface, marqués « à valider » ;
+- choix techniques internes à un module sans effet sur son contrat.
+
+Claude Code s'arrête et demande seulement pour :
+- toute nouvelle dépendance ou montée de version ;
+- toute modification d'un dossier gelé ou d'un critère d'acceptation ;
+- tout ce qui touche la sécurité, les données personnelles ou le coût
+  des appels au modèle ;
+- toute contradiction entre specs qui change le comportement visible.
+
+Les mises à jour de doc non bloquantes se regroupent en un commit de
+fin de tâche, pas une par décision.
