@@ -1,4 +1,4 @@
-import { answerResponseSchema, playableListResponseSchema, type ComparisonResultDto, type GameType, type PlayableListDto } from "@studiakids/contracts";
+import { answerResponseSchema, playableListResponseSchema, type AnswerResponseDto, type ComparisonResultDto, type GameType, type PlayableListDto } from "@studiakids/contracts";
 import { HttpError } from "./http-error.js";
 
 // A 404 is a course deleted meanwhile: null, and the screen goes home.
@@ -9,14 +9,18 @@ export async function listPlayableExercises(courseId: string): Promise<PlayableL
   return playableListResponseSchema.parse(await res.json());
 }
 
-export async function answerExercise(exerciseId: string, givenAnswer: unknown, reread: boolean): Promise<ComparisonResultDto> {
+export type Correction = NonNullable<AnswerResponseDto["correction"]>;
+
+// The units, and after a wrong answer the right one (M4 closing decision).
+export async function answerExercise(exerciseId: string, givenAnswer: unknown, reread: boolean): Promise<ComparisonResultDto & { correction?: Correction }> {
   const res = await fetch(`/api/exercises/${exerciseId}/answer`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ givenAnswer, reread }),
   });
   if (!res.ok) throw new HttpError(res.status, "POST /api/exercises/:id/answer");
-  return answerResponseSchema.parse(await res.json()).result;
+  const { result, correction } = answerResponseSchema.parse(await res.json());
+  return correction === undefined ? result : { ...result, correction };
 }
 
 // docs/ui.md, "Jouer (M4)": « Dictée flash » is decided, the others « à valider ».

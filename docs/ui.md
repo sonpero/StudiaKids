@@ -307,6 +307,13 @@ saisie en cours est gardée. Une seule mascotte à l'écran : celle du
 retour remplace celle de la saisie. Le lecteur masque son propre bouton
 « Accueil » sous la barre d'onglets.
 
+**Après une réponse fausse** (décidé à la clôture de M4) : la bonne
+réponse s'affiche 4 s (*à valider*) sous la phrase de la mascotte, puis
+disparaît — « La bonne réponse : … », « C'était vrai. » / « C'était
+faux. », « Le mot était : … », « Le mot qui manquait : … » / « Les mots
+qui manquaient : … », « Le bon ordre : … », « Les bonnes paires : » et une
+ligne par paire (textes *à valider*).
+
 ---
 
 ## Travail asynchrone

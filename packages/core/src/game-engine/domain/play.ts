@@ -1,6 +1,6 @@
 import type { Grade } from "../../auth/index.js";
 import type { ExerciseContent } from "../../exercise-generator/index.js";
-import type { ComparisonResult } from "./compare.js";
+import type { ComparisonResult, GivenAnswer } from "./compare.js";
 
 export type NewAttempt = { unitId: string; correct: boolean; starEligible: boolean };
 
@@ -99,4 +99,26 @@ export function nextExercise(exerciseIds: string[], attempts: AttemptRecord[]): 
   }
   const succeeded = new Set([...submissions].filter(([, success]) => success).map(([key]) => key.split("\u0000")[0]));
   return exerciseIds.find((id) => !succeeded.has(id)) ?? exerciseIds[0] ?? null;
+}
+
+// After a wrong answer, the right one in the shape of a given answer
+// (M4 closing decision): the screen shows it like one, briefly.
+export function correctionOf(content: ExerciseContent): GivenAnswer[ExerciseContent["type"]] {
+  switch (content.type) {
+    case "mcq":
+      return { chosenOption: content.answer };
+    case "true_false":
+      return { value: content.answer };
+    case "mental_math":
+      // Written as a French pupil writes it: a decimal comma.
+      return { value: String(content.answer).replace(".", ",") };
+    case "delayed_copy":
+      return { text: content.wordOrPhrase };
+    case "cloze":
+      return { values: [...content.blanks] };
+    case "matching":
+      return { pairs: content.pairs.map((pair) => ({ ...pair })) };
+    case "reordering":
+      return { order: [...content.elements] };
+  }
 }

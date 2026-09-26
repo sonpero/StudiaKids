@@ -267,7 +267,7 @@ que les `reviews` de StudIA, jamais un compteur incrémenté directement.
 | Route | Rôle |
 |---|---|
 | `GET /api/courses/:id/exercises` | `{ exercises: PlayableExercise[], nextExerciseId }` — vue jouable, jamais de réponse |
-| `POST /api/exercises/:id/answer` | `{ givenAnswer, reread? }` → `{ result }` ; `givenAnswer` validé par le schéma du type de l'exercice (`400 invalid_answer` sinon) |
+| `POST /api/exercises/:id/answer` | `{ givenAnswer, reread? }` → `{ result, correction? }` — `correction` (la bonne réponse, forme d'une réponse donnée, `correctionOf`) seulement après une réponse fausse ; `givenAnswer` validé par le schéma du type de l'exercice (`400 invalid_answer` sinon) |
 
 404 uniforme pour un cours ou un exercice d'un autre compte
 (`docs/securite.md`).
@@ -280,8 +280,14 @@ que les `reviews` de StudIA, jamais un compteur incrémenté directement.
 Voir `docs/ui.md`, "Jouer (M4)". La liste vient de
 `GET /api/courses/:id/exercises` ; « Jeu suivant » prend le suivant dans
 cette liste (l'ordre du cours), `nextExerciseId` ne sert qu'à marquer
-« À toi de jouer ! ». Le retour immédiat ne montre pas la bonne réponse
-(non prévu par la spec — question ouverte).
+« À toi de jouer ! ».
+
+**Après une réponse fausse, la bonne réponse s'affiche brièvement**,
+portée par la mascotte (décidé à la clôture de M4) : le serveur ne
+l'envoie qu'avec le résultat d'une réponse fausse (`correctionOf`,
+fonction pure, sous la forme d'une réponse donnée) — jamais avant que
+l'enfant ait répondu ; l'écran la montre sous la phrase de la mascotte
+pendant `CORRECTION_MS` (4 s, *à valider*), puis la retire.
 
 ## Hors périmètre
 
@@ -318,8 +324,8 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
 
 ## Questions ouvertes
 
-- Après une réponse fausse, montrer la bonne réponse (pédagogiquement
-  utile) ? Le contrat actuel ne renvoie que les unités correctes ou non.
+- ~~Montrer la bonne réponse après une erreur~~ — **tranché** à la
+  clôture de M4 : oui, brièvement, portée par la mascotte.
 - `delayed_copy` sensible à la casse (spec) alors que le défaut proposé
   pour les tolérances non tranchées était « casse ignorée » : la spec a
   été appliquée ; à confirmer.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attemptsFor, displayDurationMs, isSuccess, nextExercise, playableView } from "./play.js";
+import { attemptsFor, correctionOf, displayDurationMs, isSuccess, nextExercise, playableView } from "./play.js";
 
 // docs/modules/game-engine.md, "Copie différée" and the M4 criterion:
 // a reread never writes a success event (a correct, star-eligible attempt).
@@ -109,5 +109,20 @@ describe("nextExercise", () => {
   it("loops back to the first exercise once all are succeeded; none without exercise", () => {
     expect(nextExercise(["e1", "e2"], [attempt("e2", 1, true), attempt("e1", 2, true)])).toBe("e1");
     expect(nextExercise([], [])).toBeNull();
+  });
+});
+
+// M4 closing decision: after a wrong answer, the right one, in the shape
+// of a given answer (so the screen shows it like one).
+describe("correctionOf", () => {
+  it("gives each type's right answer", () => {
+    expect(correctionOf({ type: "mcq", question: "?", options: ["a", "b", "c", "d"], answer: "b" })).toEqual({ chosenOption: "b" });
+    expect(correctionOf({ type: "true_false", statement: "Faux.", answer: false })).toEqual({ value: false });
+    expect(correctionOf({ type: "mental_math", question: "8 + 5", answer: 13 })).toEqual({ value: "13" });
+    expect(correctionOf({ type: "mental_math", question: "5 ÷ 2", answer: 2.5 })).toEqual({ value: "2,5" });
+    expect(correctionOf({ type: "delayed_copy", wordOrPhrase: "chanter" })).toEqual({ text: "chanter" });
+    expect(correctionOf({ type: "cloze", text: "{{0}} {{1}}", blanks: ["Hier", "chantait"] })).toEqual({ values: ["Hier", "chantait"] });
+    expect(correctionOf({ type: "matching", pairs: [{ left: "a", right: "1" }] })).toEqual({ pairs: [{ left: "a", right: "1" }] });
+    expect(correctionOf({ type: "reordering", elements: ["a", "b", "c"] })).toEqual({ order: ["a", "b", "c"] });
   });
 });

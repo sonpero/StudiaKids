@@ -66,6 +66,7 @@ export {
   playableExerciseSchema,
   playableListResponseSchema,
   type AnswerRequest,
+  type AnswerResponseDto,
   type ComparisonResultDto,
   type GivenAnswer,
   type PlayError,

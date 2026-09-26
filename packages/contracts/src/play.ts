@@ -21,7 +21,19 @@ export type AnswerRequest = z.infer<typeof answerRequestSchema>;
 
 export const comparisonResultSchema = z.object({ units: z.array(z.object({ id: z.string(), correct: z.boolean() })) });
 export type ComparisonResultDto = z.infer<typeof comparisonResultSchema>;
-export const answerResponseSchema = z.object({ result: comparisonResultSchema });
+// After a wrong answer only: the right one, in the shape of a given answer
+// (the screen shows it briefly, carried by the mascot).
+const correctionSchema = z.union([
+  GIVEN_ANSWER_SCHEMAS.delayed_copy,
+  GIVEN_ANSWER_SCHEMAS.mcq,
+  GIVEN_ANSWER_SCHEMAS.matching,
+  GIVEN_ANSWER_SCHEMAS.reordering,
+  GIVEN_ANSWER_SCHEMAS.cloze,
+  GIVEN_ANSWER_SCHEMAS.true_false,
+  GIVEN_ANSWER_SCHEMAS.mental_math,
+]);
+export const answerResponseSchema = z.object({ result: comparisonResultSchema, correction: correctionSchema.optional() });
+export type AnswerResponseDto = z.infer<typeof answerResponseSchema>;
 
 export const exerciseParamsSchema = z.object({ id: z.string() });
 

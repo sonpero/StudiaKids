@@ -1,9 +1,9 @@
 import { present } from "@studiakids/mascot";
 import type { ComparisonResultDto, PlayableExerciseDto } from "@studiakids/contracts";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
-import { answerExercise, gameLabel } from "../lib/play.js";
+import { answerExercise, gameLabel, type Correction } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
 import { primary, quiet, secondary, text } from "./games/styles.js";
 import { MatchingGame, ReorderingGame } from "./games/TapGames.js";
@@ -36,6 +36,23 @@ function GameBody({ exercise, answered, onAnswer, onReread }: GameBodyArgs) {
   }
 }
 
+// How long the right answer stays after a wrong one (« à valider »).
+export const CORRECTION_MS = 4000;
+
+// The right answer, said the way each game needs (texts « à valider »).
+function correctionLines(type: PlayableExerciseDto["type"], correction: Correction): string[] {
+  if (type === "mcq" && "chosenOption" in correction) return [`La bonne réponse : ${correction.chosenOption}`];
+  if (type === "true_false" && "value" in correction && typeof correction.value === "boolean") return [correction.value ? "C'était vrai." : "C'était faux."];
+  if (type === "mental_math" && "value" in correction && typeof correction.value === "string") return [`La bonne réponse : ${correction.value}`];
+  if (type === "delayed_copy" && "text" in correction) return [`Le mot était : ${correction.text}`];
+  if (type === "cloze" && "values" in correction) {
+    return [correction.values.length === 1 ? `Le mot qui manquait : ${correction.values[0] ?? ""}` : `Les mots qui manquaient : ${correction.values.join(", ")}`];
+  }
+  if (type === "reordering" && "order" in correction) return [`Le bon ordre : ${correction.order.join(", ")}`];
+  if (type === "matching" && "pairs" in correction) return ["Les bonnes paires :", ...correction.pairs.map((pair) => `${pair.left} → ${pair.right}`)];
+  return [];
+}
+
 // docs/ui.md, "Jouer (M4)": the answer is built by tapping, sent on
 // « Valider », and the mascot reacts at once through present() — joy for
 // a right answer, a calm waiting otherwise, never sorry nor glitch.
@@ -46,6 +63,15 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const [round, setRound] = useState(0);
   const [variant] = useState(() => Math.floor(Math.random() * 3));
   const send = useMutation({ mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread) });
+  // Shown briefly after a wrong answer, then taken away.
+  const correction = send.data?.correction;
+  const [showCorrection, setShowCorrection] = useState(false);
+  useEffect(() => {
+    if (correction === undefined) return;
+    setShowCorrection(true);
+    const timer = setTimeout(() => setShowCorrection(false), CORRECTION_MS);
+    return () => clearTimeout(timer);
+  }, [correction]);
 
   function again(): void {
     send.reset();
@@ -73,6 +99,13 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
       <>
         <Mascot pose={pose} />
         <p className={text}>{line}</p>
+        {showCorrection && correction !== undefined && (
+          <div role="status" className="flex flex-col gap-1 rounded-[15px] border-[3px] border-[var(--color-ink)] bg-white p-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">
+            {correctionLines(exercise.type, correction).map((correctionLine) => (
+              <p key={correctionLine}>{correctionLine}</p>
+            ))}
+          </div>
+        )}
         <button type="button" onClick={onNext} className={primary}>
           Jeu suivant
         </button>

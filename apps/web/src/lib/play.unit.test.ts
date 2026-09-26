@@ -49,4 +49,10 @@ describe("play API client", () => {
       "Dictée flash",
     ]);
   });
+
+  it("answerExercise returns the correction a wrong answer brings back", async () => {
+    stubFetch(200, { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" } });
+
+    expect(await answerExercise("e1", { chosenOption: "Léa" }, false)).toEqual({ units: [{ id: "0", correct: false }], correction: { chosenOption: "chante" } });
+  });
 });

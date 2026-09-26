@@ -109,7 +109,8 @@ describe("play routes", () => {
     const res = await answer(ids.matching!, { givenAnswer: given });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ result: { units: [{ id: "0", correct: false }, { id: "1", correct: false }, { id: "2", correct: true }] } });
+    // M4 closing decision: a wrong answer brings the right one back.
+    expect(res.json()).toEqual({ result: { units: [{ id: "0", correct: false }, { id: "1", correct: false }, { id: "2", correct: true }] }, correction: { pairs: MATCHING.pairs } });
     expect(attempts()).toEqual([
       { exercise_id: ids.matching, unit_id: "0", correct: 0, star_eligible: 1 },
       { exercise_id: ids.matching, unit_id: "1", correct: 0, star_eligible: 1 },

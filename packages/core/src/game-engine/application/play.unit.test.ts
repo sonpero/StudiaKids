@@ -37,7 +37,10 @@ describe("playExercise", () => {
 
     const result = await playExercise(deps, "u1", "e-match", given, { reread: false }, now);
 
-    expect(result).toEqual(ok({ units: [{ id: "0", correct: true }, { id: "1", correct: false }, { id: "2", correct: false }, { id: "3", correct: true }] }));
+    // M4 closing decision: a wrong answer brings the right one back.
+    expect(result).toEqual(
+      ok({ result: { units: [{ id: "0", correct: true }, { id: "1", correct: false }, { id: "2", correct: false }, { id: "3", correct: true }] }, correction: { pairs: pairs.content.type === "matching" ? pairs.content.pairs : [] } }),
+    );
     expect(deps.attempts.rows).toHaveLength(4);
     expect(deps.attempts.rows[0]).toEqual({ id: "a-0", userId: "u1", exerciseId: "e-match", type: "matching", unitId: "0", correct: true, starEligible: true, attemptedAt: now.toISOString() });
     expect(JSON.stringify(deps.attempts.rows)).not.toContain('"4"');
@@ -56,7 +59,7 @@ describe("playExercise", () => {
   it("after a reread: the result stays faithful, the attempt is not star-eligible", async () => {
     const deps = setup();
 
-    expect(await playExercise(deps, "u1", "e-copy", { text: "chanter" }, { reread: true }, now)).toEqual(ok({ units: [{ id: "0", correct: true }] }));
+    expect(await playExercise(deps, "u1", "e-copy", { text: "chanter" }, { reread: true }, now)).toEqual(ok({ result: { units: [{ id: "0", correct: true }] } }));
     expect(deps.attempts.rows).toMatchObject([{ correct: true, starEligible: false }]);
   });
 
@@ -107,5 +110,14 @@ describe("listPlayableExercises", () => {
 
     expect(await listPlayableExercises(deps, "u1", "c2", "CP")).toEqual({ ok: false, error: "not-found" });
     expect(await listPlayableExercises(deps, "u1", "c3", "CP")).toEqual({ ok: false, error: "not-ready" });
+  });
+});
+
+describe("playExercise, the correction", () => {
+  it("comes only with a wrong answer", async () => {
+    const deps = setup();
+
+    expect(await playExercise(deps, "u1", "e-copy", { text: "chanté" }, { reread: false }, now)).toEqual(ok({ result: { units: [{ id: "0", correct: false }] }, correction: { text: "chanter" } }));
+    expect(await playExercise(deps, "u1", "e-copy", { text: "chanter" }, { reread: false }, later)).toEqual(ok({ result: { units: [{ id: "0", correct: true }] } }));
   });
 });

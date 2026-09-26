@@ -11,7 +11,7 @@ export {
   type GivenAnswer,
   type UnitResult,
 } from "./domain/compare.js";
-export { attemptsFor, displayDurationMs, isSuccess, nextExercise, playableView, type AttemptRecord, type NewAttempt, type PlayableExercise } from "./domain/play.js";
+export { attemptsFor, correctionOf, displayDurationMs, isSuccess, nextExercise, playableView, type AttemptRecord, type NewAttempt, type PlayableExercise } from "./domain/play.js";
 export type { Attempt, AttemptRepository, ExerciseSource } from "./domain/ports.js";
 
 export { playExercise, type PlayExerciseDeps } from "./application/play-exercise.js";

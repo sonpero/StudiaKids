@@ -57,7 +57,7 @@ export const playRoutes: FastifyPluginCallback<PlayRoutesOptions> = (fastify, op
       const { givenAnswer, reread } = request.body;
       const result = await playExercise({ exercises, attempts, idGenerator: opts.idGenerator }, request.user!.id, request.params.id, givenAnswer, { reread: reread === true }, opts.clock.now());
       if (!result.ok) return sendError(reply, result.error);
-      return { result: result.value };
+      return result.value;
     },
   );
 

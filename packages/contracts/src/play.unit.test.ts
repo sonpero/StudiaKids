@@ -58,3 +58,18 @@ describe("playable exercises", () => {
     expect(cloze).not.toHaveProperty("blanks");
   });
 });
+
+// M4 closing decision: after a wrong answer, the right one is shown
+// briefly — sent only then, in the shape of a given answer.
+describe("the correction", () => {
+  it("rides along with a wrong answer's result, in the shape of a given answer", () => {
+    const wrong = { result: { units: [{ id: "0", correct: false }] }, correction: { chosenOption: "chante" } };
+    expect(answerResponseSchema.parse(wrong)).toEqual(wrong);
+    const matching = { result: { units: [{ id: "0", correct: false }] }, correction: { pairs: [{ left: "Hier", right: "Léa chantait" }] } };
+    expect(answerResponseSchema.parse(matching)).toEqual(matching);
+  });
+
+  it("is absent from a right answer's result", () => {
+    expect(answerResponseSchema.parse({ result: { units: [{ id: "0", correct: true }] } })).toEqual({ result: { units: [{ id: "0", correct: true }] } });
+  });
+});
