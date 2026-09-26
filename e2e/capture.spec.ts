@@ -38,15 +38,17 @@ test("« Une autre page » disappears at the fifth page @mobile", async ({ page,
 // hands it to fetch: the FormData's "photo" part, byte for byte what the
 // upload request carries.
 test("the uploaded photo is the canvas re-encoding: upright, at native size, without EXIF or GPS @mobile", async ({ page, child: _child }) => {
-  await page.addInitScript(() => {
-    const sent: number[][] = [];
-    Object.assign(window, { __sentPhotos: sent });
-    const original = window.fetch.bind(window);
-    window.fetch = async (input, init) => {
-      const part = init?.body instanceof FormData ? init.body.get("photo") : null;
-      if (part instanceof Blob) sent.push(Array.from(new Uint8Array(await part.arrayBuffer())));
-      return original(input, init);
-    };
+  // A string: this file is type-checked without the DOM library.
+  await page.addInitScript({
+    content: `
+      window.__sentPhotos = [];
+      const original = window.fetch.bind(window);
+      window.fetch = async (input, init) => {
+        const part = init && init.body instanceof FormData ? init.body.get("photo") : null;
+        if (part instanceof Blob) window.__sentPhotos.push(Array.from(new Uint8Array(await part.arrayBuffer())));
+        return original(input, init);
+      };
+    `,
   });
   await page.goto("/");
   const upload = page.waitForRequest((request) => request.method() === "POST" && /\/api\/courses\/[^/]+\/pages$/.test(request.url()));
@@ -54,7 +56,7 @@ test("the uploaded photo is the canvas re-encoding: upright, at native size, wit
   await takePhoto(page, "Photographier un cours", cameraPhoto);
 
   await upload;
-  const sent = new Uint8Array(await page.evaluate(() => (window as unknown as { __sentPhotos: number[][] }).__sentPhotos[0] ?? []));
+  const sent = new Uint8Array(await page.evaluate<number[]>("window.__sentPhotos[0] ?? []"));
   // The camera file is 4032x3024 with EXIF orientation 6: displayed as a
   // 3024x4032 portrait.
   expect(jpegSize(sent)).toEqual(nativePhotoSize(3024, 4032));
