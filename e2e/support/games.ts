@@ -65,3 +65,43 @@ export function attemptsOf(username: string, type: string): { correct: number; s
         .all(username, type) as { correct: number; star_eligible: number }[],
   );
 }
+
+// A confirmed course written straight into the base with its games
+// (M5 scenarios: several courses with distinct titles, known answers).
+// Its last access is set in the past, so that opening it makes it the last.
+export function seedCourseWithGames(username: string, title: string, games: { item: string; content: object & { type: string } }[]): string {
+  return withDb((db) => {
+    const { id: userId } = db.prepare("SELECT id FROM accounts WHERE username = ?").get(username) as { id: string };
+    const courseId = uuidV7Generator.next();
+    const long = "2026-01-01T08:00:00.000Z";
+    db.prepare("INSERT INTO courses (id, user_id, title, subject, grade, color, extraction_status, confirmed, created_at, last_accessed_at) VALUES (?, ?, ?, 'french', 'CM1', 'matiere-francais', 'ready', 1, ?, ?)").run(
+      courseId,
+      userId,
+      title,
+      long,
+      long,
+    );
+    db.prepare("INSERT INTO extractions (course_id, markdown, extracted_at) VALUES (?, ?, ?)").run(courseId, `# ${title}`, long);
+    games.forEach(({ item, content }, position) => {
+      const itemId = uuidV7Generator.next();
+      db.prepare("INSERT INTO items (id, course_id, user_id, title, body, game_types_json, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(
+        itemId,
+        courseId,
+        userId,
+        item,
+        item,
+        JSON.stringify([content.type]),
+        position,
+        long,
+      );
+      db.prepare("INSERT INTO exercises (id, item_id, user_id, type, content_json, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(uuidV7Generator.next(), itemId, userId, content.type, JSON.stringify(content), long);
+    });
+    return courseId;
+  });
+}
+
+// Five true-or-false games whose answer is « Vrai », then one whose answer is « Faux ».
+export const TRUE_FALSE_GAMES = [
+  ...["Point un", "Point deux", "Point trois", "Point quatre", "Point cinq"].map((item) => ({ item, content: { type: "true_false", statement: `${item} : c'est dans la leçon.`, answer: true } })),
+  { item: "Point six", content: { type: "true_false", statement: "Point six : ce n'est pas dans la leçon.", answer: false } },
+];

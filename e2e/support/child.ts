@@ -9,7 +9,8 @@ import { E2E_DATA_DIR } from "./env.js";
 
 export const CHILD_FIRST_NAME = "Léa";
 export const CHILD_GRADE = "CM1";
-const PASSWORD = "e2e-Child-Secret!";
+export const CHILD_PASSWORD = "e2e-Child-Secret!";
+const PASSWORD = CHILD_PASSWORD;
 
 // The recorded fixtures' photos: the worker's fixture adapter recognises
 // each case by its size (docs/modules/ingestion.md).
