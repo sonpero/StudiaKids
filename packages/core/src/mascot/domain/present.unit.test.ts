@@ -140,3 +140,18 @@ describe("line catalogue", () => {
     }
   });
 });
+
+// M3 (docs/modules/mascot.md): the end of a generation, both ways.
+describe("present, generation outcomes", () => {
+  it("games ready: joy, and the catalogue's sentence", () => {
+    expect(present({ type: "generation-ready" }, 0)).toEqual({ pose: "joy", line: "Tes jeux sont prêts !" });
+  });
+
+  it("a lesson too short: sorry — a problem of the photo, never of the child — and an invitation to take another", () => {
+    const { pose, line } = present({ type: "generation-insufficient-coverage" }, 0);
+
+    expect(pose).toBe("sorry");
+    expect(line).toBe("Il n'y a pas assez à apprendre sur cette photo. On en prend une autre ?");
+    expect(ALL_LINES).toContain(line);
+  });
+});

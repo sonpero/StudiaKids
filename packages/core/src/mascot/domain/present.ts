@@ -10,6 +10,8 @@ export type Signal =
   | { type: "extraction-not-a-course-page" }
   | { type: "extraction-failed" }
   | { type: "generation-in-progress" }
+  | { type: "generation-ready" }
+  | { type: "generation-insufficient-coverage" }
   | { type: "generation-failed" }
   | { type: "game-from-excerpt-in-progress" }
   | { type: "game-answer"; correct: boolean; streakBonus: boolean }
@@ -34,6 +36,9 @@ const LINES = {
   notACoursePage: ["Je ne vois pas de leçon sur cette photo. On essaie encore ?", "Hum, ce n'est pas une page de cours. On reprend la photo ?"],
   extractionFailed: ["Oh, quelque chose a coincé. On réessaie ?", "Ça n'a pas marché cette fois. On recommence ?"],
   generationInProgress: ["Je prépare tes jeux…", "Tes jeux arrivent…"],
+  // Both « à valider » (docs/ui.md, M3).
+  generationReady: ["Tes jeux sont prêts !"],
+  insufficientCoverage: ["Il n'y a pas assez à apprendre sur cette photo. On en prend une autre ?"],
   generationFailed: ["Tes jeux ne sont pas prêts. On réessaie ?", "Oh, les jeux ont coincé. On recommence ?"],
   gameFromExcerptInProgress: ["Je te prépare un jeu sur ce passage…"],
   correct: ["Bravo !", "Bien joué !", "C'est ça !"],
@@ -84,6 +89,10 @@ function presentKnown(signal: Signal, variantIndex: number): Presentation | null
       return { pose: "glitch", line: pick(LINES.extractionFailed, variantIndex) };
     case "generation-in-progress":
       return { pose: "waiting", line: pick(LINES.generationInProgress, variantIndex) };
+    case "generation-ready":
+      return { pose: "joy", line: pick(LINES.generationReady, variantIndex) };
+    case "generation-insufficient-coverage":
+      return { pose: "sorry", line: pick(LINES.insufficientCoverage, variantIndex) };
     case "generation-failed":
       return { pose: "glitch", line: pick(LINES.generationFailed, variantIndex) };
     case "game-from-excerpt-in-progress":
