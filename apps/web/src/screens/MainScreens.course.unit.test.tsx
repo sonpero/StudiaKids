@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MainScreens } from "./MainScreens.js";
 
@@ -56,7 +56,9 @@ describe("MainScreens: from capture to the course, and back", () => {
     fireEvent.click(screen.getByRole("button", { name: "C'est tout !" }));
 
     expect(await screen.findByText(/Je regarde ta photo…|Je lis ta leçon…/)).toBeInTheDocument();
-    expect(api.getCourse).toHaveBeenCalledWith("c1");
+    // The loading state shows the same sentence before the query runs:
+    // wait for the call itself, not for the text (flaky under load).
+    await waitFor(() => expect(api.getCourse).toHaveBeenCalledWith("c1"));
     fireEvent.click(screen.getByRole("button", { name: "Retour à l'accueil" }));
     expect(await screen.findByRole("button", { name: "Photographier un cours" })).toBeInTheDocument();
   });
@@ -68,6 +70,6 @@ describe("MainScreens: from capture to the course, and back", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Je regarde encore ta photo…" }));
 
     expect(await screen.findByRole("button", { name: "Retour à l'accueil" })).toBeInTheDocument();
-    expect(api.getCourse).toHaveBeenCalledWith("c1");
+    await waitFor(() => expect(api.getCourse).toHaveBeenCalledWith("c1"));
   });
 });
