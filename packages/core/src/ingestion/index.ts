@@ -29,6 +29,7 @@ export { rejectCourse } from "./application/reject-course.js";
 export { retryExtraction } from "./application/retry-extraction.js";
 export { readPageFile, type ReadPageFileDeps } from "./application/read-page-file.js";
 export { recordAccess, type RecordAccessDeps } from "./application/record-access.js";
+export { getCourseText, type GetCourseTextDeps, type CourseText } from "./application/get-course-text.js";
 export { deleteCourse, type DeleteCourseDeps } from "./application/delete-course.js";
 export type { NotFound } from "./application/errors.js";
 
