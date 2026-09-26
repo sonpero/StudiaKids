@@ -5,7 +5,7 @@ import {
   Argon2PasswordHasher,
   createAccount,
   err,
-  handleExtractionJob,
+  extractCourseJobHandler,
   LocalFileStore,
   ok,
   runWorkerTick,
@@ -14,12 +14,10 @@ import {
   SqliteJobQueue,
   uuidV7Generator,
   type CourseNamer,
-  type JobHandler,
   type PhotoExtractor,
 } from "@studiakids/core";
 import { sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { z } from "zod";
 import { buildApp } from "../app.js";
 import { openDatabase, type Db } from "../db/connection.js";
 import { runMigrations } from "../db/migrate.js";
@@ -73,11 +71,10 @@ function multipart(files: Uint8Array[]): { payload: Buffer; headers: Record<stri
   };
 }
 
-const extractCourseHandler = (db: Db, volume: string, extractor: PhotoExtractor, namer: CourseNamer): JobHandler<{ courseId: string }> => ({
-  type: "extract-course",
-  payloadSchema: z.object({ courseId: z.string() }),
-  handle: (payload, ctx) => handleExtractionJob({ repo: new SqliteCourseRepository(db), fileStore: new LocalFileStore(volume), extractor, namer }, payload, ctx),
-});
+// The worker's own handler (extractCourseJobHandler), over the real SQLite
+// repository and file store; only the model adapters are scripted here.
+const extractCourseHandler = (db: Db, volume: string, extractor: PhotoExtractor, namer: CourseNamer) =>
+  extractCourseJobHandler({ repo: new SqliteCourseRepository(db), fileStore: new LocalFileStore(volume), extractor, namer });
 
 const legibleExtractor: PhotoExtractor = { extract: () => Promise.resolve(ok({ markdown: "# Les fractions", legible: true, isCoursePage: true })) };
 const mathsNamer: CourseNamer = { suggest: () => Promise.resolve(ok({ title: "Les fractions", subject: "maths" as const })) };

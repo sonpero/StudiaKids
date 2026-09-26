@@ -462,6 +462,22 @@ Les adaptateurs réels ont aussi des tests unitaires contre des réponses
 minimales écrites dans le test (forme de la requête, retry unique) : ce
 ne sont pas des fixtures de contrat, qui ne viennent que de cet outil.
 
+### Worker et adaptateurs fixture
+
+Le worker enregistre `extract-course` au démarrage
+(`extractCourseJobHandler`, qui porte le schéma Zod du payload). Avec
+`LLM_ADAPTER=fixture` (e2e, test du pipeline), il prend
+`FixturePhotoExtractor` et `FixtureCourseNamer` au lieu des adaptateurs
+Claude : aucune requête réseau. La réponse d'une photo est choisie par le
+**SHA-256 de ses octets sans métadonnées**, comparé à celui des photos de
+référence `photos/<cas>.jpg` du répertoire de fixtures (aujourd'hui
+`tests/fixtures/ingestion/synthetic/photos/` : `legible`, `illegible`,
+`not-a-course`, images synthétiques générées localement, sans rapport
+avec une vraie page). Une photo sans fixture fait échouer l'appel
+(`model-error`), jamais une réponse inventée. Le namer rend toujours
+`namer.json`. Toute autre valeur de `LLM_ADAPTER` que `fixture` ou
+`real` est refusée au démarrage.
+
 ## Hors périmètre
 
 Découpage en items. Annotation par type de jeu. Génération d'exercices.

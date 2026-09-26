@@ -1,25 +1,41 @@
 import path from "node:path";
+import {
+  EXTRACT_COURSE_JOB,
+  extractCourseJobHandler,
+  LocalFileStore,
+  runWorkerLoop,
+  SqliteCourseRepository,
+  SqliteJobQueue,
+  systemClock,
+  uuidV7Generator,
+  type JobHandler,
+} from "@studiakids/core";
 import { openDatabase } from "./db/connection.js";
 import { runMigrations } from "./db/migrate.js";
 import { resolveDataDirs } from "./data-dirs.js";
+import { selectModelAdapters } from "./model-adapters.js";
 
-const { dbDir } = resolveDataDirs();
+const { root, dbDir } = resolveDataDirs();
 
 const db = openDatabase(path.join(dbDir, "studiakids.db"));
 runMigrations(db);
 
-// No job type exists yet (M0: no business module has shipped a job
-// producer). The queue-draining loop itself belongs to the `jobs` module
-// (packages/core/src/jobs/, frozen once written — CLAUDE.md) and replaces
-// this placeholder interval once the first module needs it. The interval's
-// only purpose for now is keeping the process alive, the same role the real
-// polling loop will have.
-console.log("[worker] started, no job handlers registered yet");
-const heartbeat = setInterval(() => undefined, 60_000);
+// Handlers register at startup (docs/modules/jobs.md). The file store gets
+// the volume root: it adds photos/ itself, like the API's.
+const handlers = new Map<string, JobHandler>([
+  [EXTRACT_COURSE_JOB, extractCourseJobHandler({ repo: new SqliteCourseRepository(db), fileStore: new LocalFileStore(root), ...selectModelAdapters(process.env) })],
+]);
 
-function shutdown(signal: string): void {
-  console.log(`[worker] ${signal} received, exiting`);
-  clearInterval(heartbeat);
+const signal = { stopped: false };
+console.log(`[worker] started, handling: ${[...handlers.keys()].join(", ")}`);
+void runWorkerLoop({ jobQueue: new SqliteJobQueue(db, uuidV7Generator), handlers, clock: systemClock }, signal).catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});
+
+function shutdown(signalName: string): void {
+  console.log(`[worker] ${signalName} received, exiting`);
+  signal.stopped = true;
   process.exit(0);
 }
 

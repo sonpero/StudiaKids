@@ -19,6 +19,7 @@ export { createCourse, type CreateCourseDeps } from "./application/create-course
 export { addPage, type AddPageDeps, type AddPageError } from "./application/add-page.js";
 export { startExtraction, type StartExtractionDeps } from "./application/start-extraction.js";
 export { handleExtractionJob, type HandleExtractionJobDeps } from "./application/handle-extraction-job.js";
+export { extractCourseJobHandler } from "./application/extract-course-job.js";
 export { EXTRACT_COURSE_JOB, type ExtractCoursePayload } from "./application/latest-job.js";
 export { getCourse, type GetCourseDeps, type CourseView } from "./application/get-course.js";
 export { getUnconfirmedCourse } from "./application/get-unconfirmed-course.js";
@@ -33,6 +34,7 @@ export type { NotFound } from "./application/errors.js";
 
 export { ClaudePhotoExtractor } from "./infra/claude-photo-extractor.js";
 export { ClaudeCourseNamer } from "./infra/claude-course-namer.js";
+export { FixturePhotoExtractor, FixtureCourseNamer } from "./infra/fixture-adapters.js";
 export { SqliteCourseRepository, type IngestionDb } from "./infra/sqlite-course-repository.js";
 export { LocalFileStore } from "./infra/local-file-store.js";
 // Exported alongside the other modules' tables (drizzle-kit itself reads
