@@ -286,7 +286,7 @@ nombre de jeux prêts sur les cartes de l'accueil (M3), barre d'onglets
 
 ---
 
-## M3 — Lecteur de cours et génération d'exercices (ouvert)
+## M3 — Lecteur de cours et génération d'exercices (accepté)
 
 Ouvert le 2026-09-26 (relecture croisée des specs, dry-run réel de la
 génération, décisions validées) : un appel de génération **par type pour
@@ -333,25 +333,87 @@ générées, avec dégradations de photo (`tests/eval/`).
 progression, revenir plus tard et constater qu'elle est terminée.
 
 **Acceptation**
-- [ ] Unitaire : l'annotation des types de jeu par item ne peut produire que
-      des valeurs de l'énumération fermée des sept types
-- [ ] Unitaire : le contrôle de couverture se déclenche exactement en
+- [x] Unitaire : l'annotation des types de jeu par item ne peut produire que
+      des valeurs de l'énumération fermée des sept types —
+      `exercise-generator/domain/items.unit.test.ts` (« keeps only the
+      closed list's game types, in order, at most 3, never twice », « drops
+      an item left with no known game type ») ; contrat
+      `infra/claude-adapters.contract.test.ts` (« split: at least 6 valid
+      items, each typed from the closed list of seven ») sur réponse réelle ;
+      `apps/api/src/game-types.unit.test.ts` (même liste dans core et le
+      contrat HTTP) ; CHECK SQL de la migration 0004 (mutation testée)
+- [x] Unitaire : le contrôle de couverture se déclenche exactement en
       dessous de 6 items, jamais à 6 ou au-dessus (5 refusé, 6 accepté ;
-      seuil abaissé de 8 à 6, décidé le 2026-09-26)
-- [ ] Contrat : une fixture produisant moins de 6 items termine le job
+      seuil abaissé de 8 à 6, décidé le 2026-09-26) —
+      `domain/items.unit.test.ts` (« is insufficient at 5 items, ready at
+      6 », mutation testé)
+- [x] Contrat : une fixture produisant moins de 6 items termine le job
       avec succès et l'issue `insufficient_coverage` (sans jeu), et l'écran
       affiche le message de la mascotte (pose `sorry`) ; une fixture en
       produisant au moins 6 génère des exercices dans au moins deux types
-      différents (critère reformulé le 2026-09-26)
-- [ ] Intégration : la génération est isolée par type et par exercice : un
+      différents (critère reformulé le 2026-09-26) —
+      `infra/claude-adapters.contract.test.ts` (« a lesson with fewer than
+      6 items ends the generation as insufficient coverage… », « a lesson
+      with at least 6 items gets exercises in at least two different game
+      types »), **réponses réelles de `claude-sonnet-5` enregistrées sur
+      images générées**, rejouées par les vrais adaptateurs et les
+      handlers de jobs ; bout en bout avec le vrai processus worker :
+      `apps/api/src/generation-pipeline.int.test.ts` ; message et pose à
+      l'écran : `GenerationPanel.unit.test.tsx`, `e2e/reader.spec.ts`
+- [x] Intégration : la génération est isolée par type et par exercice : un
       exercice invalide est écarté seul, et un type en échec n'empêche pas
       les autres types d'aboutir (critère reformulé et validé à
       l'ouverture) ; une régénération remplace les exercices d'un item sans
-      dupliquer les lignes
-- [ ] Playwright : le lecteur affiche le texte du cours ; la lecture à voix
+      dupliquer les lignes —
+      `infra/generation-isolation.int.test.ts` (vraie SQLite, vraie file de
+      jobs, handlers du worker ; 5 mutations tuées) ;
+      `application/generation.unit.test.ts` ;
+      `infra/sqlite-item-repository.int.test.ts` (UNIQUE, rollback entier)
+- [x] Playwright : le lecteur affiche le texte du cours ; la lecture à voix
       haute démarre et s'arrête ; la génération se lance puis se termine ;
       le message "reprends une photo" apparaît sur un cours volontairement
-      trop court
+      trop court — `e2e/reader.spec.ts` (« a course card opens the
+      reader… », « reading aloud never starts by itself… », « « Créer mes
+      jeux »: … ready… », « a lesson too short… », plus départ pendant la
+      création, panne et erreur du lecteur), sur fixtures enregistrées,
+      desktop et mobile (Pixel 7 émulé), en CI
+
+**Démo — non faite, reportée** (décidé le 2026-09-26) : **validée par la
+démo de M4**, où les exercices sont vus en jouant. Case non cochée à ce
+titre.
+
+**Évaluation.** `pnpm eval` sur 11 pages générées (CP → 6e, six matières,
+dégradations de photo) : consignes v4 retenues — ancrage 95,5 %,
+validité 94,8 %, aucun vrai/faux qui donne sa réponse (scores par version
+dans `tests/eval/results/`). Le tri à la main des rejets n'a trouvé
+aucune invention dans v4 ; la seule invention passée avant (« 7 + 7 = 14 »,
+pris dans la section Exercices de la page) est désormais écartée en
+production (un calcul doit être écrit avec son résultat dans le cours).
+
+**Dettes reportées, avec leur jalon cible**
+- **Sections d'exercices en bas de page** : le découpage doit-il les
+  ignorer ? Les consignes v3/v4 le demandent déjà au modèle, et le filtre
+  des calculs en protège les calculs, mais le texte extrait les contient
+  toujours (un trou ou une paire pourrait encore s'y ancrer) — à trancher
+  à la **prochaine itération des consignes** (avec une réévaluation payante)
+- **Jeu d'évaluation sur de vraies photos de téléphone** (hérité de M2),
+  non bloquant — **dès que des photos réelles existent** (M4 au plus tôt)
+- **Consigne de découpage** : dit encore « entre 8 et 40 items » (v4,
+  mesurée) alors que le seuil est 6 — **prochaine itération des consignes**
+- **Juge de l'évaluation** parfois faux (« judge v1 ») — **prochaine
+  itération des consignes**
+- **Aucune fixture enregistrée de calcul mental** (la leçon enregistrée
+  est une leçon de français) — **M4**, si le jeu calcul flash en a besoin
+  pour ses scénarios, sinon à la prochaine session d'enregistrement
+- **Namer en mode fixture** : titre « Le verbe » quel que soit le texte —
+  **M4**, si un scénario a besoin du vrai titre
+- **Poses `sorry` / `glitch` et pastels de matière** : toujours
+  provisoires (dette de M2) — validation à l'œil par Alexandre, **M4**
+- **Animations de la mascotte** (respiration d'`idle`,
+  `prefers-reduced-motion`) — **M5** (célébration) ; une réaction immédiate
+  suffit en M4
+- **Worker sans clé API** qui démarre quand même : échouer tôt ou non —
+  question ouverte, **M4**
 
 **Hors périmètre** — jouer effectivement aux jeux générés (`game-engine`,
 M4), étoiles et progression (M5), tuteur (M6).

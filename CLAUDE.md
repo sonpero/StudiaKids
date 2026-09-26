@@ -89,13 +89,9 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**M3 — Lecteur de cours et génération d'exercices — est ouvert** (voir
-`docs/jalons.md`), le 26/09/2026. M0, M1 et M2 sont acceptés. Modules
-touchés : `exercise-generator` (spec `docs/modules/exercise-generator.md`),
-`reader` (`docs/modules/reader.md`), `mascot` (signaux de génération),
-`ingestion` (exports pour le lecteur et le générateur, réparation des
-tableaux sérialisés dans `generateWithRetry`). `jobs/` et `shared/`
-restent frozen.
+**Aucun jalon n'est ouvert.** M0, M1, M2 et M3 sont acceptés (M3 le
+26/09/2026, démo reportée à celle de M4). `jobs/` et `shared/` restent
+frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.
