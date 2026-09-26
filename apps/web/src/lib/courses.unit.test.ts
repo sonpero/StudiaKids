@@ -25,9 +25,10 @@ function stubFetch(status: number, body?: unknown) {
 
 describe("courses API client", () => {
   it("listCourses reads the confirmed courses", async () => {
-    const fetchMock = stubFetch(200, { courses: [course] });
+    // M3: each listed course carries its games count (docs/modules/exercise-generator.md, API).
+    const fetchMock = stubFetch(200, { courses: [{ ...course, exerciseCount: 12 }] });
 
-    expect(await listCourses()).toEqual([course]);
+    expect(await listCourses()).toEqual([{ ...course, exerciseCount: 12 }]);
     expect(fetchMock).toHaveBeenCalledWith("/api/courses");
   });
 

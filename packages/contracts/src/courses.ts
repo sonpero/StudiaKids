@@ -29,7 +29,10 @@ export const pageFileParamsSchema = z.object({ id: z.string(), index: z.coerce.n
 export const createCourseResponseSchema = z.object({ id: z.string() });
 export const startExtractionResponseSchema = z.object({ extractionStatus: extractionStatusSchema });
 export const addPageResponseSchema = z.object({ index: z.number().int() });
-export const courseListResponseSchema = z.object({ courses: z.array(courseSchema) });
+// The home cards also show how many games are ready (M3).
+export const courseListItemSchema = courseSchema.extend({ exerciseCount: z.number().int().describe("Nombre d'exercices prêts, 0 avant « Créer mes jeux »") });
+export type CourseListItemDto = z.infer<typeof courseListItemSchema>;
+export const courseListResponseSchema = z.object({ courses: z.array(courseListItemSchema) });
 export const unconfirmedCourseResponseSchema = z.object({ course: courseSchema.nullable() });
 
 // One stable code per refusal, so the web client picks the mascot's message

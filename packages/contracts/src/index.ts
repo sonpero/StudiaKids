@@ -32,6 +32,8 @@ export {
   courseListResponseSchema,
   unconfirmedCourseResponseSchema,
   courseErrorSchema,
+  courseListItemSchema,
+  type CourseListItemDto,
   type CourseError,
 } from "./courses.js";
 

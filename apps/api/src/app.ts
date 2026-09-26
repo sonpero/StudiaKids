@@ -1,7 +1,16 @@
 import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import staticPlugin from "@fastify/static";
-import { LocalFileStore, MAX_PAGE_BYTES, SqliteCourseRepository, SqliteJobQueue, systemClock, uuidV7Generator } from "@studiakids/core";
+import {
+  IngestionCourseTexts,
+  LocalFileStore,
+  MAX_PAGE_BYTES,
+  SqliteCourseRepository,
+  SqliteItemRepository,
+  SqliteJobQueue,
+  systemClock,
+  uuidV7Generator,
+} from "@studiakids/core";
 import Fastify from "fastify";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import { buildAuthDeps } from "./auth-deps.js";
@@ -11,6 +20,7 @@ import { authPlugin } from "./plugins/auth.js";
 import { dbPlugin } from "./plugins/db.js";
 import { authRoutes } from "./routes/auth.js";
 import { courseRoutes } from "./routes/courses.js";
+import { generationRoutes } from "./routes/generation.js";
 import { healthRoutes } from "./routes/health.js";
 import { meRoutes } from "./routes/me.js";
 import { readerRoutes } from "./routes/reader.js";
@@ -68,14 +78,18 @@ export function buildApp(opts: BuildAppOptions) {
   });
   void app.register(meRoutes);
   const courseRepository = new SqliteCourseRepository(db);
+  const itemRepository = new SqliteItemRepository(db);
+  const jobQueue = new SqliteJobQueue(db, uuidV7Generator);
   void app.register(courseRoutes, {
     repo: courseRepository,
+    itemRepo: itemRepository,
     fileStore: new LocalFileStore(opts.dataDir),
-    jobQueue: new SqliteJobQueue(db, uuidV7Generator),
+    jobQueue,
     idGenerator: uuidV7Generator,
     clock: systemClock,
   });
   void app.register(readerRoutes, { repo: courseRepository, clock: systemClock });
+  void app.register(generationRoutes, { courses: new IngestionCourseTexts(courseRepository), repo: itemRepository, jobQueue, clock: systemClock });
   void app.register(healthRoutes);
 
   if (opts.webDistPath) {

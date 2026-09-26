@@ -30,6 +30,7 @@ import {
   type CourseView,
   type FileStore,
   type IdGenerator,
+  type ItemRepository,
   type JobQueue,
 } from "@studiakids/core";
 import type { FastifyPluginCallback, FastifyReply } from "fastify";
@@ -38,6 +39,9 @@ import { z } from "zod";
 
 export interface CourseRoutesOptions {
   repo: CourseRepository;
+  // exercise-generator's, for the games count on the home cards: composed
+  // here, ingestion never imports exercise-generator (no cycle).
+  itemRepo: ItemRepository;
   fileStore: FileStore;
   jobQueue: JobQueue;
   idGenerator: IdGenerator;
@@ -120,8 +124,10 @@ export const courseRoutes: FastifyPluginCallback<CourseRoutesOptions> = (fastify
   });
 
   app.get("/api/courses", { schema: { response: { 200: courseListResponseSchema } } }, async (request) => {
-    const courses = await listConfirmedCourses({ repo }, request.user!.id);
-    return { courses: courses.map(toDto) };
+    const userId = request.user!.id;
+    const courses = await listConfirmedCourses({ repo }, userId);
+    const counts = await opts.itemRepo.countExercisesByCourse(userId);
+    return { courses: courses.map((course) => ({ ...toDto(course), exerciseCount: counts[course.id] ?? 0 })) };
   });
 
   app.get("/api/courses/unconfirmed", { schema: { response: { 200: unconfirmedCourseResponseSchema } } }, async (request) => {
