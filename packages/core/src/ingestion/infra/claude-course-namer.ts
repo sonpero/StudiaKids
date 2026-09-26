@@ -1,9 +1,9 @@
 import type { LanguageModel } from "ai";
 import { z } from "zod";
-import type { Result } from "../../shared/index.js";
+import { ok, type Result } from "../../shared/index.js";
 import type { CourseNamer, CourseNameSuggestion, ExtractionError } from "../domain/ports.js";
 import { SUBJECTS } from "../domain/subject.js";
-import { COURSE_TITLE_MAX_CHARS, COURSE_TITLE_MIN_CHARS, startsWithLessonCode } from "../domain/title.js";
+import { COURSE_TITLE_MAX_CHARS, COURSE_TITLE_MIN_CHARS, isValidCourseTitle, startsWithLessonCode } from "../domain/title.js";
 import { generateWithRetry } from "./generate-with-retry.js";
 
 const courseNameSchema = z.object({
@@ -28,13 +28,24 @@ const PROMPT =
   `(ni « NUM1 », ni « Leçon 3 »), ${String(COURSE_TITLE_MAX_CHARS)} caractères au plus, et la matière, pour qu'un enfant reconnaisse son cours. ` +
   "Le niveau scolaire ne se devine pas : il ne t'est pas demandé.";
 
+function salvage(output: unknown): CourseNameSuggestion {
+  const answer = typeof output === "object" && output !== null ? (output as { title?: unknown; subject?: unknown }) : {};
+  const title = typeof answer.title === "string" && isValidCourseTitle(answer.title) ? answer.title.trim() : null;
+  const subject = SUBJECTS.find((known) => known === answer.subject) ?? null;
+  return { title, subject };
+}
+
 // Text only: naming never needs the photo, nor the vision model.
 export class ClaudeCourseNamer implements CourseNamer {
   constructor(private readonly model: LanguageModel) {}
 
-  suggest(input: { markdown: string }): Promise<Result<CourseNameSuggestion, ExtractionError>> {
-    return generateWithRetry(this.model, courseNameSchema, (feedback) => [
+  async suggest(input: { markdown: string }): Promise<Result<CourseNameSuggestion, ExtractionError>> {
+    const result = await generateWithRetry(this.model, courseNameSchema, (feedback) => [
       { role: "user", content: `${PROMPT}\n\n${input.markdown}${feedback ? `\n\n${feedback}` : ""}` },
     ]);
+    if (result.ok) return result;
+    // Naming never fails a course: after the retry, whatever field of the
+    // last answer is valid is kept, the other is null (resolveCourseName).
+    return ok(salvage(result.error.lastOutput));
   }
 }

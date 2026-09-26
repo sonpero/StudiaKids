@@ -1,4 +1,4 @@
-import { generateObject, type CoreMessage, type LanguageModel } from "ai";
+import { generateObject, NoObjectGeneratedError, type CoreMessage, type LanguageModel } from "ai";
 import type { ZodType } from "zod";
 import { err, ok, type Result } from "../../shared/index.js";
 import type { ExtractionError } from "../domain/ports.js";
@@ -14,6 +14,16 @@ function describeError(error: unknown): string {
   }
   if (issues.length > 0) return issues.join(" ");
   return error instanceof Error ? error.message : String(error);
+}
+
+// The answer that came back but broke the schema, if any.
+function parsedOutput(error: unknown): unknown {
+  if (!NoObjectGeneratedError.isInstance(error) || error.text === undefined) return undefined;
+  try {
+    return JSON.parse(error.text) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 // One schema, one call; on a validation failure, exactly one retry with the
@@ -33,7 +43,8 @@ export async function generateWithRetry<T>(
       const { object } = await generateObject({ model, schema, messages: buildMessages(feedback) });
       return ok(object);
     } catch (secondError) {
-      return err({ kind: "model-error", message: describeError(secondError) });
+      const lastOutput = parsedOutput(secondError);
+      return err({ kind: "model-error", message: describeError(secondError), ...(lastOutput === undefined ? {} : { lastOutput }) });
     }
   }
 }

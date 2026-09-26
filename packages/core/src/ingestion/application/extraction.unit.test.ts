@@ -112,18 +112,35 @@ describe("handleExtractionJob", () => {
     expect(repo.extractions).toEqual([]);
   });
 
-  it("returns the naming error too, without writing a half-finished extraction", async () => {
+  // Decided 2026-09-26: naming never fails a course (it used to).
+  it("a naming failure never fails the course: the title comes from the first #, the subject is other", async () => {
     const { repo, base } = await courseWithPages(1);
 
     const result = await handleExtractionJob(
-      { ...base, extractor: scriptedPhotoExtractor([legiblePage("# A")]), namer: scriptedCourseNamer(err({ kind: "model-error", message: "bad schema" })) },
+      {
+        ...base,
+        extractor: scriptedPhotoExtractor([legiblePage("# NUM1 – Revoir les nombres jusqu'à 9999\n\n## Écrire")]),
+        namer: scriptedCourseNamer(err({ kind: "model-error", message: "bad schema" })),
+      },
       { courseId: "course-0" },
       ctx,
     );
 
-    expect(result).toEqual({ ok: false, error: "bad schema" });
-    expect(repo.extractions).toEqual([]);
-    expect(repo.courses[0]?.extractionStatus).toBe("running");
+    expect(result).toEqual(ok(undefined));
+    expect(repo.courses[0]).toMatchObject({ extractionStatus: "ready", title: "Revoir les nombres jusqu'à 9999", subject: "other", color: "matiere-autre" });
+    expect(repo.extractions).toHaveLength(1);
+  });
+
+  it("a partial naming keeps its valid field and replaces only the invalid one", async () => {
+    const { repo, base } = await courseWithPages(1);
+
+    await handleExtractionJob(
+      { ...base, extractor: scriptedPhotoExtractor([legiblePage("# Le verbe")]), namer: scriptedCourseNamer(ok({ title: null, subject: "french" as const })) },
+      { courseId: "course-0" },
+      ctx,
+    );
+
+    expect(repo.courses[0]).toMatchObject({ extractionStatus: "ready", title: "Le verbe", subject: "french", color: "matiere-francais" });
   });
 
   it("is idempotent: a retry after a failure leaves exactly one extraction and fresh page results", async () => {

@@ -1,5 +1,6 @@
 import type { JobContext, JobError } from "../../jobs/index.js";
 import { err, ok, type Result } from "../../shared/index.js";
+import { resolveCourseName } from "../domain/course-name.js";
 import { outcomeOfPages } from "../domain/extraction.js";
 import type { CourseNamer, CourseRepository, FileStore, PhotoExtractor } from "../domain/ports.js";
 import { subjectColor } from "../domain/subject.js";
@@ -53,9 +54,11 @@ export async function handleExtractionJob(deps: HandleExtractionJobDeps, payload
   }
 
   const markdown = markdownParts.join("\n\n");
+  // Naming never fails a course (docs/modules/ingestion.md): an unusable
+  // answer, or none, falls back field by field.
   const named = await deps.namer.suggest({ markdown });
-  if (!named.ok) return err(named.error.message);
+  const { title, subject } = resolveCourseName(named.ok ? named.value : null, markdown);
 
-  await deps.repo.completeExtraction(ctx.userId, course.id, { markdown, title: named.value.title, subject: named.value.subject, color: subjectColor(named.value.subject) }, ctx.now);
+  await deps.repo.completeExtraction(ctx.userId, course.id, { markdown, title, subject, color: subjectColor(subject) }, ctx.now);
   return ok(undefined);
 }

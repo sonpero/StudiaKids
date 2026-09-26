@@ -272,6 +272,15 @@ règles enfreintes (les `issues` Zod), pas le message générique du SDK.
   - si toutes les pages sont exploitables : concatène les Markdown dans
     l'ordre, écrit `extractions`, appelle `CourseNamer` pour proposer
     `title`/`subject`, dérive `color` de la matière, `extractionStatus = 'ready'`
+  - **le nommage ne fait jamais échouer un cours** (décidé le 2026-09-26,
+    après l'échec d'une vraie leçon) : après l'unique retry du namer,
+    chaque champ invalide est remplacé indépendamment
+    (`resolveCourseName`, domaine) — titre invalide → premier `#` de
+    l'extraction, nettoyé de son code (`stripLessonCode`) et tronqué à 60
+    caractères sur un mot (« Mon cours » s'il n'y en a pas, à valider) ;
+    matière invalide → `other`. Un champ valide est toujours conservé ; une
+    erreur complète du namer remplace les deux. L'enfant garde le choix
+    « Oui, c'est ça ! » / « Je reprends la photo »
   - rien n'est mis en file après : la génération est déclenchée à la main
     (`docs/jalons.md`, M3), jamais par l'extraction
 - `confirmCourse(userId, courseId, now)` — l'enfant appuie sur "Oui, c'est

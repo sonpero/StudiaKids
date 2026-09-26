@@ -105,8 +105,27 @@ describe("ClaudeCourseNamer", () => {
     ]);
     const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: api.fetch }));
 
-    expect((await namer.suggest({ markdown: "# Les fractions" })).ok).toBe(false);
+    // Naming never fails (decided 2026-09-26): after the retry, the last
+    // answer's valid field is kept and the invalid one is null.
+    expect(await namer.suggest({ markdown: "# Les fractions" })).toEqual({ ok: true, value: { title: "Fractions", subject: null } });
     expect(api.requests).toHaveLength(2);
+  });
+
+  it("after the retry, keeps a valid subject and drops a title still led by a code", async () => {
+    const api = stubApi([
+      { title: "NUM1 – Revoir les nombres jusqu'à 9999", subject: "maths" },
+      { title: "NUM1 – Revoir les nombres jusqu'à 9999", subject: "maths" },
+    ]);
+    const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: api.fetch }));
+
+    expect(await namer.suggest({ markdown: "# NUM1 – Revoir les nombres jusqu'à 9999" })).toEqual({ ok: true, value: { title: null, subject: "maths" } });
+  });
+
+  it("an answer with no usable field at all gives two nulls, never an error", async () => {
+    const api = stubApi([{ nothing: true }, { still: "nothing" }]);
+    const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: api.fetch }));
+
+    expect(await namer.suggest({ markdown: "# A" })).toEqual({ ok: true, value: { title: null, subject: null } });
   });
 });
 

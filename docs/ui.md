@@ -228,7 +228,8 @@ ce parcours :
   réessaie ?" avec un bouton "Réessaie" (celui de la vérification de
   session, M1) ; envoi d'une photo en cours, sur l'écran de capture :
   "J'envoie ta photo…" ; sur l'écran d'attente, le lien discret
-  "Retour à l'accueil".
+  "Retour à l'accueil" ; titre de repli d'un cours dont ni le modèle ni la
+  page ne donnent un titre utilisable : "Mon cours".
 - **Cartes de "Mes cours" en M2** : affichées comme des boutons mais sans
   action (`aria-disabled`) — il n'y a rien à ouvrir avant le lecteur (M3).
 

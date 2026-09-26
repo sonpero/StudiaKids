@@ -70,9 +70,11 @@ describe(`ClaudeCourseNamer contract (${FIXTURE_SOURCE} fixtures)`, () => {
     const result = await namer.suggest({ markdown: "# Les fractions" });
 
     if (!result.ok) throw new Error(result.error.message);
-    expect(result.value.title.trim().length).toBeGreaterThanOrEqual(3);
-    expect(result.value.title.trim().length).toBeLessThanOrEqual(60);
-    expect(result.value.title).not.toMatch(/^\s*(NUM|NB|Leçon|Chapitre)\s*\d/i);
+    const title = result.value.title ?? "";
+    expect(result.value.title).not.toBeNull();
+    expect(title.trim().length).toBeGreaterThanOrEqual(3);
+    expect(title.trim().length).toBeLessThanOrEqual(60);
+    expect(title).not.toMatch(/^\s*(NUM|NB|Leçon|Chapitre)\s*\d/i);
     expect(["maths", "french", "history", "geography", "science", "english", "other"]).toContain(result.value.subject);
   });
 });

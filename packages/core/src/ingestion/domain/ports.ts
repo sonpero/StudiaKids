@@ -12,7 +12,9 @@ export interface FileStore {
   deleteAccountFiles(userId: string): Promise<void>;
 }
 
-export type ExtractionError = { kind: "model-error"; message: string };
+// lastOutput: the model's last answer, parsed, when it came back but broke
+// the schema — what a caller may still salvage field by field.
+export type ExtractionError = { kind: "model-error"; message: string; lastOutput?: unknown };
 
 // legible/isCoursePage false are business results, not errors: they stop
 // the pipeline before any naming or generation (docs/modules/ingestion.md).
@@ -22,7 +24,9 @@ export interface PhotoExtractor {
   extract(input: { bytes: Uint8Array }): Promise<Result<PhotoExtraction, ExtractionError>>;
 }
 
-export type CourseNameSuggestion = { title: string; subject: Subject };
+// A field is null when the namer's answer for it was unusable even after
+// the retry: resolveCourseName replaces it, never the whole course fails.
+export type CourseNameSuggestion = { title: string | null; subject: Subject | null };
 
 export interface CourseNamer {
   suggest(input: { markdown: string }): Promise<Result<CourseNameSuggestion, ExtractionError>>;
