@@ -129,7 +129,7 @@ multiple sous un même compte.
 
 ---
 
-## M2 — Ingestion : photographier un cours (ouvert)
+## M2 — Ingestion : photographier un cours (accepté)
 
 Ajusté à l'ouverture (relecture croisée des specs, décisions validées) :
 photo "pas une page de cours" distinguée de la photo illisible, JPEG
@@ -175,48 +175,108 @@ génération. Une photo lisible aboutit à l'écran de validation à deux
 boutons, puis le cours apparaît dans la liste "Mes cours".
 
 **Acceptation**
-- [ ] Unitaire : la vérification de lisibilité est placée dans le pipeline
-      avant toute étape de génération, jamais après
-- [ ] Contrat : une fixture "floue" renvoie `legible: false` et une raison ;
+- [x] Unitaire : la vérification de lisibilité est placée dans le pipeline
+      avant toute étape de génération, jamais après —
+      `ingestion/domain/extraction.unit.test.ts` (l'illisibilité prime et
+      bloque tout le reste) ; `ingestion/application/extraction.unit.test.ts`
+      (« with an illegible page: stops there, never names the course, writes
+      no extraction, enqueues nothing ») — la génération arrive en M3, qui
+      devra le réaffirmer sur la vraie chaîne
+- [x] Contrat : une fixture "floue" renvoie `legible: false` et une raison ;
       une fixture lisible renvoie un Markdown à hiérarchie de titres ; une
-      fixture "pas un cours" renvoie `isCoursePage: false`
-- [ ] Intégration : l'upload écrit le fichier et la ligne ; le worker
-      traite le job ; le statut est visible via l'API
-- [ ] Intégration : relancer le handler d'extraction deux fois laisse
-      exactement une extraction
-- [ ] Sécurité : un compte ne peut ni lire, ni uploader sur, ni supprimer le
+      fixture "pas un cours" renvoie `isCoursePage: false` —
+      `ingestion/infra/claude-adapters.contract.test.ts`,
+      `FIXTURE_SOURCE = "recorded"` : **réponses réelles enregistrées sur
+      images générées ; validé en réel par la démo sur photo de téléphone**
+      (le retry unique est prouvé sur `schema-violation.json`, dégradée
+      volontairement à partir d'un enregistrement)
+- [x] Intégration : l'upload écrit le fichier et la ligne ; le worker
+      traite le job ; le statut est visible via l'API —
+      `apps/api/src/extraction-pipeline.int.test.ts` (vrai processus worker,
+      `LLM_ADAPTER=fixture`) ; `routes/courses.int.test.ts` (« uploading a
+      page writes the photo file and its row », « status transitions are
+      visible through the API… »)
+- [x] Intégration : relancer le handler d'extraction deux fois laisse
+      exactement une extraction — `ingestion/infra/ingestion.int.test.ts`
+      (« running the extraction handler twice leaves exactly one
+      extraction ») ; rejeu par le vrai worker dans
+      `extraction-pipeline.int.test.ts`
+- [x] Sécurité : un compte ne peut ni lire, ni uploader sur, ni supprimer le
       cours d'un autre compte : 404, testé, indiscernable d'un identifiant
-      inconnu (`docs/securite.md`)
-- [ ] Intégration : supprimer un cours supprime aussi ses fichiers photo sur
-      le disque, pas seulement ses lignes en base (`docs/securite.md`)
-- [ ] Sécurité : un fichier qui n'est pas réellement un JPEG est refusé
+      inconnu (`docs/securite.md`) — `routes/courses.int.test.ts`
+      (« another account's course answers exactly like an unknown id »,
+      8 routes, corps et en-têtes comparés)
+- [x] Intégration : supprimer un cours supprime aussi ses fichiers photo sur
+      le disque, pas seulement ses lignes en base (`docs/securite.md`) —
+      `ingestion/infra/ingestion.int.test.ts` (« deleting a course deletes
+      its photo files on disk, not only its rows ») ;
+      `routes/courses.int.test.ts` (DELETE et refus)
+- [x] Sécurité : un fichier qui n'est pas réellement un JPEG est refusé
       quel que soit son type annoncé ; un JPEG stocké ne contient plus
-      aucun segment de métadonnées (EXIF/GPS compris)
-- [ ] Intégration : une sixième page est refusée ; créer un cours supprime
-      le cours non confirmé précédent du compte, fichiers compris
-- [ ] Intégration : `accounts:delete` sur un compte qui a un cours avec
-      photo supprime ses lignes et son dossier de photos
-- [ ] Playwright : parcours complet photo → validation → cours visible sur
+      aucun segment de métadonnées (EXIF/GPS compris) —
+      `ingestion/domain/photo.unit.test.ts` (type réel, « leaves no trace of
+      the GPS coordinates ») ; `ingestion/application/add-page.unit.test.ts`
+      (« stores the photo without its metadata… ») ;
+      `routes/courses.int.test.ts` (PNG annoncé `image/jpeg` → 415) ;
+      `e2e/capture.spec.ts` (photo envoyée sans segment APP1)
+- [x] Intégration : une sixième page est refusée ; créer un cours supprime
+      le cours non confirmé précédent du compte, fichiers compris —
+      `routes/courses.int.test.ts` (« refuses a non-JPEG, a duplicate and a
+      sixth page… », « creating a course replaces the previous unconfirmed
+      one, files included ») ; `ingestion/infra/ingestion.int.test.ts`
+- [x] Intégration : `accounts:delete` sur un compte qui a un cours avec
+      photo supprime ses lignes et son dossier de photos —
+      `apps/api/src/account-deletion.int.test.ts` (la fonction appelée par la
+      CLI ; le processus CLI lui-même n'est pas lancé par un test)
+- [x] Playwright : parcours complet photo → validation → cours visible sur
       l'accueil ; parcours photo illisible → message de la mascotte →
       nouvelle tentative, sans cours créé entre-temps ; le bouton "Une
-      autre page" disparaît à la cinquième page
+      autre page" disparaît à la cinquième page — `e2e/photo-course.spec.ts`,
+      `e2e/photo-unusable.spec.ts`, `e2e/capture.spec.ts`, sur fixtures
+      enregistrées, desktop et mobile (Pixel 7 émulé), en CI
 
-**Fixtures réelles — levé le 2026-09-26.** Les commits 6 à 11 ont
-avancé sur des réponses modèle synthétiques ; les réponses réelles sont
-depuis enregistrées par `pnpm fixtures:record`, **sur des images
-générées** (page de cahier, sa version floue, un dessin sans leçon — voir
+**Démo — validée le 26/09/2026 sur téléphone réel.** Une vraie page de
+cours (« NUM1 – Revoir les nombres jusqu'à 9999 », CM, carte mentale)
+photographiée, lue, nommée et confirmée, puis listée dans "Mes cours".
+Elle a d'abord **échoué** : le namer proposait « Les nombres jusqu'à
+9999 », rejeté deux fois par l'ancienne règle des trois mots, et tout le
+cours finissait en échec technique (après avoir refait l'extraction à
+chaque tentative). Corrections qu'elle a provoquées, avant la démo
+validée : titre de la leçon tel qu'écrit, sans code, de 3 à 60 caractères
+(critère du périmètre modifié) ; le nommage ne fait jamais échouer un
+cours (repli champ par champ) ; le Markdown lu est conservé entre les
+tentatives ; aucune image avec métadonnées sous `tests/fixtures` ;
+API, worker et CLI partagent le même dossier de données en local.
+
+**Fixtures réelles.** Les commits 6 à 11 ont avancé sur des réponses
+modèle synthétiques ; les réponses réelles sont depuis enregistrées par
+`pnpm fixtures:record`, **sur des images générées** (page de cahier, sa
+version floue, un dessin sans leçon, une page au titre long — voir
 `docs/modules/ingestion.md`, "Fixtures enregistrées"), et
 `FIXTURE_SOURCE = "recorded"` : tests de contrat, worker et Playwright
-tournent sur elles. L'évaluation sur de vraies photos de téléphone est
-reportée en dette de M3.
+tournent sur elles.
 
-**Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons
-provisoires** dérivés des tracés de `idle`
-(`docs/design/mascotte-sorry-provisoire.svg`,
-`docs/design/mascotte-glitch-provisoire.svg`), en attendant leur dessin
-définitif dans `docs/design/` ; de même, les pastels de matière
-géographie, sciences, anglais et autre sont provisoires
-(`docs/design/tokens.md`), à valider visuellement.
+**Dettes reportées, avec leur jalon cible**
+- **Poses `sorry` et `glitch`** : brouillons provisoires dérivés des
+  tracés de `idle` (`docs/design/mascotte-sorry-provisoire.svg`,
+  `docs/design/mascotte-glitch-provisoire.svg`), et **pastels de
+  matière** géographie, sciences, anglais et autre provisoires
+  (`docs/design/tokens.md`) — dessin et validation visuelle **avant M4**,
+  dont les écrans de jeu les montrent le plus
+- **Textes « à valider »** de `docs/ui.md` (bandeaux, écran d'échec
+  technique, refus d'upload, chargement et erreur de l'accueil, « J'envoie
+  ta photo… », « Retour à l'accueil », « Tu n'as pas fini tes photos… »,
+  « Mon cours ») — **à l'ouverture de M3**
+- **Cartes "Mes cours" sans action** (`aria-disabled`) : elles ouvriront
+  le lecteur — **M3**
+- **Animations de la mascotte** (respiration d'`idle`, versions statiques
+  pour `prefers-reduced-motion`) non câblées — **M4**, avec `joy`
+- **Jeu d'évaluation du prompt d'extraction sur de vraies photos de
+  téléphone** (éclairage, angle, écriture manuscrite, CP à 6e) — **M3**
+- **Test instable** `apps/web/src/screens/MainScreens.course.unit.test.tsx`
+  (« « C'est tout ! » opens the course being read… ») : un échec sur huit
+  passages complets de `pnpm test`, non reproduit, ni modifié ni retiré —
+  à corriger au **premier commit de M3**
 
 **Hors périmètre** — découpage en items, génération d'exercices, lecture à
 voix haute, tuteur, tout format autre que la photo (PDF, Word, PowerPoint),
