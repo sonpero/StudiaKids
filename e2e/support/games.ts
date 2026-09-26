@@ -69,7 +69,7 @@ export function attemptsOf(username: string, type: string): { correct: number; s
 // A confirmed course written straight into the base with its games
 // (M5 scenarios: several courses with distinct titles, known answers).
 // Its last access is set in the past, so that opening it makes it the last.
-export function seedCourseWithGames(username: string, title: string, games: { item: string; content: object & { type: string } }[]): string {
+export function seedCourseWithGames(username: string, title: string, games: { item: string; content: Record<string, unknown> & { type: string } }[]): string {
   return withDb((db) => {
     const { id: userId } = db.prepare("SELECT id FROM accounts WHERE username = ?").get(username) as { id: string };
     const courseId = uuidV7Generator.next();
