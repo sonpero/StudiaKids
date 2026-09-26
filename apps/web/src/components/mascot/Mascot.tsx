@@ -1,10 +1,11 @@
+import { Glitch } from "./Glitch.js";
 import { Idle } from "./Idle.js";
+import { Sorry } from "./Sorry.js";
+import { Waiting } from "./Waiting.js";
 
 // docs/ui.md, "Contrat d'API du composant". The full closed list of seven
-// poses, even though only `idle` has art yet (`watching`/`waiting`/`joy`
-// are drawn in docs/design/mascotte-etats.html but have no component file
-// yet either — added when the screens that need them land, `sorry`/
-// `glitch`/`refusal` before M2/M2/M6 respectively per docs/modules/mascot.md).
+// poses; `watching`, `joy` and `refusal` get their component when a screen
+// needs them (docs/modules/mascot.md).
 export type MascotPose = "idle" | "watching" | "waiting" | "joy" | "sorry" | "glitch" | "refusal";
 
 export interface MascotProps {
@@ -16,8 +17,12 @@ export interface MascotProps {
 // renders `idle`, never an exception or an empty element.
 export function Mascot({ pose }: MascotProps) {
   switch (pose) {
-    case "idle":
-      return <Idle />;
+    case "waiting":
+      return <Waiting />;
+    case "sorry":
+      return <Sorry />;
+    case "glitch":
+      return <Glitch />;
     default:
       return <Idle />;
   }

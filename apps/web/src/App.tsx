@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mascot } from "./components/mascot/Mascot.js";
 import { fetchMe, logout } from "./lib/api.js";
+import { reencodePhoto } from "./lib/reencode.js";
+import { MainScreens } from "./screens/MainScreens.js";
 import { LoginScreen } from "./screens/LoginScreen.js";
 
 const ME_QUERY_KEY = ["me"];
@@ -50,18 +52,5 @@ export function App() {
     await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
   }
 
-  return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
-      <Mascot pose="idle" />
-      <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--color-ink)]">StudiaKids</h1>
-      <p className="font-[family-name:var(--font-text)] text-[var(--color-ink-soft)]">Salut {account.firstName} !</p>
-      <button
-        type="button"
-        onClick={() => void handleLogout()}
-        className="h-[44px] rounded-[15px] border-[3px] border-[var(--color-ink)] px-4 font-[family-name:var(--font-display)] font-bold text-[var(--color-ink)]"
-      >
-        Se déconnecter
-      </button>
-    </main>
-  );
+  return <MainScreens firstName={account.firstName} onLogout={() => void handleLogout()} reencode={reencodePhoto} />;
 }

@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
+      // docs/modules/mascot.md: imported directly, never through
+      // @studiakids/core's index (which pulls Node-only modules).
+      "@studiakids/mascot": path.resolve(import.meta.dirname, "../../packages/core/src/mascot/index.ts"),
     },
   },
   server: {

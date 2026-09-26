@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -10,8 +9,11 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@studiakids/mascot": ["../../packages/core/src/mascot/index.ts"]
     }
   },
-  "include": ["src"]
+  // mascot/ is imported straight into the browser bundle
+  // (docs/modules/mascot.md); dependency-cruiser keeps it self-contained.
+  "include": ["src", "../../packages/core/src/mascot"]
 }

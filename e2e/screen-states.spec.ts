@@ -4,8 +4,7 @@ import { expect, photo, test } from "./support/child.js";
 // screen that loads data. Ready is the photo-course journey; the others
 // are forced here with page.route.
 
-// FIXME(11a): passes once commit 11a adds the home screen.
-test.fixme("home, empty: the mascot invites the child to photograph a lesson, the action right there", async ({ page, child: _child }) => {
+test("home, empty: the mascot invites the child to photograph a lesson, the action right there", async ({ page, child: _child }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "idle");
@@ -14,8 +13,7 @@ test.fixme("home, empty: the mascot invites the child to photograph a lesson, th
   await expect(page.getByRole("button", { name: "Se déconnecter" })).toBeVisible();
 });
 
-// FIXME(11a): passes once commit 11a adds the home screen.
-test.fixme("home, loading: the waiting mascot and a short sentence, never a bare spinner", async ({ page, child: _child }) => {
+test("home, loading: the waiting mascot and a short sentence, never a bare spinner", async ({ page, child: _child }) => {
   let release: () => void = () => undefined;
   const held = new Promise<void>((resolve) => (release = resolve));
   await page.route("**/api/courses", async (route) => {
@@ -31,14 +29,14 @@ test.fixme("home, loading: the waiting mascot and a short sentence, never a bare
   await expect(page.getByRole("button", { name: "Photographier un cours" })).toBeVisible();
 });
 
-// FIXME(11a): passes once commit 11a adds the home screen.
-test.fixme("home, error: the glitch mascot, a child's sentence and a way to retry", async ({ page, child: _child }) => {
+test("home, error: the glitch mascot, a child's sentence and a way to retry", async ({ page, child: _child }) => {
   let broken = true;
   await page.route("**/api/courses", (route) => (broken ? route.fulfill({ status: 500, body: "" }) : route.fallback()));
 
   await page.goto("/");
 
-  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch");
+  // TanStack Query's default three retries (1 s, 2 s, 4 s) come first.
+  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch", { timeout: 15_000 });
   await expect(page.getByText(/quelque chose a coincé/)).toBeVisible();
   await expect(page.getByText(/500|error/i)).toHaveCount(0);
   broken = false;

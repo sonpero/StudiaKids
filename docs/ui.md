@@ -217,6 +217,14 @@ ce parcours :
   prend une autre ?" ; déjà prise (`duplicate`) "Tu as déjà pris cette
   page !" ; échec de l'envoi lui-même (réseau, erreur inattendue),
   mascotte `glitch` : "Oh, la photo n'est pas partie. On réessaie ?".
+- **Autres textes introduits par l'implémentation (M2), *à valider*** :
+  chargement de l'accueil, mascotte `waiting` : "Je cherche tes cours…" ;
+  erreur de l'accueil, mascotte `glitch` : "Oh, quelque chose a coincé. On
+  réessaie ?" avec un bouton "Réessaie" (celui de la vérification de
+  session, M1) ; envoi d'une photo en cours, sur l'écran de capture :
+  "J'envoie ta photo…".
+- **Cartes de "Mes cours" en M2** : affichées comme des boutons mais sans
+  action (`aria-disabled`) — il n'y a rien à ouvrir avant le lecteur (M3).
 
 Pas de barre d'onglets en M2 : seul l'accueil existe, elle arrive avec le
 lecteur (M3). Pas de routeur non plus (navigation par état d'écran, comme

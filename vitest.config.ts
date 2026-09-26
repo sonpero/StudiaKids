@@ -8,6 +8,7 @@ const commonInclude = ["apps/*/src/**", "packages/*/src/**"];
 // repeated per project rather than set once at the top level.
 const webAlias = {
   "@": path.resolve(import.meta.dirname, "apps/web/src"),
+  "@studiakids/mascot": path.resolve(import.meta.dirname, "packages/core/src/mascot/index.ts"),
 };
 
 // Inline projects do NOT inherit root-level test options, so the network

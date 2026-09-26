@@ -19,6 +19,11 @@
   --matiere-maths: #ffc2d4;
   --matiere-francais: #c9bbff;
   --matiere-histoire: #b8e9d0;
+  /* Provisional since M2 (docs/design/tokens.md), to validate visually. */
+  --matiere-geographie: #bde3ff;
+  --matiere-sciences: #e2f0a8;
+  --matiere-anglais: #f2c4f0;
+  --matiere-autre: #d5dce8;
 
   /* Referenced as font-[family-name:var(--font-display)], never the bare
      font-[var(--font-display)]: Tailwind's font- prefix is ambiguous
