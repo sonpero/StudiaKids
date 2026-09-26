@@ -20,6 +20,9 @@ dist/
 e2e/.data/
 e2e/.auth/
 
+# Evaluation cache (raw model outputs, details): local only
+/tests/eval/.cache/
+
 # IDE
 .DS_Store
 .idea/

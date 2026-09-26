@@ -1,0 +1,112 @@
+[
+  {
+    "id": "cp-maths-additions",
+    "grade": "CP",
+    "subject": "maths",
+    "calc": true,
+    "short": false,
+    "degrade": []
+  },
+  {
+    "id": "ce2-maths-table-4",
+    "grade": "CE2",
+    "subject": "maths",
+    "calc": true,
+    "short": false,
+    "degrade": [
+      "perspective",
+      "shadow"
+    ]
+  },
+  {
+    "id": "cm1-maths-fractions",
+    "grade": "CM1",
+    "subject": "maths",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "gray",
+      "noise"
+    ]
+  },
+  {
+    "id": "6e-maths-cercle",
+    "grade": "6e",
+    "subject": "maths",
+    "calc": true,
+    "short": false,
+    "degrade": [
+      "glare"
+    ]
+  },
+  {
+    "id": "ce1-francais-son-e",
+    "grade": "CE1",
+    "subject": "french",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "gray",
+      "noise"
+    ]
+  },
+  {
+    "id": "cm2-francais-passe-compose",
+    "grade": "CM2",
+    "subject": "french",
+    "calc": false,
+    "short": false,
+    "degrade": []
+  },
+  {
+    "id": "ce2-histoire-prehistoire",
+    "grade": "CE2",
+    "subject": "history",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "glare"
+    ]
+  },
+  {
+    "id": "cm1-geographie-fleuves",
+    "grade": "CM1",
+    "subject": "geography",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "perspective"
+    ]
+  },
+  {
+    "id": "6e-sciences-vegetaux",
+    "grade": "6e",
+    "subject": "science",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "shadow"
+    ]
+  },
+  {
+    "id": "cm2-anglais-days",
+    "grade": "CM2",
+    "subject": "english",
+    "calc": false,
+    "short": false,
+    "degrade": [
+      "shadow",
+      "noise"
+    ]
+  },
+  {
+    "id": "cp-francais-son-a-court",
+    "grade": "CP",
+    "subject": "french",
+    "calc": false,
+    "short": true,
+    "degrade": [
+      "gray"
+    ]
+  }
+]
