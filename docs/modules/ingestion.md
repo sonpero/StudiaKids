@@ -222,6 +222,18 @@ métier normaux qui bloquent la suite du pipeline.
 signal dont `exercise-generator` a besoin pour découper en items. Un
 extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
 
+**Forme du Markdown, imposée au modèle et vérifiée** (décidé après le
+premier vrai appel, 2026-09-25, appliqué le 2026-09-26) : **un seul titre
+`#`, le titre de la leçon** ; ses parties en `##` ; **l'en-tête de la
+page** (matière, numéro de leçon, date) **en texte simple, jamais en
+titre** ; **toute énumération en liste Markdown `- ` ou `1. `**, jamais
+en lignes ouvertes par « – », « — », « • », « · » ou « ● » (qu'un rendu
+Markdown fusionne en un paragraphe). Consigne dans le prompt et dans le
+`.describe()` ; deux `.refine()` du schéma (au plus un `#` ; aucune ligne
+à puce typographique), qui ne s'appliquent qu'à une page lisible de cours
+et déclenchent l'unique retry. Le retry renvoie au modèle les messages des
+règles enfreintes (les `issues` Zod), pas le message générique du SDK.
+
 ## Cas d'usage
 
 - `createCourse(userId, grade, now)` — supprime d'abord tout cours non

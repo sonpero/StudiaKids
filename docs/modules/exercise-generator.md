@@ -296,9 +296,8 @@ Recherche plein texte dans les items (pas demandée par le brief).
   jouer pour un item, ou si `game-engine` pioche automatiquement parmi les
   exercices disponibles. Cette spec ne préjuge pas de la réponse — voir
   `docs/modules/game-engine.md`.
-- **Observé sur un vrai appel d'extraction (M2, 2026-09-25)** : l'en-tête
-  de page (« Mathématiques – Leçon 7 ») sort en `#`, au même niveau que le
-  vrai titre du cours (« # Les fractions »), et ne coiffe aucun contenu.
-  Un découpage par titres de premier niveau en ferait une section vide.
-  À traiter avant M3 : ignorer une section sans corps, découper sur `##`,
-  ou demander autre chose à l'extraction — à trancher.
+- ~~En-tête de page sorti en `#`~~ — **tranché à la source**
+  (2026-09-26) : l'extraction n'a qu'un `#`, le titre de la leçon, et
+  écrit l'en-tête de la page en texte simple (`docs/modules/ingestion.md`,
+  "Forme du Markdown"). Un cours de plusieurs pages concatène toutefois
+  un `#` par page qui en porte un : le découpage de M3 doit le prévoir.

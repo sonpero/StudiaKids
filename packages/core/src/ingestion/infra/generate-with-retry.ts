@@ -3,7 +3,16 @@ import type { ZodType } from "zod";
 import { err, ok, type Result } from "../../shared/index.js";
 import type { ExtractionError } from "../domain/ports.js";
 
+// The SDK's own message is generic ("response did not match schema"); the
+// rule the model broke lives in the Zod issues down the cause chain, and
+// that is what it must be told (CLAUDE.md rule 4).
 function describeError(error: unknown): string {
+  const issues: string[] = [];
+  for (let cause: unknown = error, depth = 0; cause instanceof Error && depth < 5; cause = cause.cause, depth++) {
+    const found = (cause as { issues?: unknown }).issues;
+    if (Array.isArray(found)) issues.push(...found.map((issue: { message?: unknown }) => String(issue.message)));
+  }
+  if (issues.length > 0) return issues.join(" ");
   return error instanceof Error ? error.message : String(error);
 }
 

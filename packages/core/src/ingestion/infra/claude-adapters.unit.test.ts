@@ -109,3 +109,71 @@ describe("ClaudeCourseNamer", () => {
     expect(api.requests).toHaveLength(2);
   });
 });
+
+// Decided before commit 7 of M2 (docs/modules/ingestion.md), after a real
+// dry run: the page header (subject, lesson number) came out as a second
+// `#`, and visual bullets as « – » lines that are not Markdown lists. Both
+// break the reader's rendering and the splitting of M3.
+describe("ClaudePhotoExtractor, Markdown shape", () => {
+  const extractorFor = (inputs: unknown[]) => {
+    const api = stubApi(inputs);
+    return { api, extractor: new ClaudePhotoExtractor(createLanguageModel({ apiKey: "k", fetch: api.fetch })) };
+  };
+  const page = (markdown: string) => ({ markdown, legible: true, isCoursePage: true });
+  const clean = "# Le verbe\n\nCahier de Léa, leçon 3\n\n## 1. À quoi sert le verbe ?\n\n- chante est le verbe ;\n- Léa est le sujet.\n\n1. chanter\n2. finir";
+
+  it("asks for the lesson title as the only # heading, the page header as plain text, and lists as « - » or « 1. »", async () => {
+    const { api, extractor } = extractorFor([page(clean)]);
+
+    await extractor.extract({ bytes: photo });
+
+    const prompt = lastUserText(api.requests[0]!);
+    expect(prompt).toMatch(/en-tête de la page/);
+    expect(prompt).toMatch(/seul titre #/);
+    expect(prompt).toMatch(/« - » ou « 1\. »/);
+  });
+
+  it("accepts one # heading, ## sections, « - » and « 1. » lists on the first call", async () => {
+    const { api, extractor } = extractorFor([page(clean)]);
+
+    expect(await extractor.extract({ bytes: photo })).toEqual({ ok: true, value: page(clean) });
+    expect(api.requests).toHaveLength(1);
+  });
+
+  it("the page header as a second # heading triggers the single retry, with the rule fed back", async () => {
+    const { api, extractor } = extractorFor([page("# Français – Leçon 3\n\n# Le verbe\n\n## 1. Définition\n\nTexte."), page(clean)]);
+
+    const result = await extractor.extract({ bytes: photo });
+
+    expect(result).toEqual({ ok: true, value: page(clean) });
+    expect(api.requests).toHaveLength(2);
+    expect(lastUserText(api.requests[1]!)).toMatch(/un seul titre #/i);
+  });
+
+  for (const bullet of ["–", "—", "•", "·", "●"]) {
+    it(`a « ${bullet} » bullet line (not a Markdown list) triggers the single retry`, async () => {
+      const { api, extractor } = extractorFor([page(`# Le verbe\n\nDans la phrase :\n ${bullet} chante est le verbe ;\n ${bullet} Léa est le sujet.`), page(clean)]);
+
+      const result = await extractor.extract({ bytes: photo });
+
+      expect(result.ok).toBe(true);
+      expect(api.requests).toHaveLength(2);
+      expect(lastUserText(api.requests[1]!)).toMatch(/listes Markdown/);
+    });
+  }
+
+  it("a dash inside a sentence or a heading is not a bullet", async () => {
+    const markdown = "# Français – Leçon 3 : le verbe\n\nLe verbe – c'est important – change avec le temps.";
+    const { api, extractor } = extractorFor([page(markdown)]);
+
+    expect(await extractor.extract({ bytes: photo })).toEqual({ ok: true, value: page(markdown) });
+    expect(api.requests).toHaveLength(1);
+  });
+
+  it("an unusable photo is never held to the Markdown rules", async () => {
+    const { api, extractor } = extractorFor([{ markdown: "# A\n# B\n – x", legible: false, isCoursePage: false, reason: "trop flou" }]);
+
+    expect((await extractor.extract({ bytes: photo })).ok).toBe(true);
+    expect(api.requests).toHaveLength(1);
+  });
+});
