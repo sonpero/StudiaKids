@@ -340,8 +340,16 @@ l'écran Jouer inchangés) :
   récapitulatif.
 - **Reprise** : l'accueil propose le dernier cours ouvert (plus grand
   `lastAccessedAt`, qu'ouvrir Lire ou Jouer met à jour), y compris après
-  une reconnexion : « On reprend « Le verbe » ? » ; un tap ouvre Jouer si
-  le cours a des jeux, sinon Lire.
+  une reconnexion : **sa carte porte « On reprend ? »** (précisé à
+  l'implémentation : un bouton séparé aurait doublé le nom de la carte) ;
+  un tap ouvre Jouer si le cours a des jeux, sinon Lire.
+
+Précisé à l'implémentation (M5, textes *à valider*) : le compteur est une
+image nommée « N étoile(s) » (le chiffre visible est décoratif pour le
+lecteur d'écran) ; récapitulatif : « Je compte tes étoiles… » pendant le
+chargement, « N bonne(s) réponse(s) » (masqué à zéro), « Encore des jeux »
+ouvre une nouvelle session ; la liste Jouer porte « J'ai fini ». Les
+animations vivent dans `apps/web/src/styles/motion.css`.
 - Aucun classement, aucune comparaison, aucune notification.
 
 ---
