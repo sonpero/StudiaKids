@@ -259,6 +259,11 @@ Sondage de statut : TanStack Query avec `refetchInterval` tant que le
 statut n'est pas terminal, ralenti après 30 secondes — mécanisme recopié de
 StudIA tel quel.
 
+**Relances** (décidé en M2, 2026-09-26) : **une seule relance** d'une
+requête en échec, **aucune sur un 404** (un cours remplacé entre-temps est
+une réponse, pas une panne) — l'écran d'erreur arrive après environ une
+seconde, pas sept (`apps/web/src/lib/query-client.ts`).
+
 ---
 
 ## États requis

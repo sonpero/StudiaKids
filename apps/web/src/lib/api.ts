@@ -1,4 +1,5 @@
 import type { MeResponse } from "@studiakids/contracts";
+import { HttpError } from "./http-error.js";
 
 export type LoginResult = { ok: true } | { ok: false; error: "invalid_credentials" | "rate_limited" };
 
@@ -8,7 +9,7 @@ export type LoginResult = { ok: true } | { ok: false; error: "invalid_credential
 export async function fetchMe(): Promise<MeResponse | null> {
   const res = await fetch("/api/me");
   if (res.status === 401) return null;
-  if (!res.ok) throw new Error(`GET /api/me failed with status ${String(res.status)}`);
+  if (!res.ok) throw new HttpError(res.status, "GET /api/me");
   return (await res.json()) as MeResponse;
 }
 

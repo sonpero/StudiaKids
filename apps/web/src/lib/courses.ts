@@ -9,6 +9,7 @@ import {
   type CourseError,
   type ExtractionStatus,
 } from "@studiakids/contracts";
+import { HttpError } from "./http-error.js";
 
 export type UploadError = CourseError | "upload_failed";
 export type UploadResult = { ok: true; index: number } | { ok: false; error: UploadError };
@@ -16,7 +17,7 @@ export type UploadResult = { ok: true; index: number } | { ok: false; error: Upl
 // Unexpected statuses throw, for the calling screen's error state; the
 // refusals a screen explains to the child come back as stable codes.
 function expectOk(res: Response, what: string): Response {
-  if (!res.ok) throw new Error(`${what} failed with status ${String(res.status)}`);
+  if (!res.ok) throw new HttpError(res.status, what);
   return res;
 }
 

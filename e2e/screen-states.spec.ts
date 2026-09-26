@@ -35,8 +35,8 @@ test("home, error: the glitch mascot, a child's sentence and a way to retry", as
 
   await page.goto("/");
 
-  // TanStack Query's default three retries (1 s, 2 s, 4 s) come first.
-  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch", { timeout: 15_000 });
+  // One retry at most (apps/web/src/lib/query-client.ts), about a second.
+  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch");
   await expect(page.getByText(/quelque chose a coincé/)).toBeVisible();
   await expect(page.getByText(/500|error/i)).toHaveCount(0);
   broken = false;
@@ -74,8 +74,8 @@ test("course screen, error: the glitch mascot and a retry, never a raw error", a
   );
   await page.getByRole("button", { name: "C'est tout !" }).click();
 
-  // TanStack Query's default three retries (1 s, 2 s, 4 s) come first.
-  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch", { timeout: 15_000 });
+  // One retry at most (apps/web/src/lib/query-client.ts), about a second.
+  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch");
   await expect(page.getByText(/quelque chose a coincé/)).toBeVisible();
   broken = false;
   await page.getByRole("button", { name: "Réessaie" }).click();
