@@ -44,6 +44,8 @@ export interface ItemRepository {
   listItems(userId: string, courseId: string): Promise<Item[]>; // by position
   findItem(userId: string, itemId: string): Promise<Item | null>;
   listExercises(userId: string, itemIds: string[], type?: GameType): Promise<Exercise[]>;
+  // For game-engine (M4): one exercise, only for its owner.
+  findExercise(userId: string, exerciseId: string): Promise<Exercise | null>;
   // One transaction: removed first, then inserted.
   applyExercises(userId: string, change: { remove: string[]; insert: Exercise[] }): Promise<void>;
   countExercisesByCourse(userId: string): Promise<Record<string, number>>;

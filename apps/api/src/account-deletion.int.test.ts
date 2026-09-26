@@ -10,6 +10,7 @@ import {
   SqliteAccountRepository,
   SqliteCourseRepository,
   SqliteItemRepository,
+  SqliteAttemptRepository,
   SqliteJobQueue,
   startExtraction,
   uuidV7Generator,
@@ -93,5 +94,28 @@ describe("deleteAccountWithPhotos", () => {
     expect(await deleteAccountWithPhotos({ db, volumeRoot: volume }, "lea")).toBe("deleted");
 
     expect([count("items", lea.userId), count("exercises", lea.userId), count("course_generations", lea.userId)]).toEqual([0, 0, 0]);
+  });
+
+  // Decided at M4's opening: accounts:delete also removes the account's
+  // attempts (ON DELETE CASCADE on user_id).
+  it("removes the account's attempts too, and leaves another account's alone", async () => {
+    const seed = async (username: string, exerciseId: string) => {
+      const account = await accountWithCourse(username);
+      const courseId = db.get<{ id: string }>(sql`SELECT id FROM courses WHERE user_id = ${account.userId}`).id;
+      db.run(sql`UPDATE courses SET extraction_status = 'ready', confirmed = 1 WHERE id = ${courseId}`);
+      const item = { id: `i-${exerciseId}`, courseId, userId: account.userId, title: "Le verbe", body: "b", applicableGameTypes: ["true_false" as const], position: 0, createdAt: now.toISOString() };
+      const items = new SqliteItemRepository(db);
+      await items.saveSplit(account.userId, courseId, { items: [item], outcome: "items_ready", itemCount: 1 }, now);
+      await items.applyExercises(account.userId, { remove: [], insert: [{ id: exerciseId, itemId: item.id, userId: account.userId, type: "true_false", content: { type: "true_false", statement: "Vrai.", answer: true }, createdAt: now.toISOString() }] });
+      await new SqliteAttemptRepository(db).record(account.userId, [{ id: `a-${exerciseId}`, exerciseId, type: "true_false", unitId: "0", correct: true, starEligible: true }], now);
+      return account.userId;
+    };
+    const lea = await seed("lea", "e-lea");
+    const tom = await seed("tom", "e-tom");
+    expect([count("attempts", lea), count("attempts", tom)]).toEqual([1, 1]);
+
+    expect(await deleteAccountWithPhotos({ db, volumeRoot: volume }, "lea")).toBe("deleted");
+
+    expect([count("attempts", lea), count("attempts", tom)]).toEqual([0, 1]);
   });
 });

@@ -26,6 +26,7 @@ export function fakeItemRepository(): ItemRepository & { items: Item[]; exercise
     listItems: (userId, courseId) =>
       Promise.resolve(items.filter((i) => i.userId === userId && i.courseId === courseId).sort((a, b) => a.position - b.position).map((i) => ({ ...i }))),
     findItem: (userId, itemId) => Promise.resolve(items.find((i) => i.userId === userId && i.id === itemId) ?? null),
+    findExercise: (userId, exerciseId) => Promise.resolve(exercises.find((e) => e.userId === userId && e.id === exerciseId) ?? null),
     listExercises: (userId, itemIds, type) =>
       Promise.resolve(exercises.filter((e) => e.userId === userId && itemIds.includes(e.itemId) && (type === undefined || e.type === type)).map((e) => ({ ...e }))),
     applyExercises: (userId, change) => {

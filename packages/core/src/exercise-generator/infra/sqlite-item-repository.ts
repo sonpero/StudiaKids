@@ -89,6 +89,15 @@ export class SqliteItemRepository implements ItemRepository {
     return Promise.resolve(row ? toItem(row) : null);
   }
 
+  findExercise(userId: string, exerciseId: string): Promise<Exercise | null> {
+    const row = this.db
+      .select()
+      .from(exercisesTable)
+      .where(and(eq(exercisesTable.userId, userId), eq(exercisesTable.id, exerciseId)))
+      .get();
+    return Promise.resolve(row ? toExercise(row) : null);
+  }
+
   listExercises(userId: string, itemIds: string[], type?: GameType): Promise<Exercise[]> {
     if (itemIds.length === 0) return Promise.resolve([]);
     const filters = [eq(exercisesTable.userId, userId), inArray(exercisesTable.itemId, itemIds)];

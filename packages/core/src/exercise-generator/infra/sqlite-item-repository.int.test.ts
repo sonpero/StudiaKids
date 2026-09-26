@@ -168,4 +168,15 @@ describe("SqliteItemRepository", () => {
 
     expect(() => db.run(sql`INSERT INTO exercises (id, item_id, user_id, type, content_json, created_at) VALUES ('e9', 'i9', 'u1', 'quiz', '{}', 'x')`)).toThrow();
   });
+
+  // M4: game-engine reads one exercise by its id, always for its owner.
+  it("finds one exercise by its id, only for its owner", async () => {
+    const { repo } = setup();
+    await repo.saveSplit("u1", "c1", { items: [item("i0", "c1", "u1", 0)], outcome: "items_ready", itemCount: 1 }, now);
+    await repo.applyExercises("u1", { remove: [], insert: [exercise("e0", "i0", "u1")] });
+
+    expect(await repo.findExercise("u1", "e0")).toMatchObject({ id: "e0", itemId: "i0", type: "true_false", content: { type: "true_false", answer: true } });
+    expect(await repo.findExercise("u2", "e0")).toBeNull();
+    expect(await repo.findExercise("u1", "nope")).toBeNull();
+  });
 });
