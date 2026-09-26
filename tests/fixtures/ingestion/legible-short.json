@@ -1,0 +1,54 @@
+{
+  "module": "ingestion",
+  "case": "legible-short",
+  "model": "claude-sonnet-5",
+  "recordedAt": "2026-09-26T11:44:54.526Z",
+  "photo": "photos/legible-short.jpg",
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 2683,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01LitwLY9ttLE6jADevLRbGo",
+            "name": "json",
+            "input": {
+              "markdown": "# LECT 1 – Le son [a]\n\nJ'entends [a] dans : ami, avion, papa.\n\n## À retenir\n\nLa lettre a fait le son [a].",
+              "legible": true,
+              "isCoursePage": true
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 5106,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 134,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    }
+  ]
+}

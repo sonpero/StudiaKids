@@ -39,6 +39,9 @@ export function buildFixture(input: {
   model: string;
   recordedAt: string;
   photo?: string;
+  // The fixture whose answer was this call's input (the request body
+  // itself is never written).
+  source?: string;
   exchanges: RecordedExchange[];
 }) {
   return {
@@ -47,6 +50,7 @@ export function buildFixture(input: {
     model: input.model,
     recordedAt: input.recordedAt,
     ...(input.photo === undefined ? {} : { photo: input.photo }),
+    ...(input.source === undefined ? {} : { source: input.source }),
     exchanges: input.exchanges,
   };
 }

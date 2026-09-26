@@ -1,0 +1,52 @@
+{
+  "module": "exercise-generator",
+  "case": "split-short",
+  "model": "claude-sonnet-5",
+  "recordedAt": "2026-09-26T11:45:09.989Z",
+  "source": "ingestion/legible-short.json",
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 2715,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01GnyGanMZM6yFxZD4DeUMvr",
+            "name": "json",
+            "input": {
+              "items": "{\"items\":[{\"title\":\"Le son étudié\",\"body\":\"Le son [a]\",\"gameTypes\":[\"delayed_copy\",\"true_false\"]},{\"title\":\"Exemple : ami\",\"body\":\"J'entends [a] dans : ami, avion, papa.\",\"gameTypes\":[\"cloze\"]},{\"title\":\"Exemple : avion\",\"body\":\"J'entends [a] dans : ami, avion, papa.\",\"gameTypes\":[\"cloze\"]},{\"title\":\"Exemple : papa\",\"body\":\"J'entends [a] dans : ami, avion, papa.\",\"gameTypes\":[\"cloze\"]},{\"title\":\"La lettre du son [a]\",\"body\":\"La lettre a fait le son [a].\",\"gameTypes\":[\"cloze\",\"true_false\",\"mcq\"]}]}"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1333,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 279,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    }
+  ]
+}

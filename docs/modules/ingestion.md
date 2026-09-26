@@ -446,7 +446,12 @@ par `legible`), et `pnpm fixtures:record ingestion namer-long-title --photo
 écrit dans `photos/`), la fait nommer, et n'enregistre que la réponse du
 namer, refusée si le titre accepté du premier coup ne dépasse pas trois
 mots (enregistré le 2026-09-26 : « La vie quotidienne dans un château
-fort au Moyen Âge », `history`, sur une page générée « HIST 2 – … »). Manuel, payant, jamais lancé par `pnpm test` ; clé lue
+fort au Moyen Âge », `history`, sur une page générée « HIST 2 – … »). Depuis M3, un
+quatrième cas photo, `legible-short` : une leçon lisible trop courte pour
+un jeu (moins de 8 items), la page que photographie le scénario « cours
+trop court » (enregistré le 2026-09-26 sur la page générée
+`tests/eval/corpus/cp-francais-son-a-court.jpg`, recadrée à 1488 px pour ne
+pas prendre la taille d'une autre photo). Manuel, payant, jamais lancé par `pnpm test` ; clé lue
 dans l'environnement ou le `.env` (ignoré par git).
 
 - La photo doit être un vrai JPEG **déjà à la taille native**

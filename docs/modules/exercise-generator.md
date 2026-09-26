@@ -347,6 +347,26 @@ d'échéance. Recherche plein texte dans les items.
   `tests/eval/results/` ; consignes retenues en M3 : v4 (ancrage 95 %,
   validité 95 %, sur une seule course par version)
 
+## Enregistrement des fixtures
+
+`pnpm fixtures:record exercise-generator <split|split-short|generate>`
+(mêmes options et mêmes garde-fous que pour `ingestion` : test de fumée,
+rien d'écrasé sans `--force`, corps de réponse seul) :
+
+- `split` découpe le texte enregistré par `ingestion/legible` ; refusé s'il
+  donne moins de 8 items valides. `split-short` découpe celui de
+  `ingestion/legible-short` ; refusé s'il en donne 8 ou plus.
+- `generate` relit `split.json` par le vrai adaptateur (sans appel) et
+  enregistre une réponse par type proposé : `generate-<type>.json`.
+- Chaque fichier nomme sa `source` (le corps des requêtes n'est jamais
+  écrit). `schema-violation.json` est la seule fixture retouchée à la main
+  (`degradedFrom: split.json`), pour le chemin du retry unique.
+
+Enregistrées le 2026-09-26 avec les consignes v4 (13 items pour « Le
+verbe », 5 pour « Le son [a] », six types générés). Toutes les réponses de
+génération et celle de `split-short` arrivent sérialisées en chaîne JSON :
+les tests de contrat couvrent la réparation sur des réponses réelles.
+
 ## Questions ouvertes
 
 - Le brief ne précise pas si l'enfant choisit *quels* types jouer pour un

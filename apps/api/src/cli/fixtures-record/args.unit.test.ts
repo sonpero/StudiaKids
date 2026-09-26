@@ -54,3 +54,29 @@ describe("parseArgs, namer-long-title", () => {
     expect(parseArgs(["ingestion", "namer-long-title"]).ok).toBe(false);
   });
 });
+
+// M3: a short lesson's page, and the splitting and generation answers the
+// worker replays in LLM_ADAPTER=fixture.
+describe("parseArgs, M3 cases", () => {
+  it("reads the short lesson's photo case", () => {
+    expect(parseArgs(["ingestion", "legible-short", "--photo", "short.jpg"])).toEqual({
+      ok: true,
+      value: { module: "ingestion", fixtureCase: "legible-short", photoPath: "short.jpg", force: false, dryRun: false, show: false },
+    });
+  });
+
+  it("reads the exercise-generator cases, which take no photo", () => {
+    for (const fixtureCase of ["split", "split-short", "generate"]) {
+      expect(parseArgs(["exercise-generator", fixtureCase, "--force"])).toEqual({
+        ok: true,
+        value: { module: "exercise-generator", fixtureCase, photoPath: null, force: true, dryRun: false, show: false },
+      });
+    }
+  });
+
+  it("refuses an exercise-generator case with a photo, or an unknown one", () => {
+    expect(parseArgs(["exercise-generator", "split", "--photo", "p.jpg"]).ok).toBe(false);
+    expect(parseArgs(["exercise-generator", "legible", "--photo", "p.jpg"]).ok).toBe(false);
+    expect(parseArgs(["exercise-generator", "namer"]).ok).toBe(false);
+  });
+});

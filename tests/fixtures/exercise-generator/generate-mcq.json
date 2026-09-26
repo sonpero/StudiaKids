@@ -1,0 +1,52 @@
+{
+  "module": "exercise-generator",
+  "case": "generate-mcq",
+  "model": "claude-sonnet-5",
+  "recordedAt": "2026-09-26T11:45:23.411Z",
+  "source": "exercise-generator/split.json",
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 6013,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01Aywithb58ijkCTGKJ5fdGa",
+            "name": "json",
+            "input": {
+              "exercises": "{\"exercises\":[{\"item\":0,\"question\":\"À quoi sert le verbe ?\",\"options\":[\"Le verbe indique ce que fait le sujet ou ce qu'il est\",\"Le verbe indique le lieu de la phrase\",\"Le verbe indique le nombre de mots\",\"Le verbe indique la couleur des objets\"],\"answer\":\"Le verbe indique ce que fait le sujet ou ce qu'il est\"},{\"item\":1,\"question\":\"Dans la phrase « Léa chante une chanson », que peut-on dire ?\",\"options\":[\"chante est le verbe ; Léa est le sujet\",\"chanson est le verbe ; Léa est le sujet\",\"Léa est le verbe ; chante est le sujet\",\"chante est le sujet ; Léa est le verbe\"],\"answer\":\"chante est le verbe ; Léa est le sujet\"},{\"item\":2,\"question\":\"Dans « Léa chante une chanson », quel mot est le verbe ?\",\"options\":[\"chante\",\"Léa\",\"chanson\",\"une\"],\"answer\":\"chante\"},{\"item\":3,\"question\":\"Dans « Léa chante une chanson », quel mot est le sujet ?\",\"options\":[\"Léa\",\"chante\",\"chanson\",\"une\"],\"answer\":\"Léa\"},{\"item\":4,\"question\":\"Qu'est-ce que l'infinitif ?\",\"options\":[\"Le verbe a une forme qui ne change pas : l'infinitif\",\"Le verbe a une forme qui change tout le temps\",\"Le sujet a une forme qui ne change pas\",\"Le verbe est toujours au passé\"],\"answer\":\"Le verbe a une forme qui ne change pas : l'infinitif\"},{\"item\":5,\"question\":\"Que faut-il retenir sur le verbe ?\",\"options\":[\"Le verbe change quand on change le temps de la phrase\",\"Le verbe ne change jamais\",\"Le sujet change quand on change le temps\",\"Le verbe change quand on change de sujet\"],\"answer\":\"Le verbe change quand on change le temps de la phrase\"}]}"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1622,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 689,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    }
+  ]
+}

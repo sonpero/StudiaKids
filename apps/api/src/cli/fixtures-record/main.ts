@@ -4,13 +4,20 @@ import { fileURLToPath } from "node:url";
 import { nativePhotoSize } from "@studiakids/contracts";
 import {
   ClaudeCourseNamer,
+  ClaudeExerciseGenerator,
+  ClaudeItemSplitter,
   ClaudePhotoExtractor,
   createLanguageModel,
   DEFAULT_MODEL,
   sniffImageType,
   stripJpegMetadata,
+  validItems,
+  type GameType,
+  type Grade,
+  type ValidItem,
 } from "@studiakids/core";
-import { parseArgs, type PhotoCase } from "./args.js";
+import { parseArgs, type GeneratorCase, type PhotoCase } from "./args.js";
+import { splitMismatch } from "./generator-recording.js";
 import { assertWritable, buildFixture, dimensionCollision, jpegSize, sanitizeExchange, smokeReport, type PhotoSize, type RawExchange, type RecordedExchange } from "./recording.js";
 
 // See USAGE in args.ts and docs/modules/ingestion.md. Manual, costs money,
@@ -22,10 +29,15 @@ const EXPECTED: Record<PhotoCase, { legible: boolean; isCoursePage: boolean | nu
   legible: { legible: true, isCoursePage: true },
   illegible: { legible: false, isCoursePage: null },
   "not-a-course": { legible: true, isCoursePage: false },
+  "legible-short": { legible: true, isCoursePage: true },
 };
 
 const repoRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 const fixturesDir = path.join(repoRoot, "tests/fixtures/ingestion");
+const generatorFixturesDir = path.join(repoRoot, "tests/fixtures/exercise-generator");
+// The level the splitting and generation fixtures are recorded for; the
+// fixture adapters answer whatever the account's level.
+const FIXTURE_GRADE: Grade = "CE2";
 
 function fail(message: string): never {
   console.error(message);
@@ -146,11 +158,13 @@ async function showNaming(markdown: string, apiKey: string, model: string): Prom
   if (result.ok) console.log(`proposé : « ${result.value.title} », ${result.value.subject}`);
 }
 
-function recordedMarkdown(): string {
-  const fixture = JSON.parse(readFileSync(path.join(fixturesDir, "legible.json"), "utf8")) as { exchanges: RecordedExchange[] };
+function recordedMarkdown(fixtureCase: "legible" | "legible-short" = "legible"): string {
+  const file = path.join(fixturesDir, `${fixtureCase}.json`);
+  if (!existsSync(file)) fail(`Enregistrez d'abord le cas ingestion "${fixtureCase}" : ce cas part de son texte.`);
+  const fixture = JSON.parse(readFileSync(file, "utf8")) as { exchanges: RecordedExchange[] };
   const last = fixture.exchanges.at(-1)?.body as { content?: { type: string; input?: { markdown?: string } }[] } | undefined;
   const markdown = last?.content?.find((block) => block.type === "tool_use")?.input?.markdown;
-  if (!markdown) fail("Enregistrez d'abord le cas \"legible\" : le cas \"namer\" nomme son texte.");
+  if (!markdown) fail(`Le cas ingestion "${fixtureCase}" n'a pas de Markdown.`);
   return markdown;
 }
 
@@ -216,6 +230,80 @@ async function recordLongTitleNamer(photoPath: string, { force, dryRun, show, ap
   write({ [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
 }
 
+// Serves a recorded fixture's responses in order: `generate` reads the
+// recorded split through the real adapter (repair and validation
+// included) without paying for it again.
+function replayRecorded(file: string): typeof fetch {
+  const fixture = JSON.parse(readFileSync(file, "utf8")) as { exchanges: RecordedExchange[] };
+  let next = 0;
+  return () => {
+    const exchange = fixture.exchanges[next++];
+    if (!exchange) fail(`${path.relative(repoRoot, file)} : plus de réponse enregistrée.`);
+    const body = typeof exchange.body === "string" ? exchange.body : JSON.stringify(exchange.body);
+    return Promise.resolve(new Response(body, { status: exchange.status, headers: { "content-type": "application/json" } }));
+  };
+}
+
+async function recordSplit(fixtureCase: Exclude<GeneratorCase, "generate">, { force, dryRun, show, apiKey, model }: RunOptions): Promise<void> {
+  const sourceCase = fixtureCase === "split" ? "legible" : "legible-short";
+  const markdown = recordedMarkdown(sourceCase);
+  const fixtureFile = path.join(generatorFixturesDir, `${fixtureCase}.json`);
+  if (!dryRun) {
+    const writable = assertWritable([fixtureFile], force);
+    if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  }
+
+  const raw: RawExchange[] = [];
+  const result = await new ClaudeItemSplitter(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) })).split({ markdown, grade: FIXTURE_GRADE });
+  const exchanges = raw.map(sanitizeExchange);
+  report(exchanges, result.ok);
+  if (!result.ok) return;
+  const items = validItems(result.value);
+  console.log(`${String(result.value.length)} items proposés, ${String(items.length)} valides`);
+  if (show) for (const item of items) console.log(`- ${item.title} [${item.applicableGameTypes.join(", ")}]`);
+  const mismatch = splitMismatch(fixtureCase, items.length);
+  if (mismatch) fail(`ARRÊT : ${mismatch} Rien n'a été écrit.`);
+
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
+  const fixture = buildFixture({ module: "exercise-generator", fixtureCase, model, recordedAt: new Date().toISOString(), source: `ingestion/${sourceCase}.json`, exchanges });
+  write({ [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
+}
+
+// One fixture per game type the recorded split proposes, each call made
+// on that type's items, exactly as the generation job would.
+async function recordGeneration({ force, dryRun, show, apiKey, model }: RunOptions): Promise<void> {
+  const splitFile = path.join(generatorFixturesDir, "split.json");
+  if (!existsSync(splitFile)) fail("Enregistrez d'abord le cas \"split\" : la génération part de ses items.");
+  const split = await new ClaudeItemSplitter(createLanguageModel({ apiKey: "replay", model, fetch: replayRecorded(splitFile) })).split({ markdown: "", grade: FIXTURE_GRADE });
+  if (!split.ok) fail(`split.json ne se relit pas : ${split.error.message}`);
+  const items: ValidItem[] = validItems(split.value);
+  const courseMarkdown = recordedMarkdown("legible");
+  const types: GameType[] = [];
+  for (const item of items) for (const type of item.applicableGameTypes) if (!types.includes(type)) types.push(type);
+  const files = types.map((type) => path.join(generatorFixturesDir, `generate-${type}.json`));
+  if (!dryRun) {
+    const writable = assertWritable(files, force);
+    if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  }
+
+  const written: Record<string, string> = {};
+  for (const [i, type] of types.entries()) {
+    const withType = items.filter((item) => item.applicableGameTypes.includes(type));
+    const raw: RawExchange[] = [];
+    const result = await new ClaudeExerciseGenerator(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) })).generate({ type, items: withType, courseMarkdown, grade: FIXTURE_GRADE });
+    const exchanges = raw.map(sanitizeExchange);
+    console.log(`--- ${type} (${String(withType.length)} items) ---`);
+    report(exchanges, result.ok);
+    if (!result.ok) return;
+    console.log(`${String(result.value.length)} exercices reçus`);
+    if (show) console.log(JSON.stringify(result.value, null, 2));
+    const fixture = buildFixture({ module: "exercise-generator", fixtureCase: `generate-${type}`, model, recordedAt: new Date().toISOString(), source: "exercise-generator/split.json", exchanges });
+    written[files[i]!] = `${JSON.stringify(fixture, null, 2)}\n`;
+  }
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
+  write(written, force);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!args.ok) fail(args.error);
@@ -225,6 +313,10 @@ async function main(): Promise<void> {
   console.log(`modèle : ${model}${args.value.dryRun ? " (--dry-run)" : ""}`);
 
   const options = { force: args.value.force, dryRun: args.value.dryRun, show: args.value.show, apiKey, model };
+  if (args.value.module === "exercise-generator") {
+    const generatorCase = args.value.fixtureCase;
+    return generatorCase === "generate" ? recordGeneration(options) : recordSplit(generatorCase, options);
+  }
   const { fixtureCase, photoPath } = args.value;
   if (fixtureCase === "namer") return recordNamer(options);
   if (photoPath === null) fail("--photo manquant.");
