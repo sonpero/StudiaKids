@@ -7,6 +7,7 @@ import { answerExercise, gameLabel } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
 import { primary, quiet, secondary, text } from "./games/styles.js";
 import { MatchingGame, ReorderingGame } from "./games/TapGames.js";
+import { ClozeGame, DelayedCopyGame, MentalMathGame } from "./games/TypedGames.js";
 
 export interface GameScreenProps {
   exercise: PlayableExerciseDto;
@@ -14,7 +15,9 @@ export interface GameScreenProps {
   onBack: () => void;
 }
 
-function GameBody({ exercise, onAnswer }: { exercise: PlayableExerciseDto; onAnswer: (given: unknown) => void }) {
+type GameBodyArgs = { exercise: PlayableExerciseDto; answered: boolean; onAnswer: (given: unknown) => void; onReread: () => void };
+
+function GameBody({ exercise, answered, onAnswer, onReread }: GameBodyArgs) {
   switch (exercise.type) {
     case "mcq":
       return <McqGame question={exercise.question} options={exercise.options} onAnswer={onAnswer} />;
@@ -24,8 +27,12 @@ function GameBody({ exercise, onAnswer }: { exercise: PlayableExerciseDto; onAns
       return <MatchingGame lefts={exercise.lefts} rights={exercise.rights} onAnswer={onAnswer} />;
     case "reordering":
       return <ReorderingGame elements={exercise.elements} onAnswer={onAnswer} />;
-    default:
-      return null;
+    case "cloze":
+      return <ClozeGame text={exercise.text} blankCount={exercise.blankCount} onAnswer={onAnswer} />;
+    case "mental_math":
+      return <MentalMathGame question={exercise.question} onAnswer={onAnswer} />;
+    case "delayed_copy":
+      return <DelayedCopyGame wordOrPhrase={exercise.wordOrPhrase} displayDurationMs={exercise.displayDurationMs} answered={answered} onAnswer={onAnswer} onReread={onReread} />;
   }
 }
 
@@ -34,13 +41,16 @@ function GameBody({ exercise, onAnswer }: { exercise: PlayableExerciseDto; onAns
 // a right answer, a calm waiting otherwise, never sorry nor glitch.
 export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const [given, setGiven] = useState<unknown>(null);
+  // A reread of the flash dictation: the answer is sent without a star.
+  const [reread, setReread] = useState(false);
   const [round, setRound] = useState(0);
   const [variant] = useState(() => Math.floor(Math.random() * 3));
-  const send = useMutation({ mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, false) });
+  const send = useMutation({ mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread) });
 
   function again(): void {
     send.reset();
     setGiven(null);
+    setReread(false);
     setRound((n) => n + 1);
   }
 
@@ -81,7 +91,7 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
       <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{gameLabel(exercise.type)}</h1>
       <p className={text}>{exercise.itemTitle}</p>
       <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
-        <GameBody exercise={exercise} onAnswer={setGiven} />
+        <GameBody exercise={exercise} answered={answered} onAnswer={setGiven} onReread={() => setReread(true)} />
       </fieldset>
       {!answered && (
         <button type="button" disabled={given === null || send.isPending} onClick={() => send.mutate(given)} className={primary}>

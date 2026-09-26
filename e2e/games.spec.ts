@@ -83,8 +83,7 @@ test("Remets dans l'ordre: tap the elements in order; a second tap takes one bac
   await expectRight(page);
 });
 
-// fixme until M4 commit 10 « web: typed games and the flash dictation » (seen failing: no Jouer screen yet).
-test.fixme("Texte à trous: type the missing word, whatever its case @mobile", async ({ page, child: _child }) => {
+test("Texte à trous: type the missing word, whatever its case @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Texte à trous.*Léa chantait \(hier\)/);
 
@@ -94,8 +93,7 @@ test.fixme("Texte à trous: type the missing word, whatever its case @mobile", a
   await expectRight(page);
 });
 
-// fixme until M4 commit 10 « web: typed games and the flash dictation » (seen failing: no Jouer screen yet).
-test.fixme("Calcul flash: type the result @mobile", async ({ page, child }) => {
+test("Calcul flash: type the result @mobile", async ({ page, child }) => {
   await courseWithMentalMath(page.request, child.username);
   await openGame(page, /Calcul flash.*Des additions à connaître/);
 
@@ -106,8 +104,7 @@ test.fixme("Calcul flash: type the result @mobile", async ({ page, child }) => {
   await expectRight(page);
 });
 
-// fixme until M4 commit 10 « web: typed games and the flash dictation » (seen failing: no Jouer screen yet).
-test.fixme("Dictée flash: the word, then type it from memory @mobile", async ({ page, child }) => {
+test("Dictée flash: the word, then type it from memory @mobile", async ({ page, child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Dictée flash.*Infinitif : chanter/);
 
@@ -120,8 +117,7 @@ test.fixme("Dictée flash: the word, then type it from memory @mobile", async ({
 });
 
 // docs/modules/game-engine.md, "Copie différée": the complete journey.
-// fixme until M4 commit 10 « web: typed games and the flash dictation » (seen failing: no Jouer screen yet).
-test.fixme("Dictée flash, complete: timed violet flash without countdown, a field that corrects nothing, a reread without star, validation @mobile", async ({ page, child }) => {
+test("Dictée flash, complete: timed violet flash without countdown, a field that corrects nothing, a reread without star, validation @mobile", async ({ page, child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Dictée flash.*Léa chantera \(demain\)/);
 
