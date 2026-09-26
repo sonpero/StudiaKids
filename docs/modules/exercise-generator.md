@@ -168,7 +168,7 @@ Conventions Zod (`CLAUDE.md`, règle 4, avec son exception) :
 - `handleSplittingJob({ courseId }, ctx)` — lit le texte extrait et le
   niveau via `ingestion`, appelle `ItemSplitter`, filtre et valide les
   items en `domain/`, contrôle la couverture :
-  - moins de 8 items valides → issue `insufficient_coverage`, aucun item
+  - moins de 6 items valides → issue `insufficient_coverage`, aucun item
     écrit, le job se termine **avec succès** (résultat métier, jamais
     retenté ni repayé) ;
   - sinon → écrit les items (en remplaçant ceux d'un découpage précédent
@@ -215,8 +215,8 @@ de l'enfant), pas le cours entier. Conséquences actées :
   items et exercices du cours, dans les mêmes tables, avec le même cycle
   de vie — rien ici ne sort du modèle de données déjà décrit.
 - **Le contrôle de couverture s'applique à l'identique** (le même seuil de
-  8 items minimum, pas un seuil réduit pour l'occasion) : un extrait court
-  produira souvent moins de 8 items, et c'est le cas attendu, pas une
+  6 items minimum, pas un seuil réduit pour l'occasion) : un extrait court
+  produira souvent moins de 6 items, et c'est le cas attendu, pas une
   anomalie — la mascotte le dit et propose de jouer sur le cours entier
   plutôt que de livrer un jeu creux (voir `docs/modules/tutor.md`).
 - **Mêmes règles d'étoiles que tout autre exercice** : aucun traitement
@@ -234,7 +234,7 @@ Mécanisme :
   n'apporterait qu'une latence supplémentaire.
 - `handleGameFromExcerptJob(payload, ctx)` :
   1. `ItemSplitter.split({ markdown: excerpt, grade })`
-  2. Moins de 8 items → le job échoue, `last_error` commence par le préfixe
+  2. Moins de 6 items → le job échoue, `last_error` commence par le préfixe
      documenté `INSUFFICIENT_COVERAGE:` (convention nécessaire parce que
      `jobs` est frozen et n'a pas de champ de résultat structuré au-delà de
      `last_error`) ; aucun item écrit
@@ -329,15 +329,15 @@ d'échéance. Recherche plein texte dans les items.
 
 ## Tests clés
 
-- Unitaire : couverture à 7 refusée, à 8 acceptée, 40 gardés sur 41 ;
+- Unitaire : couverture à 5 refusée, à 6 acceptée, 40 gardés sur 41 ;
   types hors énumération écartés, au plus 3, item sans type invalide ;
   titres distincts ; positions contiguës
 - Unitaire : un validateur et une vérification d'ancrage par type (dont
   l'ordre de la remise en ordre) ; seuil de régénération — mutation
   testing
 - Unitaire : `generationStatus` dans chacun de ses cas
-- Contrat : une fixture de découpage produit au moins 8 items ; une
-  fixture de leçon courte en produit moins de 8 et le job se termine en
+- Contrat : une fixture de découpage produit au moins 6 items ; une
+  fixture de leçon courte en produit moins de 6 et le job se termine en
   `insufficient_coverage` avec un message clair ; une fixture de
   génération produit des exercices dans au moins deux types ; un tableau
   sérialisé est réparé ; une réponse illisible retry une fois puis échoue
@@ -366,8 +366,8 @@ d'échéance. Recherche plein texte dans les items.
 rien d'écrasé sans `--force`, corps de réponse seul) :
 
 - `split` découpe le texte enregistré par `ingestion/legible` ; refusé s'il
-  donne moins de 8 items valides. `split-short` découpe celui de
-  `ingestion/legible-short` ; refusé s'il en donne 8 ou plus.
+  donne moins de 6 items valides. `split-short` découpe celui de
+  `ingestion/legible-short` ; refusé s'il en donne 6 ou plus.
 - `generate` relit `split.json` par le vrai adaptateur (sans appel) et
   enregistre une réponse par type proposé : `generate-<type>.json`.
 - Chaque fichier nomme sa `source` (le corps des requêtes n'est jamais
@@ -389,12 +389,12 @@ les tests de contrat couvrent la réparation sur des réponses réelles.
   `docs/modules/ingestion.md`, "Forme du Markdown"). Un cours de plusieurs
   pages peut porter un `#` par page : la consigne de découpage le traite
   comme un seul cours.
-- **Seuil de 8 items et pages courtes** : sur le corpus, deux leçons
+- ~~Seuil de 8 items et pages courtes~~ — **tranché** (2026-09-26) :
+  seuil abaissé à **6** (`COVERAGE_MIN_ITEMS`). Sur le corpus, deux leçons
   d'une page bien remplie (le cercle en 6e, le passé composé en CM2)
-  donnent tantôt 7, tantôt 8 à 10 items selon la course — le découpage
-  est honnête à 7, et l'enfant reçoit alors « pas assez de choses à
-  apprendre ». Le seuil (`COVERAGE_MIN_ITEMS`) est une décision humaine :
-  question ouverte, non tranchée ici.
+  donnaient 7 items honnêtes. La consigne de découpage (« entre 8 et 40
+  items quand la leçon le permet », consignes v4) n'a pas été changée :
+  elle n'a pas été réévaluée, et viser plus haut que le seuil ne gêne pas.
 - Jeu d'évaluation sur de **vraies photos de téléphone** : dette ouverte de
   M3, non bloquante pour sa clôture (aucune photo réelle disponible ;
   l'évaluation se fait sur un corpus d'images générées).

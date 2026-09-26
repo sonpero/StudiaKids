@@ -12,12 +12,13 @@ describe("game types", () => {
 });
 
 // Acceptance (docs/jalons.md, M3): the coverage check triggers exactly
-// below 8 items, never at 8 or above.
+// below 6 items, never at 6 or above (lowered from 8 after the eval,
+// decided 2026-09-26).
 describe("coverageOutcome", () => {
-  it("is insufficient at 7 items, ready at 8", () => {
-    expect(COVERAGE_MIN_ITEMS).toBe(8);
-    expect(coverageOutcome(7)).toBe("insufficient_coverage");
-    expect(coverageOutcome(8)).toBe("items_ready");
+  it("is insufficient at 5 items, ready at 6", () => {
+    expect(COVERAGE_MIN_ITEMS).toBe(6);
+    expect(coverageOutcome(5)).toBe("insufficient_coverage");
+    expect(coverageOutcome(6)).toBe("items_ready");
     expect(coverageOutcome(0)).toBe("insufficient_coverage");
     expect(coverageOutcome(40)).toBe("items_ready");
   });

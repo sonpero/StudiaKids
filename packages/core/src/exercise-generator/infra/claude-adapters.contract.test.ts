@@ -54,7 +54,7 @@ function sourceMarkdown(ingestionCase: "legible" | "legible-short"): string {
 }
 
 describe(`ClaudeItemSplitter contract (${FIXTURE_SOURCE} fixtures)`, () => {
-  it("split: at least 8 valid items, each typed from the closed list of seven, in one call", async () => {
+  it("split: at least 6 valid items, each typed from the closed list of seven, in one call", async () => {
     const { splitter, requests } = splitterFor("split");
 
     const result = await splitter.split({ markdown: sourceMarkdown("legible"), grade: "CE2" });
@@ -106,7 +106,7 @@ describe(`ClaudeExerciseGenerator contract (${FIXTURE_SOURCE} fixtures)`, () => 
 
 // Acceptance criterion (docs/jalons.md, M3, "Contrat").
 describe("generation jobs on recorded answers", () => {
-  it("a lesson with fewer than 8 items ends the generation as insufficient coverage: no game job, a status the screen explains", async () => {
+  it("a lesson with fewer than 6 items ends the generation as insufficient coverage: no game job, a status the screen explains", async () => {
     const repo = fakeItemRepository();
     const jobQueue = fakeJobQueue();
     const deps = { courses: courseTexts({ c1: sourceMarkdown("legible-short") }), splitter: splitterFor("split-short").splitter, repo, jobQueue, idGenerator: sequentialIds() };
@@ -119,7 +119,7 @@ describe("generation jobs on recorded answers", () => {
     expect((await getGenerationStatus({ repo, jobQueue }, "u1", "c1")).status).toBe("insufficient_coverage");
   });
 
-  it("a lesson with at least 8 items gets exercises in at least two different game types", async () => {
+  it("a lesson with at least 6 items gets exercises in at least two different game types", async () => {
     const repo = fakeItemRepository();
     const jobQueue = fakeJobQueue();
     const courses = courseTexts({ c1: sourceMarkdown("legible") });

@@ -4,10 +4,10 @@ import { splitMismatch } from "./generator-recording.js";
 
 describe("splitMismatch", () => {
   it("split needs enough items for games; split-short needs too few", () => {
-    expect(splitMismatch("split", 8)).toBeNull();
-    expect(splitMismatch("split", 7)).toMatch(/8/);
-    expect(splitMismatch("split-short", 7)).toBeNull();
-    expect(splitMismatch("split-short", 8)).toMatch(/8/);
+    expect(splitMismatch("split", 6)).toBeNull();
+    expect(splitMismatch("split", 5)).toMatch(/6/);
+    expect(splitMismatch("split-short", 5)).toBeNull();
+    expect(splitMismatch("split-short", 6)).toMatch(/6/);
   });
 });
 

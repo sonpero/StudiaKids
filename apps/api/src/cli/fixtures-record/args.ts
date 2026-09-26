@@ -1,6 +1,6 @@
 import { err, ok, type Result } from "@studiakids/core";
 
-// legible-short: a lesson too short for a game (fewer than 8 items), the
+// legible-short: a lesson too short for a game (fewer than 6 items), the
 // page the short-lesson scenario photographs.
 export const PHOTO_CASES = ["legible", "illegible", "not-a-course", "legible-short"] as const;
 export type PhotoCase = (typeof PHOTO_CASES)[number];

@@ -192,7 +192,7 @@ déduites de la maquette seule.
   exercices du cours, avec les mêmes règles d'étoiles que tout autre
   exercice — aucun traitement particulier dans ce module.
 - **Le contrôle de couverture s'applique aussi ici** : si l'extrait ne
-  produit pas assez d'items (moins de 8,
+  produit pas assez d'items (moins de 6,
   `docs/modules/exercise-generator.md`), l'écran doit le dire par la
   mascotte et proposer de jouer sur le cours entier plutôt que de livrer un
   jeu creux — ce module expose le statut nécessaire

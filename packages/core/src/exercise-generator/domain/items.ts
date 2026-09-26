@@ -1,6 +1,6 @@
 import { isGameType, type GameType } from "./game-types.js";
 
-export const COVERAGE_MIN_ITEMS = 8; // the brief's value, non-negotiable
+export const COVERAGE_MIN_ITEMS = 6; // the brief said 8; lowered by decision, 2026-09-26
 export const COVERAGE_MAX_ITEMS = 40; // decided, revisable: beyond, the first 40 are kept
 export const ITEM_MAX_GAME_TYPES = 3; // decided at M3's opening
 const TITLE_MIN_CHARS = 3;
@@ -10,7 +10,8 @@ export type SplitOutcome = "items_ready" | "insufficient_coverage";
 export type ItemProposal = { title: string; body: string; applicableGameTypes: string[] };
 export type ValidItem = { title: string; body: string; applicableGameTypes: GameType[]; position: number };
 
-// The coverage check triggers exactly below 8 items (docs/jalons.md, M3).
+// The coverage check triggers exactly below 6 items (docs/jalons.md, M3;
+// lowered from 8 on 2026-09-26: well-filled one-page lessons gave 7).
 export function coverageOutcome(validItemCount: number): SplitOutcome {
   return validItemCount < COVERAGE_MIN_ITEMS ? "insufficient_coverage" : "items_ready";
 }

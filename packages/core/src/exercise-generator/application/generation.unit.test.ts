@@ -58,7 +58,7 @@ describe("startGeneration (« Créer mes jeux »)", () => {
     expect(deps.jobQueue.rows).toHaveLength(2);
 
     const short = setup();
-    await split(short, eight().slice(0, 7));
+    await split(short, eight().slice(0, 5));
     expect(await startGeneration(short, "u1", "c1", now)).toEqual(ok(expect.objectContaining({ status: "insufficient_coverage" })));
     expect(short.jobQueue.rows).toEqual([]);
   });
@@ -82,13 +82,13 @@ describe("handleSplittingJob", () => {
     expect(deps.jobQueue.rows.every((r) => r.type === GENERATE_EXERCISES_JOB)).toBe(true);
   });
 
-  it("below 8 valid items: no item, insufficient_coverage, no generation, and the job succeeds (never retried)", async () => {
+  it("below 6 valid items: no item, insufficient_coverage, no generation, and the job succeeds (never retried)", async () => {
     const deps = setup();
-    const proposals = [...eight().slice(0, 7), item("Titre inconnu", ["quiz"])];
+    const proposals = [...eight().slice(0, 5), item("Titre inconnu", ["quiz"])];
 
     expect(await split(deps, proposals)).toEqual(ok(undefined));
     expect(deps.repo.items).toEqual([]);
-    expect(deps.repo.outcomes.get("u1/c1")).toEqual({ outcome: "insufficient_coverage", itemCount: 7 });
+    expect(deps.repo.outcomes.get("u1/c1")).toEqual({ outcome: "insufficient_coverage", itemCount: 5 });
     expect(deps.jobQueue.rows).toEqual([]);
   });
 

@@ -306,10 +306,12 @@ et `docs/modules/reader.md`.
   stockage permanent — jamais à la volée pendant qu'on joue ; **règle
   d'ancrage** : chaque exercice, réponse comprise, vérifiable à partir du
   texte du cours
-- Contrôle de couverture : si le cours produit moins de 8 items, le job
-  échoue proprement et la mascotte invite à reprendre une photo (cours trop
-  court ou extraction trop pauvre) plutôt que de générer des jeux sur une
-  base insuffisante
+- Contrôle de couverture : si le cours produit moins de 6 items (seuil
+  abaissé de 8 à 6 le 2026-09-26, après l'évaluation), le job se termine
+  avec l'issue `insufficient_coverage`, sans aucun jeu, et la mascotte
+  (pose `sorry`) invite à reprendre une photo (cours trop court ou
+  extraction trop pauvre) plutôt que de générer des jeux sur une base
+  insuffisante
 - Écran lecteur : affichage continu du texte du cours et de ses photos,
   bouton de lecture à voix haute (Web Speech API) qui **démarre au premier
   geste de l'enfant** (les navigateurs refusent une lecture sans geste ;
@@ -334,10 +336,13 @@ progression, revenir plus tard et constater qu'elle est terminée.
 - [ ] Unitaire : l'annotation des types de jeu par item ne peut produire que
       des valeurs de l'énumération fermée des sept types
 - [ ] Unitaire : le contrôle de couverture se déclenche exactement en
-      dessous de 8 items, jamais à 8 ou au-dessus
-- [ ] Contrat : une fixture produisant moins de 8 items échoue le job avec
-      un message clair ; une fixture en produisant au moins 8 génère des
-      exercices dans au moins deux types différents
+      dessous de 6 items, jamais à 6 ou au-dessus (5 refusé, 6 accepté ;
+      seuil abaissé de 8 à 6, décidé le 2026-09-26)
+- [ ] Contrat : une fixture produisant moins de 6 items termine le job
+      avec succès et l'issue `insufficient_coverage` (sans jeu), et l'écran
+      affiche le message de la mascotte (pose `sorry`) ; une fixture en
+      produisant au moins 6 génère des exercices dans au moins deux types
+      différents (critère reformulé le 2026-09-26)
 - [ ] Intégration : la génération est isolée par type et par exercice : un
       exercice invalide est écarté seul, et un type en échec n'empêche pas
       les autres types d'aboutir (critère reformulé et validé à
@@ -513,7 +518,7 @@ s'ouvrir avant que les trois soient acceptés.
 - Un seul job, `game-from-excerpt`, qui découpe l'extrait et génère les
   exercices en une fois — exception délibérée à la règle "un job par item"
   (`docs/modules/exercise-generator.md`)
-- Le contrôle de couverture (8 items minimum) s'applique à l'identique ;
+- Le contrôle de couverture (6 items minimum depuis M3) s'applique à l'identique ;
   en dessous, la mascotte le dit et propose de jouer sur le cours entier
 - Les items et exercices créés rejoignent la liste normale du cours, mêmes
   règles d'étoiles que tout autre exercice
@@ -532,7 +537,7 @@ voir la mascotte proposer de jouer sur le cours entier à la place.
 - [ ] Intégration : les items créés par `game-from-excerpt` s'ajoutent à la
       suite des positions existantes du cours, sans jamais toucher aux
       items déjà présents
-- [ ] Intégration : un extrait produisant moins de 8 items n'écrit aucun
+- [ ] Intégration : un extrait produisant moins de 6 items n'écrit aucun
       item et le statut renvoyé permet à l'écran de distinguer ce cas d'un
       échec technique
 - [ ] Playwright : parcours complet chip → jeu généré → jeu joué avec gain

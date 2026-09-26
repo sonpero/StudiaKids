@@ -22,7 +22,7 @@ pnpm eval [--cases id1,id2] [--max-usd 1.2] [--reextract]
 Onze pages **générées** (aucune photo réelle d'élève), CP → 6e, six
 matières, mises en page de classe : code de leçon, encadré « À retenir »,
 listes, carte mentale, section d'exercices, QR code ou lien. Trois leçons
-de calcul, une leçon courte (moins de 8 items attendus), et des
+de calcul, une leçon courte (moins de 6 items attendus), et des
 dégradations de téléphone sur une partie (perspective, ombre, reflet,
 papier gris, bruit JPEG) — voir `corpus/index.json`. Chaque image a sa
 source (`.md`) : le texte exact rendu sur la page.
