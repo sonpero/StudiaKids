@@ -96,8 +96,7 @@ test.fixme("the session summary shows only what was won, never a mistake @mobile
   await expect(page.getByRole("heading", { name: "Tes jeux", level: 1 })).toBeVisible();
 });
 
-// fixme until M5 commit 6 « web: star counter and resuming the last course » (seen failing: no counter, dance, summary nor resume yet).
-test.fixme("after logging in again, the home offers to resume the last course opened @mobile", async ({ page, child }) => {
+test("after logging in again, the home offers to resume the last course opened @mobile", async ({ page, child }) => {
   seedCourseWithGames(child.username, "Les fractions", TRUE_FALSE_GAMES);
   seedCourseWithGames(child.username, "Le passé composé", [{ item: "Avoir ou être", content: { type: "true_false", statement: "On dit « j'ai chanté ».", answer: true } }]);
   await openCourse(page, "Les fractions");
@@ -110,7 +109,7 @@ test.fixme("after logging in again, the home offers to resume the last course op
   await page.getByLabel("Mot de passe").fill(CHILD_PASSWORD);
   await page.getByRole("button", { name: "Se connecter" }).click();
 
-  const resume = page.getByRole("button", { name: "On reprend « Le passé composé » ?" });
+  const resume = page.getByRole("button", { name: /Le passé composé.*On reprend \?/ });
   await expect(resume).toBeVisible();
   await resume.click();
   await expect(page.getByRole("heading", { name: "Tes jeux", level: 1 })).toBeVisible();

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
+import { StarCounter } from "../components/StarCounter.js";
 import { getUnconfirmedCourse, listCourses, pollInterval } from "../lib/courses.js";
 import { subjectLabel } from "../lib/subjects.js";
 
@@ -53,6 +54,9 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
   // (docs/modules/mascot.md, "variantIndex").
   const [variant] = useState(() => Math.floor(Math.random() * 2));
 
+  // Jouer when the course's games are ready, otherwise Lire.
+  const openConfirmed = (course: { id: string; exerciseCount: number }) => (course.exerciseCount > 0 ? onPlayCourse?.(course.id) : onReadCourse?.(course.id));
+
   let body;
   if (courses.isPending) {
     body = (
@@ -77,6 +81,9 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
     );
   } else {
     const list = courses.data;
+    // docs/ui.md, M5: the last course opened (read or played), kept by
+    // the server, so it is still offered after logging in again.
+    const lastOpened = list.reduce<(typeof list)[number] | null>((last, course) => (last === null || course.lastAccessedAt > last.lastAccessedAt ? course : last), null);
     const { pose, line } = present({ type: "home", hasExistingCourses: list.length > 0 }, variant);
     body = (
       <>
@@ -100,7 +107,7 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                 <li key={course.id}>
                   <button
                     type="button"
-                    onClick={() => (course.exerciseCount > 0 ? onPlayCourse?.(course.id) : onReadCourse?.(course.id))}
+                    onClick={() => openConfirmed(course)}
                     className="flex min-h-[56px] w-full items-center gap-3 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white p-3 text-left shadow-[0_4px_0_var(--color-ink)]"
                   >
                     <span
@@ -113,6 +120,11 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                       <span className="text-[14.5px] text-[var(--color-ink-soft)]">
                         {course.subject ? subjectLabel(course.subject) : ""} · {course.grade}
                       </span>
+                      {course.id === lastOpened?.id && (
+                        <span className="self-start rounded-[999px] border-[2px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-2 text-[14.5px] font-bold text-[var(--color-ink)]">
+                          On reprend ?
+                        </span>
+                      )}
                       {course.exerciseCount > 0 && (
                         <span className="text-[14.5px] font-bold text-[var(--color-ink)]">
                           {course.exerciseCount === 1 ? "1 jeu prêt" : `${String(course.exerciseCount)} jeux prêts`}
@@ -131,7 +143,10 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 py-6 text-center">
-      <h1 className="self-start font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">Salut {firstName} !</h1>
+      <header className="flex w-full items-center justify-between">
+        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">Salut {firstName} !</h1>
+        <StarCounter />
+      </header>
       {body}
       <button
         type="button"

@@ -1,8 +1,9 @@
 import { present } from "@studiakids/mascot";
 import type { ComparisonResultDto, PlayableExerciseDto } from "@studiakids/contracts";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
+import { PROGRESS_QUERY_KEY, StarCounter } from "../components/StarCounter.js";
 import { answerExercise, gameLabel, type Correction } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
 import { primary, quiet, secondary, text } from "./games/styles.js";
@@ -59,7 +60,14 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const [reread, setReread] = useState(false);
   const [round, setRound] = useState(0);
   const [variant] = useState(() => Math.floor(Math.random() * 3));
-  const send = useMutation({ mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread) });
+  const queryClient = useQueryClient();
+  const send = useMutation({
+    mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread),
+    // The answer brings the new counters: every counter on screen moves at once.
+    onSuccess: ({ progress }) => {
+      if (progress) queryClient.setQueryData(PROGRESS_QUERY_KEY, { total: progress.total, currentStreak: progress.currentStreak, bestStreak: progress.bestStreak });
+    },
+  });
   // Shown after a wrong answer until the child taps « Continuer » (M5):
   // never taken away by a timer.
   const correction = send.data?.correction;
@@ -121,7 +129,10 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const answered = send.data !== undefined || send.isError;
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-[96px] text-center">
-      <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{gameLabel(exercise.type)}</h1>
+      <header className="flex w-full items-center justify-between">
+        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{gameLabel(exercise.type)}</h1>
+        <StarCounter />
+      </header>
       <p className={text}>{exercise.itemTitle}</p>
       <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
         <GameBody exercise={exercise} answered={answered} onAnswer={setGiven} onReread={() => setReread(true)} />
