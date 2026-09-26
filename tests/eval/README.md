@@ -30,3 +30,9 @@ source (`.md`) : le texte exact rendu sur la page.
 Les images ont été rendues une fois avec un script Pillow hors dépôt
 (Pillow n'est pas une dépendance du projet). Le jeu sur vraies photos reste
 une dette ouverte de M3 (`docs/jalons.md`).
+
+## Relire une course sans appel
+
+`pnpm --filter @studiakids/api exec tsx src/cli/eval/replay.ts ../../tests/eval/.cache/details-v<N>.json`
+rejoue validation et contrôle d'ancrage sur les réponses brutes gardées en
+cache, et affiche chaque exercice écarté ou mal jugé avec sa raison.

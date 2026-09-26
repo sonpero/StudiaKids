@@ -36,14 +36,16 @@ Décidé à l'ouverture de M3, après un dry-run où le modèle avait inventé
 l'ordre « fossé, pont-levis, murailles, donjon ».
 
 Inscrite dans la consigne de découpage (le corps d'un item recopie la
-leçon) et dans celle de génération, et **vérifiée mécaniquement** en
+leçon) et dans celle de génération — qui écartent aussi la section
+« Exercices » de la page : ses questions n'ont pas leur réponse dans la
+leçon (mesuré par l'évaluation, consignes v3) — et **vérifiée mécaniquement** en
 `domain/` quand c'est possible (`anchoringProblem`) :
 
 | Type | Vérification mécanique (texte normalisé : casse, accents, espaces, apostrophes) |
 |---|---|
 | `cloze` | chaque réponse attendue figure dans le texte du cours |
 | `delayed_copy` | le mot ou la phrase figure tel quel dans le texte du cours |
-| `reordering` | chaque élément figure dans le texte, **dans cet ordre** (première occurrence croissante) |
+| `reordering` | chaque élément figure dans le texte, **dans cet ordre** (chaque élément cherché après le précédent : un nombre déjà vu plus haut dans la leçon ne fait pas rejeter une suite écrite dans l'ordre) |
 | `matching` | chaque élément de gauche et de droite figure dans le texte |
 | `mcq` | la bonne réponse figure dans le texte |
 | `mental_math` | le calcul est juste, et ses nombres figurent dans le texte |
@@ -341,7 +343,9 @@ d'échéance. Recherche plein texte dans les items.
 - Évaluation (`pnpm eval`, manuel, payant, jamais en CI) : ancrage,
   vrai/faux qui donnent leur réponse, trous bavards ou sans intérêt,
   variété des types, validité — sur un corpus de pages générées
-  (`tests/eval/`)
+  (`tests/eval/`). Scores par version des consignes dans
+  `tests/eval/results/` ; consignes retenues en M3 : v4 (ancrage 95 %,
+  validité 95 %, sur une seule course par version)
 
 ## Questions ouvertes
 
@@ -353,6 +357,12 @@ d'échéance. Recherche plein texte dans les items.
   `docs/modules/ingestion.md`, "Forme du Markdown"). Un cours de plusieurs
   pages peut porter un `#` par page : la consigne de découpage le traite
   comme un seul cours.
+- **Seuil de 8 items et pages courtes** : sur le corpus, deux leçons
+  d'une page bien remplie (le cercle en 6e, le passé composé en CM2)
+  donnent tantôt 7, tantôt 8 à 10 items selon la course — le découpage
+  est honnête à 7, et l'enfant reçoit alors « pas assez de choses à
+  apprendre ». Le seuil (`COVERAGE_MIN_ITEMS`) est une décision humaine :
+  question ouverte, non tranchée ici.
 - Jeu d'évaluation sur de **vraies photos de téléphone** : dette ouverte de
   M3, non bloquante pour sa clôture (aucune photo réelle disponible ;
   l'évaluation se fait sur un corpus d'images générées).
