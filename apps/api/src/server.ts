@@ -3,14 +3,14 @@ import path from "node:path";
 import { buildApp } from "./app.js";
 import { resolveDataDirs } from "./data-dirs.js";
 
-const { dbDir, photosDir } = resolveDataDirs();
+const { root, dbDir } = resolveDataDirs();
 
 const isProduction = process.env.NODE_ENV === "production";
 const webDistPath = fileURLToPath(new URL("../../web/dist", import.meta.url));
 
 const app = buildApp({
   databasePath: path.join(dbDir, "studiakids.db"),
-  dataDir: photosDir,
+  dataDir: root,
   webDistPath: isProduction ? webDistPath : undefined,
   sessionSecret: process.env.SESSION_SECRET ?? "",
   cookieSecure: process.env.COOKIE_SECURE === "true",

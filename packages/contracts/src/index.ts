@@ -18,3 +18,18 @@ export {
   type PhotoLimits,
   type PhotoSize,
 } from "./photo-size.js";
+
+export {
+  courseSchema,
+  type CourseDto,
+  extractionStatusSchema,
+  type ExtractionStatus,
+  courseParamsSchema,
+  pageFileParamsSchema,
+  createCourseResponseSchema,
+  addPageResponseSchema,
+  courseListResponseSchema,
+  unconfirmedCourseResponseSchema,
+  courseErrorSchema,
+  type CourseError,
+} from "./courses.js";

@@ -1,6 +1,7 @@
 import cookie from "@fastify/cookie";
+import multipart from "@fastify/multipart";
 import staticPlugin from "@fastify/static";
-import { systemClock } from "@studiakids/core";
+import { LocalFileStore, MAX_PAGE_BYTES, SqliteCourseRepository, SqliteJobQueue, systemClock, uuidV7Generator } from "@studiakids/core";
 import Fastify from "fastify";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import { buildAuthDeps } from "./auth-deps.js";
@@ -9,11 +10,13 @@ import { runMigrations } from "./db/migrate.js";
 import { authPlugin } from "./plugins/auth.js";
 import { dbPlugin } from "./plugins/db.js";
 import { authRoutes } from "./routes/auth.js";
+import { courseRoutes } from "./routes/courses.js";
 import { healthRoutes } from "./routes/health.js";
 import { meRoutes } from "./routes/me.js";
 
 export interface BuildAppOptions {
   databasePath: string;
+  // The volume root (photos/ lives under it), never photos/ itself.
   dataDir: string;
   webDistPath?: string;
   sessionSecret: string;
@@ -41,6 +44,9 @@ export function buildApp(opts: BuildAppOptions) {
   app.setSerializerCompiler(serializerCompiler);
 
   void app.register(cookie);
+  // One photo per request, capped at the Claude API's per-image limit:
+  // anything bigger is refused while streaming, before addPage runs.
+  void app.register(multipart, { limits: { fileSize: MAX_PAGE_BYTES, files: 1 } });
   void app.register(dbPlugin, { db });
   // Registered directly on the root app (not nested in another plugin) and
   // wrapped in fastify-plugin: its requireAuth decorator and its onRequest
@@ -60,6 +66,13 @@ export function buildApp(opts: BuildAppOptions) {
     sessionMaxAgeSeconds,
   });
   void app.register(meRoutes);
+  void app.register(courseRoutes, {
+    repo: new SqliteCourseRepository(db),
+    fileStore: new LocalFileStore(opts.dataDir),
+    jobQueue: new SqliteJobQueue(db, uuidV7Generator),
+    idGenerator: uuidV7Generator,
+    clock: systemClock,
+  });
   void app.register(healthRoutes);
 
   if (opts.webDistPath) {

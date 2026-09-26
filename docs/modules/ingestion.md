@@ -372,7 +372,24 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 
 **Les fichiers ne sont jamais servis en statique.** Toute lecture passe par
 la route ci-dessus, qui vérifie l'appartenance au compte en premier (404
-sinon, comme pour un identifiant inconnu).
+sinon, comme pour un identifiant inconnu). Elle répond
+`Content-Type: image/jpeg`, `X-Content-Type-Options: nosniff` et
+`Cache-Control: private, no-store`.
+
+**Codes de réponse.** Création et upload : `201` ; extraction et relance :
+`202` sans corps ; confirmation, refus et suppression : `204`. Tout refus
+porte un corps `{ error: <code> }` stable, d'où l'écran tire le message
+de la mascotte (`courseErrorSchema`, `packages/contracts`) :
+`not_found` (404, identique pour un identifiant inconnu et le cours d'un
+autre compte), `missing_file` (400), `too_large` (413), `unsupported`
+(415), et en 409 `locked`, `too_many_pages`, `duplicate`, `no_pages`,
+`not_pending`, `not_ready`, `already_confirmed`, `not_failed`.
+
+**Upload** : une seule photo lue par requête (la première, les suivantes
+sont ignorées), plafonnée à 7 500 000 octets
+dès la lecture du flux multipart (`limits.fileSize`, `limits.files: 1`),
+avant tout appel à `addPage` : un fichier trop gros n'atteint ni le
+disque ni la base. `addPage` refait le contrôle de taille sur les octets.
 
 ## Enregistrement des fixtures
 
