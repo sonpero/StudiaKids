@@ -13,6 +13,7 @@ import { authRoutes } from "./routes/auth.js";
 import { courseRoutes } from "./routes/courses.js";
 import { healthRoutes } from "./routes/health.js";
 import { meRoutes } from "./routes/me.js";
+import { readerRoutes } from "./routes/reader.js";
 
 export interface BuildAppOptions {
   databasePath: string;
@@ -66,13 +67,15 @@ export function buildApp(opts: BuildAppOptions) {
     sessionMaxAgeSeconds,
   });
   void app.register(meRoutes);
+  const courseRepository = new SqliteCourseRepository(db);
   void app.register(courseRoutes, {
-    repo: new SqliteCourseRepository(db),
+    repo: courseRepository,
     fileStore: new LocalFileStore(opts.dataDir),
     jobQueue: new SqliteJobQueue(db, uuidV7Generator),
     idGenerator: uuidV7Generator,
     clock: systemClock,
   });
+  void app.register(readerRoutes, { repo: courseRepository, clock: systemClock });
   void app.register(healthRoutes);
 
   if (opts.webDistPath) {
