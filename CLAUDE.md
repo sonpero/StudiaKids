@@ -141,6 +141,12 @@ N'ajoutez pas de dépendance sans une justification d'une ligne dans la
 description de la PR. Préférez la bibliothèque standard ou une dépendance
 déjà présente.
 
+**Jamais de `npx` (ni `pnpm dlx`) sur un paquet absent du lockfile** : il
+serait téléchargé et exécuté hors de toute dépendance validée (arrivé en
+M4 : `npx prettier` a reformaté un fichier avec un outil que le dépôt
+n'utilise pas). `npx` ne sert qu'aux binaires déjà installés
+(`npx vitest`, `npx eslint`, `npx tsc`…).
+
 ---
 
 ## Arborescence
