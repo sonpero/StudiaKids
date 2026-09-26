@@ -6,6 +6,7 @@ import { Mascot } from "../components/mascot/Mascot.js";
 import { answerExercise, gameLabel } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
 import { primary, quiet, secondary, text } from "./games/styles.js";
+import { MatchingGame, ReorderingGame } from "./games/TapGames.js";
 
 export interface GameScreenProps {
   exercise: PlayableExerciseDto;
@@ -19,6 +20,10 @@ function GameBody({ exercise, onAnswer }: { exercise: PlayableExerciseDto; onAns
       return <McqGame question={exercise.question} options={exercise.options} onAnswer={onAnswer} />;
     case "true_false":
       return <TrueFalseGame statement={exercise.statement} onAnswer={onAnswer} />;
+    case "matching":
+      return <MatchingGame lefts={exercise.lefts} rights={exercise.rights} onAnswer={onAnswer} />;
+    case "reordering":
+      return <ReorderingGame elements={exercise.elements} onAnswer={onAnswer} />;
     default:
       return null;
   }

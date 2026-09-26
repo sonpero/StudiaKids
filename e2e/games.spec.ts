@@ -52,8 +52,7 @@ test("Vrai ou faux: a wrong answer gets a calm mascot, never sorry nor glitch; �
   await expectRight(page);
 });
 
-// fixme until M4 commit 9 « web: games played by tapping » (seen failing: no Jouer screen yet).
-test.fixme("Relie les paires: tap a left item then its answer, three times @mobile", async ({ page, child: _child }) => {
+test("Relie les paires: tap a left item then its answer, three times @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Relie les paires.*Chronologie des temps de Léa/);
 
@@ -70,8 +69,7 @@ test.fixme("Relie les paires: tap a left item then its answer, three times @mobi
   await expectRight(page);
 });
 
-// fixme until M4 commit 9 « web: games played by tapping » (seen failing: no Jouer screen yet).
-test.fixme("Remets dans l'ordre: tap the elements in order; a second tap takes one back @mobile", async ({ page, child: _child }) => {
+test("Remets dans l'ordre: tap the elements in order; a second tap takes one back @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Remets dans l'ordre.*Chronologie des temps de Léa/);
 
