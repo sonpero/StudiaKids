@@ -92,6 +92,17 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur dans
 - un bouton « Accueil » ramène à l'accueil. La barre d'onglets arrive avec
   l'écran « Jouer » (M4).
 
+Précisé à l'implémentation (M3, décisions prises seul) :
+
+- états : chargement (`waiting`, « J'ouvre ton cours… », *à valider*),
+  erreur (`glitch`, « Réessaie »), cours supprimé entre-temps → retour à
+  l'accueil. **Pas d'état vide** : un cours confirmé a toujours un texte ;
+- le bouton « Écouter » est masqué si le navigateur n'a pas de synthèse
+  vocale ; la voix s'arrête quand l'enfant quitte l'écran ;
+- les liens d'une leçon sont affichés comme du texte, jamais suivis :
+  l'enfant reste dans l'application ;
+- une photo agrandie se referme par « Fermer ».
+
 ## Hors périmètre
 
 L'extraction elle-même, le stockage des photos (`ingestion`). Le découpage

@@ -92,7 +92,7 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `extraction-not-a-course-page` | `sorry` — même dessin, phrase différente ("Je ne vois pas de leçon sur cette photo…") |
 | `extraction-failed` | `glitch` |
 | `generation-in-progress` | `waiting` |
-| `generation-ready` | `joy` (M3) |
+| `generation-ready` | `joy` (M3 ; pose dessinée en M3, recopiée de `mascotte-etats.html`) |
 | `generation-insufficient-coverage` | `sorry` (M3) — un problème de photo (trop peu à apprendre), jamais une faute de l'enfant ; phrases « à valider » |
 | `generation-failed` | `glitch` |
 | `game-from-excerpt-in-progress` | `waiting` — même pose que `generation-in-progress`, mais avec sa propre phrase ("Je te prépare un jeu sur ce passage…"), voir `docs/modules/tutor.md` |

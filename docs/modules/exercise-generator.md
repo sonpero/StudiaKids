@@ -301,6 +301,18 @@ comparaison avant écriture garde l'id d'un exercice inchangé.
 | `GET /api/items/:id/exercises` | Exercices d'un item |
 | `POST /api/items/:id/regenerate` | Régénération d'un item |
 
+Erreurs : `404 not_found` (identique pour un id inconnu et le cours ou
+l'item d'un autre compte) et `409 not_ready` (cours pas encore confirmé) —
+les codes de `courseErrorSchema`, aucun code propre à la génération n'a
+été nécessaire. Un second « Créer mes jeux » répond le même `202` avec le
+statut courant.
+
+Adaptateurs fixture (`LLM_ADAPTER=fixture`, worker et e2e) : les vrais
+adaptateurs nourris des réponses enregistrées ; un découpage répond au
+texte de la fixture d'ingestion nommée par sa `source` (ou à un cours de
+plusieurs photos de cette même page), une génération à son type ; un texte
+ou un type inconnu échoue bruyamment.
+
 Le nombre de jeux prêts affiché sur les cartes "Mes cours" est ajouté à
 `GET /api/courses` **dans la route API**, qui compose `ingestion` et ce
 module : `ingestion` n'importe jamais `exercise-generator` (cycle interdit

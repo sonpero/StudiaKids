@@ -262,6 +262,12 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
 - L'enfant peut quitter le lecteur pendant la création : elle continue,
   et la carte de l'accueil montre les jeux prêts à son retour.
 
+Textes ajoutés à l'implémentation, tous *à valider* : « J'ouvre ton
+cours… » (chargement du lecteur), « Fermer » (photo agrandie), « 2 sur 5 »
+(avancement), « Prendre une autre photo » (cours trop court), « 12 jeux
+prêts » / « 1 jeu prêt » (carte). La pose `joy` est dessinée depuis M3,
+recopiée de `docs/design/mascotte-etats.html`.
+
 ---
 
 ## Travail asynchrone
