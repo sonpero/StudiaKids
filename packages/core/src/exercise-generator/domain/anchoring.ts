@@ -68,6 +68,38 @@ function evaluate(question: string): number | null {
   return terms.slice(1).reduce((sum, term, i) => (signs[i] === "-" ? sum - term : sum + term), terms[0]!);
 }
 
+// A calculation as its numbers and signs only, words dropped: « Combien
+// font 4 × 7 ? » and « le diamètre mesure 4 x 7 » both read "4 * 7".
+function calculationTokens(text: string): string[] {
+  return (
+    text
+      .replace(/[−–]/g, "-")
+      .replace(/[×*]|(?<=\d\s?)x(?=\s?\d)/g, "*")
+      .replace(/÷|(?<=\d\s?):(?=\s?\d)/g, "/")
+      .replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1")
+      .replace(/(\d),(\d)/g, "$1.$2")
+      .match(/\d+(?:\.\d+)?|[+\-*/]/g) ?? []
+  ).map((token) => (/\d/.test(token) ? String(Number(token)) : token));
+}
+
+// Whether the course writes this calculation with this result in one chain
+// of equalities (« 5 + 8 = 8 + 5 = 13 », « 8 352 = 8 000 + … », « 2 × 3 =
+// 6 cm »): the result given by the lesson, never only asked (« 7 + 7 = … »).
+function writtenWithResult(question: string, answer: number, courseText: string): boolean {
+  const expression = calculationTokens(question);
+  const result = String(answer);
+  // Token by token: « 12 × 3 » does not end with « 2 × 3 ».
+  const endsWithExpression = (tokens: string[]) => expression.every((token, i) => tokens[tokens.length - expression.length + i] === token);
+  // One chain of equalities per line or clause; a blank to fill (« = … »,
+  // « = ? ») ends one, so the next line's number is never its result.
+  const chains = courseText.split(/[\n;?…]/);
+  return chains.some((chain) => {
+    const segments = chain.split("=").map(calculationTokens);
+    // The result is the value of an equality, not any number near it.
+    return segments.some((tokens, i) => endsWithExpression(tokens) && segments.some((other, j) => j !== i && other[0] === result));
+  });
+}
+
 // The anchoring rule, checked mechanically where it can be
 // (docs/modules/exercise-generator.md): every exercise, answer included,
 // must be checkable against the course text. Null when it holds.
@@ -100,7 +132,8 @@ export function anchoringProblem(content: ExerciseContent, courseText: string): 
       if (result === null) return "calcul : aucune opération lisible";
       if (Math.abs(result - content.answer) > 1e-9) return "calcul : la réponse est fausse";
       const known = new Set(numbersIn(course));
-      return numbersIn(normalize(content.question)).every((n) => known.has(n)) ? null : "calcul : un nombre absent du cours";
+      if (!numbersIn(normalize(content.question)).every((n) => known.has(n))) return "calcul : un nombre absent du cours";
+      return writtenWithResult(content.question, content.answer, courseText) ? null : "calcul : le cours ne donne pas ce résultat";
     }
     case "true_false":
       return /\b(vrai|vraie|faux|fausse)\b/.test(normalize(content.statement)) ? "vrai/faux : la phrase donne sa réponse" : null;

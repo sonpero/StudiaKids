@@ -76,3 +76,88 @@ describe("anchoringProblem", () => {
     expect(anchoringProblem({ type: "true_false", statement: "C'est faux de dire que le fossé protège.", answer: false }, course)).not.toBeNull();
   });
 });
+
+// Real cases (pnpm eval, prompts v2): calculations taken from the page's
+// own exercise section passed the check above — right, and made of the
+// course's numbers — but the lesson never gives their result. The course
+// must write the calculation with its result, in either direction.
+describe("anchoringProblem, mental_math written with its result in the course", () => {
+  const additions = `# CALC 2 – J'additionne jusqu'à 20
+
+## 2. Des additions à connaître
+
+- 7 + 3 = 10
+- 8 + 5 = 13
+- 9 + 4 = 13
+- 6 + 6 = 12, c'est un double
+
+## 3. Compter en avançant
+
+Pour calculer 8 + 5, je pars de 8 et j'avance de 5 : 9, 10, 11, 12, 13.
+
+## À retenir
+
+Dans une addition, on peut changer l'ordre des nombres :
+5 + 8 = 8 + 5 = 13.
+
+## Exercices
+
+1. Calcule : 4 + 6 = …
+2. Calcule : 7 + 7 = …`;
+  const circle = `Si le rayon mesure 3 cm, le diamètre mesure 2 × 3 = 6 cm.
+
+Si le diamètre mesure 10 cm, le rayon mesure 10 ÷ 2 = 5 cm.
+
+diamètre = 2 × rayon`;
+  const table = `- 4 × 6 = 24
+Multiplier par 4, c'est doubler deux fois : 4 × 6, c'est le double de 12, donc 24.
+
+4 × 7 = 28 et 7 × 4 = 28 :
+on peut changer l'ordre des facteurs.`;
+  const mentalMath = (question: string, answer: number) => ({ type: "mental_math" as const, question, answer });
+
+  it("refuses a calculation the lesson only asks, never answers (its exercise section)", () => {
+    expect(anchoringProblem(mentalMath("7 + 7", 14), additions)).toMatch(/résultat/);
+    expect(anchoringProblem(mentalMath("4 + 6", 10), additions)).toMatch(/résultat/);
+  });
+
+  it("accepts the lesson's own calculations, including in a chain of equalities", () => {
+    for (const [question, answer] of [["8 + 5", 13], ["9 + 4", 13], ["6 + 6", 12], ["5 + 8", 13], ["Combien font 7 + 3 ?", 10]] as const) {
+      expect(anchoringProblem(mentalMath(question, answer), additions), question).toBeNull();
+    }
+  });
+
+  it("accepts a result followed by its unit, or written first, and a calculation after words", () => {
+    expect(anchoringProblem(mentalMath("2 × 3", 6), circle)).toBeNull();
+    expect(anchoringProblem(mentalMath("10 ÷ 2", 5), circle)).toBeNull();
+    expect(anchoringProblem(mentalMath("4 × 6", 24), table)).toBeNull();
+    expect(anchoringProblem(mentalMath("7 × 4", 28), table)).toBeNull();
+    expect(anchoringProblem(mentalMath("4 x 7", 28), table)).toBeNull();
+  });
+
+  it("reads decimal commas and trailing zeros as the same number", () => {
+    expect(anchoringProblem(mentalMath("1,50 + 1", 2.5), "Le prix : 1,50 + 1 = 2,50 euros.")).toBeNull();
+  });
+
+  it("reads the ways a primary school writes signs: « : » for ÷, « − » for -", () => {
+    expect(anchoringProblem(mentalMath("10 ÷ 2", 5), "10 : 2 = 5")).toBeNull();
+    expect(anchoringProblem(mentalMath("14 - 7", 7), "14 − 7 = 7")).toBeNull();
+    expect(anchoringProblem(mentalMath("14 − 7", 7), "14 − 7 = 7")).toBeNull();
+  });
+
+  it("a blank to fill ends the calculation: the next line's or the next question's number is not its result", () => {
+    expect(anchoringProblem(mentalMath("1 + 1", 2), "1. Calcule : 1 + 1 = ___\n2. Calcule : 3 + 3 = ___")).toMatch(/résultat/);
+    expect(anchoringProblem(mentalMath("7 + 7", 14), "Calcule : 7 + 7 = ? 14 − 7 = ?")).toMatch(/résultat/);
+  });
+
+  it("never takes the result from another calculation of the same line or the next one", () => {
+    expect(anchoringProblem(mentalMath("3 × 2", 6), circle)).toMatch(/résultat/);
+    expect(anchoringProblem(mentalMath("2 × 5", 10), circle)).not.toBeNull();
+    expect(anchoringProblem(mentalMath("2 × 3", 36), "12 × 3 = 36 ; 2 et 3")).not.toBeNull();
+    expect(anchoringProblem(mentalMath("2 × 3", 6), "Le 6 vient de 2 × 3 = …")).toMatch(/résultat/);
+    expect(anchoringProblem(mentalMath("7 + 7", 14), "Calcule : 7 + 7 = … puis ajoute 14.")).toMatch(/résultat/);
+    expect(anchoringProblem(mentalMath("2 × 3", 6), "2 × 3 = 3 + 3, et non 6")).toMatch(/résultat/);
+    // Compared token by token: « 12 × 3 » does not end with the calculation « 2 × 3 ».
+    expect(anchoringProblem(mentalMath("2 × 3", 6), "12 × 3 = 6 ; 2")).toMatch(/résultat/);
+  });
+});

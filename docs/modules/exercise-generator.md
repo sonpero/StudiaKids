@@ -48,7 +48,7 @@ leçon (mesuré par l'évaluation, consignes v3) — et **vérifiée mécaniquem
 | `reordering` | chaque élément figure dans le texte, **dans cet ordre** (chaque élément cherché après le précédent : un nombre déjà vu plus haut dans la leçon ne fait pas rejeter une suite écrite dans l'ordre) |
 | `matching` | chaque élément de gauche et de droite figure dans le texte |
 | `mcq` | la bonne réponse figure dans le texte |
-| `mental_math` | le calcul est juste, et ses nombres figurent dans le texte |
+| `mental_math` | le calcul est juste, ses nombres figurent dans le texte, et **le cours écrit ce calcul avec son résultat** dans une même chaîne d'égalités (« 5 + 8 = 8 + 5 = 13 », « 8 352 = 8 000 + … », « 2 × 3 = 6 cm ») ; un calcul seulement demandé (« 7 + 7 = … », section Exercices de la page) est écarté — ajouté le 2026-09-26 après le tri des rejets de l'évaluation |
 | `true_false` | la phrase ne contient pas sa propre réponse (« vrai », « faux », « c'est vrai ») ; sa justesse n'est pas vérifiable mécaniquement |
 
 Ce qui n'est pas vérifiable mécaniquement (justesse d'un vrai/faux, d'un
