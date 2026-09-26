@@ -1,0 +1,5 @@
+#!/bin/sh
+# Refuses a commit that would carry an image with metadata (EXIF, GPS...)
+# under tests/fixtures: the repository is public (docs/modules/ingestion.md).
+# Enable once per clone: git config core.hooksPath .githooks
+exec pnpm exec vitest run --project int apps/api/src/cli/fixtures-record/fixtures-hygiene.int.test.ts

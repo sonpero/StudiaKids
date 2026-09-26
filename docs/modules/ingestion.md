@@ -478,6 +478,16 @@ le modèle la lisait encore à 6 et 9) et le dessin d'une voiture jouet
 --show` avant l'enregistrement. L'évaluation du prompt sur de vraies
 photos de téléphone reste à faire (dette de M3, `docs/jalons.md`).
 
+**Aucune image avec métadonnées sous `tests/fixtures`** (décidé le
+2026-09-26, après qu'une photo brute de téléphone y a été indexée) : un
+test (`fixtures-hygiene.int.test.ts`) parcourt tout ce qu'un commit
+pourrait emporter (fichiers suivis, et non suivis non ignorés) et échoue
+sur toute image portant EXIF, GPS, XMP, IPTC ou un commentaire, quelle
+que soit la casse de l'extension ; HEIC, HEIF, TIFF, DNG et AVIF sont
+refusés d'office. `pnpm test` et la CI échouent ; un hook `pre-commit`
+versionné (`.githooks/`, à activer une fois par clone avec
+`git config core.hooksPath .githooks`) refuse le commit lui-même.
+
 Deux exceptions, déclarées dans les fichiers eux-mêmes :
 
 - `schema-violation.json` est **dégradée volontairement** (`degradedFrom:
