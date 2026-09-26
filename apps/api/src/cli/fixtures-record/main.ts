@@ -173,6 +173,49 @@ async function recordNamer({ force, dryRun, apiKey, model }: RunOptions): Promis
   write({ [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
 }
 
+// A namer answer on a real-looking lesson whose title runs past three
+// words (decided 2026-09-26). The page is extracted (real call, smoke
+// test, never recorded nor written) and only the namer's exchanges are
+// kept: the photo must never reach photos/, where the fixture adapter
+// reads one size per case.
+async function recordLongTitleNamer(photoPath: string, { force, dryRun, show, apiKey, model }: RunOptions): Promise<void> {
+  const stripped = stripJpegMetadata(new Uint8Array(readFileSync(photoPath)));
+  if (!stripped.ok) fail("JPEG illisible.");
+  const size = jpegSize(stripped.value);
+  if (!size) fail("Dimensions introuvables dans le JPEG.");
+  const target = nativePhotoSize(size.width, size.height);
+  if (target.width !== size.width || target.height !== size.height) fail(`Photo plus grande que la taille native : réduisez-la à ${String(target.width)}x${String(target.height)}.`);
+
+  const fixtureFile = path.join(fixturesDir, "namer-long-title.json");
+  if (!dryRun) {
+    const writable = assertWritable([fixtureFile], force);
+    if (!writable.ok) fail(`Refus d'écraser (relancer avec --force) :\n  ${writable.error.join("\n  ")}`);
+  }
+
+  const extractionExchanges: RawExchange[] = [];
+  const extracted = await new ClaudePhotoExtractor(createLanguageModel({ apiKey, model, fetch: recordingFetch(extractionExchanges) })).extract({ bytes: stripped.value });
+  console.log("--- extraction (non enregistrée) ---");
+  report(extractionExchanges.map(sanitizeExchange), extracted.ok);
+  if (!extracted.ok || !extracted.value.legible || !extracted.value.isCoursePage) fail("ARRÊT : la page n'a pas été lue comme une page de cours lisible. Rien n'a été écrit.");
+  if (show) console.log(`--- Markdown ---\n${extracted.value.markdown}\n--- fin ---`);
+
+  const raw: RawExchange[] = [];
+  const result = await new ClaudeCourseNamer(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) })).suggest({ markdown: extracted.value.markdown });
+  const exchanges = raw.map(sanitizeExchange);
+  console.log("--- namer ---");
+  report(exchanges, result.ok);
+  if (!result.ok) return;
+  console.log(`proposé : « ${String(result.value.title)} », ${String(result.value.subject)}`);
+  const title = result.value.title ?? "";
+  if (exchanges.length !== 1 || title.trim().split(/\s+/).length <= 3) {
+    fail("ARRÊT : il faut un titre de plus de trois mots accepté du premier coup, sinon cette fixture ne prouve rien. Rien n'a été écrit.");
+  }
+
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
+  const fixture = buildFixture({ module: "ingestion", fixtureCase: "namer-long-title", model, recordedAt: new Date().toISOString(), exchanges });
+  write({ [fixtureFile]: `${JSON.stringify(fixture, null, 2)}\n` }, force);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!args.ok) fail(args.error);
@@ -185,6 +228,7 @@ async function main(): Promise<void> {
   const { fixtureCase, photoPath } = args.value;
   if (fixtureCase === "namer") return recordNamer(options);
   if (photoPath === null) fail("--photo manquant.");
+  if (fixtureCase === "namer-long-title") return recordLongTitleNamer(photoPath, options);
   return recordPhoto(fixtureCase, photoPath, options);
 }
 

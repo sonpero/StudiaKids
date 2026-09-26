@@ -78,3 +78,22 @@ describe(`ClaudeCourseNamer contract (${FIXTURE_SOURCE} fixtures)`, () => {
     expect(["maths", "french", "history", "geography", "science", "english", "other"]).toContain(result.value.subject);
   });
 });
+
+// Decided at M2 (2026-09-26): a real lesson's title often runs past three
+// words; this recorded answer names a generated page whose title does.
+describe(`ClaudeCourseNamer contract on a long lesson title (${FIXTURE_SOURCE} fixtures)`, () => {
+  it("keeps the lesson's own long title, without its code, within 60 characters, on the first call", async () => {
+    const replay = replayFetch(loadFixture("ingestion", "namer-long-title"));
+    const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: replay.fetch }));
+
+    const result = await namer.suggest({ markdown: "# (texte d'une page générée, voir la fixture)" });
+
+    if (!result.ok) throw new Error(result.error.message);
+    const title = result.value.title ?? "";
+    expect(replay.requests).toHaveLength(1);
+    expect(title.trim().split(/\s+/).length).toBeGreaterThan(3);
+    expect(title.trim().length).toBeLessThanOrEqual(60);
+    expect(title).not.toMatch(/^\s*[A-Z]{1,5}\s?\d+\s*[–—\-:]/);
+    expect(["maths", "french", "history", "geography", "science", "english", "other"]).toContain(result.value.subject);
+  });
+});

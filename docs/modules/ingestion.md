@@ -433,7 +433,12 @@ première photo est lue et stockée (`201`), les suivantes sont ignorées**
 
 `pnpm fixtures:record ingestion <legible|illegible|not-a-course> --photo <fichier.jpg>`,
 puis `pnpm fixtures:record ingestion namer` (qui nomme le texte enregistré
-par `legible`). Manuel, payant, jamais lancé par `pnpm test` ; clé lue
+par `legible`), et `pnpm fixtures:record ingestion namer-long-title --photo
+<page générée>` : l'outil lit la page (appel réel, jamais enregistré ni
+écrit dans `photos/`), la fait nommer, et n'enregistre que la réponse du
+namer, refusée si le titre accepté du premier coup ne dépasse pas trois
+mots (enregistré le 2026-09-26 : « La vie quotidienne dans un château
+fort au Moyen Âge », `history`, sur une page générée « HIST 2 – … »). Manuel, payant, jamais lancé par `pnpm test` ; clé lue
 dans l'environnement ou le `.env` (ignoré par git).
 
 - La photo doit être un vrai JPEG **déjà à la taille native**

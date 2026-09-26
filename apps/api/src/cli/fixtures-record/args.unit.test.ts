@@ -39,3 +39,18 @@ describe("parseArgs", () => {
     expect(parseArgs([]).ok).toBe(false);
   });
 });
+
+// Decided at M2 (2026-09-26): a namer fixture on a real lesson's long
+// title, named from a generated page's extraction.
+describe("parseArgs, namer-long-title", () => {
+  it("reads the case with the page to extract and name", () => {
+    expect(parseArgs(["ingestion", "namer-long-title", "--photo", "page.jpg", "--dry-run"])).toEqual({
+      ok: true,
+      value: { module: "ingestion", fixtureCase: "namer-long-title", photoPath: "page.jpg", force: false, dryRun: true, show: false },
+    });
+  });
+
+  it("refuses it without its page", () => {
+    expect(parseArgs(["ingestion", "namer-long-title"]).ok).toBe(false);
+  });
+});
