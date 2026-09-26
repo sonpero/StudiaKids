@@ -34,3 +34,23 @@ export {
   courseErrorSchema,
   type CourseError,
 } from "./courses.js";
+
+export {
+  GAME_TYPES,
+  gameTypeSchema,
+  type GameType,
+  exerciseContentSchema,
+  type ExerciseContent,
+  itemSchema,
+  type ItemDto,
+  itemListResponseSchema,
+  exerciseSchema,
+  type ExerciseDto,
+  exerciseListResponseSchema,
+  GENERATION_STATUSES,
+  generationStatusSchema,
+  type GenerationStatusDto,
+  itemParamsSchema,
+  readerTextSchema,
+  type ReaderTextDto,
+} from "./games.js";
