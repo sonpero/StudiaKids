@@ -86,6 +86,7 @@ CREATE TABLE pages (
   legible INTEGER,               -- NULL tant que non traité, 0/1 ensuite
   is_course_page INTEGER,        -- idem
   unusable_reason TEXT,
+  markdown TEXT,                -- ce que la page a lu, gardé entre les tentatives
   PRIMARY KEY (course_id, page_index),
   UNIQUE (course_id, sha256)
 );

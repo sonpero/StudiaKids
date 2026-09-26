@@ -136,7 +136,7 @@ export class SqliteCourseRepository implements CourseRepository {
 
   resetPageResults(userId: string, courseId: string): Promise<void> {
     if (this.isOwned(userId, courseId)) {
-      this.db.update(pagesTable).set({ legible: null, isCoursePage: null, unusableReason: null }).where(eq(pagesTable.courseId, courseId)).run();
+      this.db.update(pagesTable).set({ legible: null, isCoursePage: null, unusableReason: null, markdown: null }).where(eq(pagesTable.courseId, courseId)).run();
     }
     return Promise.resolve();
   }
@@ -150,6 +150,28 @@ export class SqliteCourseRepository implements CourseRepository {
         .run();
     }
     return Promise.resolve();
+  }
+
+  recordPageMarkdown(userId: string, courseId: string, index: number, markdown: string): Promise<void> {
+    if (this.isOwned(userId, courseId)) {
+      this.db
+        .update(pagesTable)
+        .set({ markdown })
+        .where(and(eq(pagesTable.courseId, courseId), eq(pagesTable.pageIndex, index)))
+        .run();
+    }
+    return Promise.resolve();
+  }
+
+  listPageMarkdown(userId: string, courseId: string): Promise<{ index: number; markdown: string }[]> {
+    if (!this.isOwned(userId, courseId)) return Promise.resolve([]);
+    const rows = this.db
+      .select({ index: pagesTable.pageIndex, markdown: pagesTable.markdown })
+      .from(pagesTable)
+      .where(eq(pagesTable.courseId, courseId))
+      .orderBy(pagesTable.pageIndex)
+      .all();
+    return Promise.resolve(rows.flatMap((row) => (row.markdown === null ? [] : [{ index: row.index, markdown: row.markdown }])));
   }
 
   // One short transaction, no model call inside (CLAUDE.md rule 2): the

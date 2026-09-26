@@ -211,4 +211,21 @@ describe("SqliteCourseRepository", () => {
       ["last_accessed_at", 1],
     ]);
   });
+
+  // Decided at M2 (2026-09-26): what a page read is kept, so that a retry
+  // never pays for it twice.
+  it("keeps a page's Markdown and reads it back, only for the owner; a reset clears it", async () => {
+    const { repo } = setup();
+    await repo.insertCourse(course("c1", "u1"));
+    await repo.addPage("u1", page("c1", 0));
+    await repo.addPage("u1", page("c1", 1));
+
+    await repo.recordPageMarkdown("u1", "c1", 1, "## Suite");
+    await repo.recordPageMarkdown("u2", "c1", 0, "# Intrus");
+
+    expect(await repo.listPageMarkdown("u1", "c1")).toEqual([{ index: 1, markdown: "## Suite" }]);
+    expect(await repo.listPageMarkdown("u2", "c1")).toEqual([]);
+    await repo.resetPageResults("u1", "c1");
+    expect(await repo.listPageMarkdown("u1", "c1")).toEqual([]);
+  });
 });

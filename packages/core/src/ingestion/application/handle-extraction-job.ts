@@ -17,8 +17,8 @@ const RESULT_STATUSES = new Set(["ready", "illegible", "not_a_course_page"]);
 
 // Reads pages in order, one model call per page, and stops at the first
 // unusable one: legibility gates naming, and nothing is ever enqueued after
-// it (generation is started by hand, M3). Idempotent: a re-run starts from
-// clean page results, a course whose result is already stored is left
+// it (generation is started by hand, M3). Idempotent: a re-run reuses the
+// pages already read, a course whose result is already stored is left
 // alone, and completeExtraction replaces any extraction in the same
 // transaction that sets `ready` — so one only ever exists for a ready
 // course. No model call happens inside a transaction:
@@ -30,11 +30,18 @@ export async function handleExtractionJob(deps: HandleExtractionJobDeps, payload
   if (RESULT_STATUSES.has(course.extractionStatus)) return ok(undefined);
 
   await deps.repo.setExtractionStatus(ctx.userId, course.id, "running");
-  await deps.repo.resetPageResults(ctx.userId, course.id);
 
+  // A page already read on a previous attempt is never read (nor paid for)
+  // again: only pages without a kept Markdown go to the model.
+  const kept = new Map((await deps.repo.listPageMarkdown(ctx.userId, course.id)).map((row) => [row.index, row.markdown]));
   const pages = await deps.repo.listPages(ctx.userId, course.id);
   const markdownParts: string[] = [];
   for (const page of pages) {
+    const alreadyRead = page.legible === true && page.isCoursePage === true ? kept.get(page.index) : undefined;
+    if (alreadyRead !== undefined) {
+      markdownParts.push(alreadyRead);
+      continue;
+    }
     const bytes = await deps.fileStore.read(page.storedPath);
     const extracted = await deps.extractor.extract({ bytes });
     if (!extracted.ok) return err(extracted.error.message);
@@ -50,6 +57,7 @@ export async function handleExtractionJob(deps: HandleExtractionJobDeps, payload
       await deps.repo.setExtractionStatus(ctx.userId, course.id, outcome);
       return ok(undefined);
     }
+    await deps.repo.recordPageMarkdown(ctx.userId, course.id, page.index, extracted.value.markdown);
     markdownParts.push(extracted.value.markdown);
   }
 

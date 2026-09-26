@@ -48,6 +48,10 @@ export interface CourseRepository {
   setExtractionStatus(userId: string, courseId: string, status: StoredExtractionStatus): Promise<void>;
   resetPageResults(userId: string, courseId: string): Promise<void>;
   recordPageResult(userId: string, courseId: string, index: number, result: PageResult): Promise<void>;
+  // What a usable page read, kept between attempts: a retry never pays
+  // for a page twice (docs/modules/ingestion.md).
+  recordPageMarkdown(userId: string, courseId: string, index: number, markdown: string): Promise<void>;
+  listPageMarkdown(userId: string, courseId: string): Promise<{ index: number; markdown: string }[]>;
   // Replaces any existing extraction, sets title/subject/color and `ready`.
   completeExtraction(userId: string, courseId: string, result: CompletedExtraction, now: Date): Promise<void>;
   getExtraction(userId: string, courseId: string): Promise<Extraction | null>;

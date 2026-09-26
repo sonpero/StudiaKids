@@ -43,6 +43,9 @@ export const pagesTable = sqliteTable(
     legible: integer("legible", { mode: "boolean" }),
     isCoursePage: integer("is_course_page", { mode: "boolean" }),
     unusableReason: text("unusable_reason"),
+    // What this page read, kept so that a retry never pays for it twice;
+    // null until read, and for an unusable page.
+    markdown: text("markdown"),
   },
   (table) => [primaryKey({ columns: [table.courseId, table.pageIndex] }), unique("pages_course_sha256_unique").on(table.courseId, table.sha256)],
 );

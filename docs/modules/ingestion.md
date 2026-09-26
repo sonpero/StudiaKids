@@ -258,9 +258,12 @@ règles enfreintes (les `issues` Zod), pas le message générique du SDK.
 - `handleExtractionJob(payload, ctx)` — se termine sans rien faire si le
   cours n'existe plus (refusé ou remplacé entre-temps) ou si son résultat
   est déjà stocké (job rejoué après un crash : rien n'est repayé) ; sinon
-  passe le cours à `running`, remet à zéro les résultats de pages, lit
-  les pages dans l'ordre, appelle `PhotoExtractor` par page, marque
-  `legible`/`isCoursePage`/`unusableReason` sur chaque page, et
+  passe le cours à `running`, lit les pages dans l'ordre, appelle
+  `PhotoExtractor` par page, marque `legible`/`isCoursePage`/`unusableReason`
+  sur chaque page, **conserve le Markdown de chaque page exploitable**
+  (`pages.markdown`) et **ne relit jamais une page déjà lue** lors d'une
+  tentative précédente (décidé le 2026-09-26 : une relance après un échec
+  du nommage ou de l'écriture finale ne refait aucune extraction), et
   **s'arrête à la première page inexploitable** (les suivantes gardent
   `null` : inutile de payer un appel modèle pour un cours qui sera repris
   en entier) :
@@ -357,6 +360,7 @@ CREATE TABLE pages (
   legible INTEGER,               -- NULL tant que non traité, 0/1 ensuite
   is_course_page INTEGER,        -- idem
   unusable_reason TEXT,
+  markdown TEXT,                -- ce que la page a lu, gardé entre les tentatives (NULL avant lecture ou si inexploitable)
   PRIMARY KEY (course_id, page_index),
   UNIQUE (course_id, sha256)
 );

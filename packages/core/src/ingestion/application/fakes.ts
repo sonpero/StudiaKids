@@ -5,10 +5,12 @@ import { err, ok, type Result } from "../../shared/index.js";
 import type { CourseNamer, CourseNameSuggestion, CourseRepository, ExtractionError, FileStore, PhotoExtraction, PhotoExtractor } from "../domain/ports.js";
 import type { Course, Extraction, Page } from "../domain/types.js";
 
-export function fakeCourseRepository(): CourseRepository & { courses: Course[]; pages: Page[]; extractions: Extraction[] } {
+export function fakeCourseRepository(): CourseRepository & { courses: Course[]; pages: Page[]; extractions: Extraction[]; pageMarkdown: Map<string, string> } {
   const courses: Course[] = [];
   const pages: Page[] = [];
   const extractions: Extraction[] = [];
+  const pageMarkdown = new Map<string, string>();
+  const markdownKey = (courseId: string, index: number) => `${courseId}#${String(index)}`;
   const owned = (userId: string, courseId: string) => courses.find((c) => c.id === courseId && c.userId === userId);
   const withCount = (course: Course): Course => ({ ...course, pageCount: pages.filter((p) => p.courseId === course.id).length });
   const removeWhere = <T>(rows: T[], predicate: (row: T) => boolean) => {
@@ -19,6 +21,7 @@ export function fakeCourseRepository(): CourseRepository & { courses: Course[]; 
     courses,
     pages,
     extractions,
+    pageMarkdown,
     insertCourse: (course) => {
       courses.push({ ...course });
       return Promise.resolve();
@@ -53,7 +56,10 @@ export function fakeCourseRepository(): CourseRepository & { courses: Course[]; 
     },
     resetPageResults: (userId, courseId) => {
       if (owned(userId, courseId)) {
-        for (const p of pages.filter((row) => row.courseId === courseId)) Object.assign(p, { legible: null, isCoursePage: null, unusableReason: null });
+        for (const p of pages.filter((row) => row.courseId === courseId)) {
+          Object.assign(p, { legible: null, isCoursePage: null, unusableReason: null });
+          pageMarkdown.delete(markdownKey(courseId, p.index));
+        }
       }
       return Promise.resolve();
     },
@@ -62,6 +68,19 @@ export function fakeCourseRepository(): CourseRepository & { courses: Course[]; 
       if (page) Object.assign(page, result);
       return Promise.resolve();
     },
+    recordPageMarkdown: (userId, courseId, index, markdown) => {
+      if (owned(userId, courseId)) pageMarkdown.set(markdownKey(courseId, index), markdown);
+      return Promise.resolve();
+    },
+    listPageMarkdown: (userId, courseId) =>
+      Promise.resolve(
+        owned(userId, courseId)
+          ? pages
+              .filter((p) => p.courseId === courseId && pageMarkdown.has(markdownKey(courseId, p.index)))
+              .sort((a, b) => a.index - b.index)
+              .map((p) => ({ index: p.index, markdown: pageMarkdown.get(markdownKey(courseId, p.index)) ?? "" }))
+          : [],
+      ),
     completeExtraction: (userId, courseId, result, now) => {
       const course = owned(userId, courseId);
       if (!course) return Promise.resolve();
