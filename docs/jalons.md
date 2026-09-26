@@ -531,7 +531,19 @@ tuteur.
 
 ---
 
-## M5 — Progression et mascotte festive
+## M5 — Progression et mascotte festive (ouvert)
+
+Ouvert le 2026-09-26, en session autonome (plan au journal de session,
+décisions d'Alexandre) : étoiles au rejeu — une au premier succès, puis au
+plus une de plus par exercice et par jour calendaire de Paris ; bonus de
+série au seuil fixé par `docs/modules/progress.md` (5), une erreur remet la
+série à zéro sans rien retirer, une réponse aidée est neutre, une réponse
+juste déjà récompensée aujourd'hui prolonge ; total et série dérivés des
+seules tentatives (aucun compteur stocké, fuseau seul paramètre externe) ;
+l'API renvoie le nouveau total et la série après chaque réponse ; danse de
+la joie sur un bonus et sur une réussite marquante, `prefers-reduced-motion`
+respecté ; aucune nouvelle dépendance, aucun appel au modèle. Détail et
+choix *à valider* dans `docs/modules/progress.md` et `docs/ui.md`.
 
 **Périmètre**
 - Dérivation des étoiles depuis les événements de tentative stockés en M4 :

@@ -25,66 +25,56 @@ anglais ci-dessous.
 
 ## Domaine
 
-```ts
-type AttemptSummary = { correct: boolean; starEligible: boolean; attemptedAt: string };
-
-type StarsPerAttempt = { attemptedAt: string; stars: 0 | 1 | 2 };  // 2 = bonus de série inclus
-
-type StarCounters = {
-  total: number;
-  starsSince: number | null;   // null si aucun filtre `since` demandé
-  currentStreak: number;
-  bestStreak: number;
-};
-
-const STREAK_BONUS_THRESHOLD = 5;
-// Décidé, valeur de départ simple : toutes les 5 bonnes réponses
-// consécutives, une étoile bonus. Choisi parce que c'est assez fréquent
-// pour être motivant dans une session courte sans banaliser le bonus ;
-// révisable après les premiers essais réels.
-```
-
-**`starEligible: false` (relecture en copie différée) est totalement
-invisible ici** : ni comptée, ni cassante pour la série. Une relecture n'est
-ni une réussite ni un échec au sens des étoiles, elle est hors de
-l'économie d'étoiles — exactement ce que le brief demande ("une relecture
-du mot possible sans gain d'étoile").
-
-**Fonctions pures :**
+**Réécrit à l'ouverture de M5** (décisions d'Alexandre, journal de
+session ; valeurs *à valider*).
 
 ```ts
-// Une seule passe chronologique sur l'historique complet. Ignore les
-// tentatives non éligibles (relecture) : elles ne comptent ni pour le
-// total ni pour la série. Un échec remet la série à 0 sans jamais retirer
-// une étoile déjà comptée sur une ligne antérieure.
-function computeStarsPerAttempt(attempts: AttemptSummary[]): StarsPerAttempt[];
+// Une ligne par unité, telle que game-engine l'a écrite.
+type AttemptEvent = { exerciseId: string; attemptedAt: string; correct: boolean; starEligible: boolean };
 
-// Somme les étoiles de computeStarsPerAttempt, filtrées par
-// `since` si fourni (comparaison ISO simple, ISO 8601 UTC trie
-// lexicographiquement comme chronologiquement).
-function totalStars(perAttempt: StarsPerAttempt[], since?: string): number;
+// Une réponse à un exercice : les unités d'une même soumission partagent
+// exercice et instant. Un succès = toutes ses unités justes.
+type Submission = { exerciseId: string; at: string; correct: boolean; eligible: boolean };
 
-// Repart de l'historique complet : la série "en cours" et la meilleure
-// série jamais atteinte sont des propriétés de tout l'historique, pas
-// d'une fenêtre — resynthétiser la série à l'intérieur d'une fenêtre
-// `since` produirait un nombre qui ne correspond à rien de réel pour
-// l'enfant (une série ne "recommence" pas parce qu'on regarde une autre
-// période).
-function computeStreaks(attempts: AttemptSummary[]): { currentStreak: number; bestStreak: number };
+type Celebration = "streak-bonus" | "comeback";
+type SubmissionStars = { exerciseId: string; at: string; stars: 0 | 1; bonus: 0 | 1; celebrate: Celebration | null };
+
+type Progress = { total: number; currentStreak: number; bestStreak: number; submissions: SubmissionStars[] };
+
+const STREAK_BONUS_THRESHOLD = 5;   // fixé par cette spec ; la décision « 3 » ne valait que si la spec se taisait
+const PROGRESS_TIME_ZONE = "Europe/Paris";
+
+function deriveProgress(events: AttemptEvent[], timeZone: string): Progress;
+function calendarDay(instant: string, timeZone: string): string;   // "AAAA-MM-JJ" dans ce fuseau
 ```
 
-**`since`, jamais une notion de "jour" calculée côté serveur.** Le
-principe "conversion en heure locale seulement côté web" de `CLAUDE.md`
-s'applique strictement ici : un jour UTC ne correspond pas à la journée que
-l'enfant perçoit (le changement de date UTC tombe en pleine soirée en
-France). L'écran calcule lui-même l'instant de minuit local et le passe en
-paramètre `since` — le domaine ne sait rien de "aujourd'hui", seulement
-"depuis cet instant précis". Le même mécanisme sert au récapitulatif de fin
-de session (`since` = l'instant d'entrée sur l'écran jeux, gardé
-uniquement en mémoire côté client, aucune table `sessions` créée pour ça —
-simplification délibérée par rapport aux `sessions` persistées de
-`review` dans StudIA : rien ici n'a besoin de survivre à un rechargement de
-page).
+Une seule passe chronologique sur les soumissions (fonction pure : aucune
+horloge, aucun aléatoire, **le fuseau horaire est le seul paramètre
+externe**) :
+
+- **Réponse aidée** (`eligible: false`, relecture) : invisible — ni
+  étoile, ni série prolongée, ni série cassée, qu'elle soit juste ou
+  fausse.
+- **Réponse fausse** (une unité au moins fausse) : la série revient à 0 ;
+  **aucune étoile n'est jamais retirée** (le total ne décroît jamais).
+- **Réponse juste et éligible** :
+  - **une étoile** si l'exercice n'a pas encore été récompensé **ce jour
+    calendaire en heure de Paris** — donc une au premier succès, puis au
+    plus une de plus par exercice et par jour (décision d'Alexandre) ;
+    sinon 0 (« déjà récompensée aujourd'hui ») ;
+  - la série augmente de 1 dans tous les cas (y compris déjà récompensée
+    aujourd'hui) ; **une étoile bonus** chaque fois qu'elle atteint un
+    multiple de `STREAK_BONUS_THRESHOLD` ;
+  - **fête** : `streak-bonus` sur un bonus ; sinon `comeback` pour la
+    **première réussite d'un exercice qui avait d'abord été manqué**
+    (réussite marquante, *à valider*) ; sinon rien.
+- Unité d'étoile = la réponse à un exercice, pas l'unité d'un exercice
+  composite (un appariement réussi à moitié ne rapporte rien, ne retire
+  rien) — *à valider*.
+
+Le jour se calcule **côté serveur, en heure de Paris** (décision de M5, qui
+remplace « jamais une notion de jour côté serveur ») : bornes à 23 h 59 /
+0 h 00 et changements d'heure testés.
 
 ## Ports
 
@@ -98,13 +88,18 @@ interface AttemptsQuery {
 
 ## Cas d'usage
 
-- `getCounters(userId, since?: string)` → `StarCounters` — lit
-  l'historique complet du compte via `gameEngine.listAttemptsForProgress`
-  (une méthode exportée par l'`index.ts` de `game-engine` à cet effet, pas la
-  `AttemptRepository` interne), applique les fonctions pures ci-dessus.
+- `getProgress(userId, { since?, submission? })` → `{ total,
+  currentStreak, bestStreak, starsSince, successesSince, submission }` —
+  lit toutes les tentatives du compte via `gameEngine.listAttemptsForProgress`
+  (exporté par l'`index.ts` de `game-engine`), applique `deriveProgress`
+  avec `PROGRESS_TIME_ZONE`. `since` (instant fourni par l'écran : entrée
+  dans Jouer) donne les étoiles gagnées et les bonnes réponses (aidées
+  comprises) depuis ; `submission` (`{ exerciseId, at }`) renvoie ce que
+  cette réponse a rapporté et sa fête.
 
 Aucune écriture dans ce module : il ne fait jamais qu'agréger ce que
-`game-engine` a déjà écrit.
+`game-engine` a déjà écrit — **aucune colonne d'étoiles, aucun compteur
+stocké**.
 
 ## Persistance
 
@@ -115,13 +110,13 @@ détenue par `game-engine`, exclusivement via son `index.ts`.
 
 | Route | Rôle |
 |---|---|
-| `GET /api/progress/counters` | `{ total, currentStreak, bestStreak }` — compte connecté |
-| `GET /api/progress/counters?since=<ISO>` | Ajoute `starsSince`, calculé par rapport à l'instant fourni par le client |
+| `GET /api/progress` | `{ total, currentStreak, bestStreak }` — compte connecté |
+| `GET /api/progress?since=<ISO>` | Ajoute `starsSince` et `successesSince` (récapitulatif de session) |
 
-Un seul endpoint sert donc à la fois le compteur d'accueil (sans `since`),
-le total "aujourd'hui" (`since` = minuit local calculé côté client) et le
-récapitulatif de fin de session (`since` = l'instant d'entrée sur l'écran
-jeux) — pas trois routes différentes pour la même forme de donnée.
+`POST /api/exercises/:id/answer` (`game-engine`) renvoie en plus
+`progress: { total, currentStreak, bestStreak, stars, celebrate }` —
+composé dans la route API, pour que le compteur se mette à jour sans
+rechargement.
 
 ## Hors périmètre
 
@@ -133,27 +128,24 @@ comptes (explicitement absent du produit).
 
 ## Tests clés
 
-- Unitaire : mêmes tentatives en entrée, même résultat en sortie, toujours
-  (aucune horloge ni aléatoire interne)
-- Unitaire : un échec remet `currentStreak` (via `computeStreaks`) à 0 sans
-  jamais diminuer `total`
-- Unitaire : le bonus se déclenche exactement à la 5e, 10e, 15e bonne
-  réponse consécutive, jamais avant, jamais deux fois pour la même
-  tentative
-- Unitaire : une tentative `starEligible: false` n'apparaît dans aucun
-  compteur et ne casse pas une série en cours
-- Unitaire : `totalStars` avec un `since` postérieur à toute tentative
-  renvoie 0, jamais une exception ; sans `since`, `starsSince` vaut
-  `null`
+- Unitaire : mêmes événements en entrée, même résultat en sortie (test
+  explicite, ordre des événements mélangé compris)
+- Unitaire : un échec ne diminue jamais le total (ajout d'un échec à
+  n'importe quel historique)
+- Unitaire : une étoile au premier succès, puis au plus une par exercice et
+  par jour de Paris — bornes 23 h 59 / 0 h 00 en heure d'hiver et d'été, et
+  les deux nuits de changement d'heure
+- Unitaire : bonus exactement à la 5e, 10e bonne réponse consécutive ;
+  réponse aidée neutre ; réponse déjà récompensée aujourd'hui qui prolonge
+- Unitaire : fête `comeback` et `streak-bonus`
+- Mutation testing sur tout ce qui précède
 - Intégration : le total renvoyé par l'API correspond exactement à la
-  somme dérivée des lignes `attempts` réellement stockées pour ce compte,
-  jamais un compteur mis en cache qui pourrait diverger
+  dérivation des lignes `attempts` réellement stockées pour ce compte
 - Sécurité : les compteurs d'un compte n'incluent jamais les tentatives
   d'un autre compte (test à deux comptes)
 
 ## Questions ouvertes
 
-- Un exercice déjà réussi peut-il être rejoué pour regagner une étoile ?
-  Question déjà posée dans `docs/modules/game-engine.md` ; la réponse change
-  directement si `computeStarsPerAttempt` doit dédupliquer par
-  exercice ou compter chaque tentative sans limite.
+- ~~Rejouer un exercice réussi pour regagner une étoile~~ — **tranché à
+  l'ouverture de M5** : au plus une étoile de plus par exercice et par
+  jour de Paris.

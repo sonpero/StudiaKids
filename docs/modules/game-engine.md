@@ -57,8 +57,9 @@ c'est la règle n°6 de `CLAUDE.md`. Toutes renvoient la même forme : une
 liste d'**unités**, chacune correcte ou non. Un exercice à réponse unique
 (QCM, vrai/faux, calcul, copie) a une seule unité. Un exercice composite
 (appariement, texte à trous, remise en ordre) a une unité par sous-réponse
-— ce qui donne mécaniquement "une étoile par bonne réponse" y compris à
-l'intérieur d'un seul exercice, sans logique spéciale dans `progress`.
+— les unités servent au retour immédiat et au stockage ; depuis M5,
+l'étoile se compte par **réponse** (toutes les unités justes), voir
+"Étoiles au rejeu" plus bas.
 
 ```ts
 type UnitResult = { id: string; correct: boolean };
@@ -203,6 +204,8 @@ interface ExerciseSource {
   5. Renvoie `result` — le retour immédiat (mascotte `joy` ou pose
      d'encouragement) est décidé côté écran à partir de ce résultat, pas
      recalculé
+- `listAttemptsForProgress(userId)` — toutes les tentatives du compte
+  (exercice, instant, correct, éligible), pour `progress` (M5)
 - `listPlayableExercises(userId, courseId, grade)` — pour l'écran
   "Jouer" : la vue jouable de chaque exercice du cours (ordre des items,
   puis des types), le titre de son item, et `nextExerciseId`
@@ -323,6 +326,18 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
 - Playwright : un scénario par type de jeu (voir `docs/jalons.md`, M4),
   plus le parcours complet de copie différée avec relecture
 
+## Étoiles au rejeu (décidé à l'ouverture de M5)
+
+**Une étoile au premier succès éligible d'un exercice ; ensuite, au plus
+une étoile de plus par exercice et par jour calendaire, en heure de Paris
+(Europe/Paris), pas en UTC.** Un succès = une réponse dont toutes les
+unités sont justes et éligibles (pas de relecture). La règle est
+appliquée par `progress` (`deriveProgress`), fonction pure des tentatives
+— aucune colonne d'étoiles, aucun compteur stocké ; `game-engine` n'écrit
+que les tentatives. L'unité d'étoile est la réponse à un exercice, et non
+plus chaque unité d'un exercice composite comme le laissait entendre le
+comparateur ci-dessus (*à valider*).
+
 ## Questions ouvertes
 
 - ~~Montrer la bonne réponse après une erreur~~ — **tranché** à la
@@ -330,15 +345,6 @@ Génération d'exercices. Calcul des étoiles, des séries et des bonus
 - ~~`delayed_copy` sensible à la casse~~ — **confirmé** à la clôture de
   M4 : casse exigée, conforme à la spec.
 
-- **Étoiles au rejeu : tranché à l'ouverture de M5.** Piste d'Alexandre
-  (clôture de M4) : une étoile au premier succès, puis une seule autre si
-  le rejeu a lieu un autre jour.
-- Un exercice déjà réussi peut-il être rejoué **volontairement** (pas via
-  `nextExercise`, mais si l'enfant revient dessus depuis une liste) pour
-  gagner à nouveau une étoile ? Le brief ne l'interdit pas explicitement
-  mais "une étoile par bonne réponse" pourrait aussi vouloir dire "par
-  exercice unique, une seule fois". À trancher avant `progress`
-  (`docs/modules/progress.md` en dépend directement).
 - `docs/design/flash.png` montre un regroupement en séance pour la dictée
   flash ("Mot 3 sur 8"). `nextExercise` reste compatible avec un tel
   regroupement côté écran, mais rien ne dit si les six autres types de jeu

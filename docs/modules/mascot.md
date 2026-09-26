@@ -67,6 +67,15 @@ potentiellement technique) mais la phrase reste celle du catalogue.
 as fini !") : finir une session n'est jamais présenté comme une perte
 (`CLAUDE.md`, règle 7).
 
+**Animations (entrées en M5, dette depuis M2)** : en CSS, sur le
+composant (`docs/ui.md`) — respiration lente d'`idle`, **danse de la
+joie** de `joy` (deux sauts, rotation alternée de 4°) quand l'écran la
+demande (bonus de série, réussite marquante : `docs/modules/progress.md`),
+rebond de l'étoile gagnée. Avec `prefers-reduced-motion`, **aucune
+animation** : la pose change sans bouger. `present()` ne décide pas de la
+danse (elle reste une fonction pure du signal) : c'est l'écran qui la
+demande, d'après la fête renvoyée avec la réponse.
+
 **`variantIndex`, pas `Math.random()` interne.** Plusieurs phrases possibles
 existent par signal pour éviter la répétition ("Je regarde ta photo…", "Je
 jette un œil à ton cours…"), mais la fonction reste pure : l'appelant fait

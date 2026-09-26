@@ -89,9 +89,13 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**Aucun jalon n'est ouvert.** M0 à M4 sont acceptés (M3 et M4 le
-26/09/2026, validés par une même démo sur téléphone). M5 n'est pas
-ouvert. `jobs/` et `shared/` restent frozen.
+**M5 — Progression et mascotte festive — est ouvert** (voir
+`docs/jalons.md`), le 26/09/2026. M0 à M4 sont acceptés. Modules touchés :
+`progress` (spec `docs/modules/progress.md`, créé dans ce jalon),
+`game-engine` (lecture des tentatives pour `progress`), `mascot`
+(animations), `ingestion` (dernier accès à l'ouverture de Jouer). Aucun
+appel au modèle, aucune nouvelle dépendance. `jobs/` et `shared/` restent
+frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.

@@ -254,7 +254,13 @@ Liste fermée, sept poses :
 | compte-rendu de tentative (pour le calcul) | `AttemptSummary` | |
 | port de lecture des tentatives | `AttemptsQuery` | Nom réservé : `Reader` désigne déjà le module `reader`, `AttemptsQuery` évite la collision tout en restant descriptif. |
 | série (en cours / meilleure) | `currentStreak` / `bestStreak` | |
-| palier de bonus de série | `STREAK_BONUS_THRESHOLD` | |
+| palier de bonus de série | `STREAK_BONUS_THRESHOLD` | 5 (fixé par la spec). |
+| réponse (à un exercice), soumission | `Submission` | Les unités d'une même réponse ; un succès = toutes justes. Unité d'étoile depuis M5. |
+| jour calendaire de Paris | `calendarDay(instant, "Europe/Paris")` | Au plus une étoile de plus par exercice et par jour. |
+| fête (danse de la joie) | `Celebration` : `streak-bonus`, `comeback` | `comeback` = première réussite d'un exercice d'abord manqué (réussite marquante). |
+| session de jeu | `since` (instant d'entrée dans Jouer) | Jusqu'à « J'ai fini » ou la fin de la liste ; aucune table. |
+| récapitulatif de session | `SessionSummary` (écran) | Étoiles gagnées et bonnes réponses, jamais d'échec. |
+| dernier cours ouvert | `lastAccessedAt` le plus récent | Proposé par l'accueil (« reprise »). |
 | valide (statut d'un cours) | `confirmed` | |
 
 ## Fonctions et verbes divers

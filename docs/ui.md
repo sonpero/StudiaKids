@@ -316,6 +316,34 @@ faux. », « Le mot était : … », « Le mot qui manquait : … » / « Les mo
 qui manquaient : … », « Le bon ordre : … », « Les bonnes paires : » et une
 ligne par paire (textes *à valider*).
 
+### Étoiles, danse, récapitulatif, reprise (M5)
+
+Décidé à l'ouverture de M5 (textes *à valider* ; noms de jeux et textes de
+l'écran Jouer inchangés) :
+
+- **Compteur d'étoiles** : une étoile (SVG, `--color-soleil`) et son
+  nombre, sur l'accueil et dans l'en-tête d'un jeu ; mis à jour **après
+  chaque réponse** par la réponse de l'API, sans rechargement ; l'étoile
+  rebondit quand le total monte. Jamais de perte, jamais de comparaison.
+- **Danse de la joie** : sur un **bonus de série** (« Super série ! ») et
+  sur une **réussite marquante** — la première réussite d'un exercice
+  d'abord manqué (*à valider*). Avec `prefers-reduced-motion`, la mascotte
+  prend la pose `joy` sans bouger.
+- **Session et récapitulatif** : une session va de l'entrée dans l'onglet
+  Jouer jusqu'au bouton **« J'ai fini »** de la liste, ou jusqu'au « Jeu
+  suivant » après le dernier jeu de la liste. Le récapitulatif montre la
+  mascotte `joy` et `present({ type: "session-complete" })` (« Bravo, tu as
+  gagné 3 étoiles ! », ou « Bien joué, tu as fini ! » sans étoile), et
+  « 5 bonnes réponses » (réponses aidées comprises) — **jamais un nombre
+  d'erreurs, jamais une comparaison** ; boutons « Encore des jeux » et
+  « Accueil ». Sortir de Jouer autrement termine la session sans
+  récapitulatif.
+- **Reprise** : l'accueil propose le dernier cours ouvert (plus grand
+  `lastAccessedAt`, qu'ouvrir Lire ou Jouer met à jour), y compris après
+  une reconnexion : « On reprend « Le verbe » ? » ; un tap ouvre Jouer si
+  le cours a des jeux, sinon Lire.
+- Aucun classement, aucune comparaison, aucune notification.
+
 ---
 
 ## Travail asynchrone
