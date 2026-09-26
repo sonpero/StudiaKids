@@ -36,9 +36,6 @@ function GameBody({ exercise, answered, onAnswer, onReread }: GameBodyArgs) {
   }
 }
 
-// How long the right answer stays after a wrong one (« à valider »).
-export const CORRECTION_MS = 4000;
-
 // The right answer, said the way each game needs (texts « à valider »).
 function correctionLines(type: PlayableExerciseDto["type"], correction: Correction): string[] {
   if (type === "mcq" && "chosenOption" in correction) return [`La bonne réponse : ${correction.chosenOption}`];
@@ -63,14 +60,12 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const [round, setRound] = useState(0);
   const [variant] = useState(() => Math.floor(Math.random() * 3));
   const send = useMutation({ mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread) });
-  // Shown briefly after a wrong answer, then taken away.
+  // Shown after a wrong answer until the child taps « Continuer » (M5):
+  // never taken away by a timer.
   const correction = send.data?.correction;
   const [showCorrection, setShowCorrection] = useState(false);
   useEffect(() => {
-    if (correction === undefined) return;
-    setShowCorrection(true);
-    const timer = setTimeout(() => setShowCorrection(false), CORRECTION_MS);
-    return () => clearTimeout(timer);
+    if (correction !== undefined) setShowCorrection(true);
   }, [correction]);
 
   function again(): void {
@@ -105,6 +100,11 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
               <p key={correctionLine}>{correctionLine}</p>
             ))}
           </div>
+        )}
+        {showCorrection && correction !== undefined && (
+          <button type="button" onClick={() => setShowCorrection(false)} className={secondary}>
+            Continuer
+          </button>
         )}
         <button type="button" onClick={onNext} className={primary}>
           Jeu suivant

@@ -52,9 +52,9 @@ test("Vrai ou faux: a wrong answer gets a calm mascot, never sorry nor glitch; �
   await expectRight(page);
 });
 
-// M4 closing decision: after a wrong answer, the right one is shown
-// briefly, carried by the mascot.
-test("after a wrong answer, the mascot shows the right one, briefly @mobile", async ({ page, child: _child }) => {
+// M4 closing decision: after a wrong answer, the right one is shown,
+// carried by the mascot — until « Continuer » since M5.
+test("after a wrong answer, the mascot shows the right one until « Continuer » @mobile", async ({ page, child: _child }) => {
   await courseWithGames(page.request);
   await openGame(page, /Quiz.*Le sujet « Léa »/);
 
@@ -64,7 +64,11 @@ test("after a wrong answer, the mascot shows the right one, briefly @mobile", as
   await expect(page.getByText(WRONG)).toBeVisible();
   await expect(mascot(page)).toHaveAttribute("data-pose", "waiting");
   await expect(page.getByRole("status")).toHaveText("La bonne réponse : Léa");
-  await expect(page.getByRole("status")).toHaveCount(0, { timeout: 10_000 });
+  // M5, T0 (decision): it stays until « Continuer » is tapped.
+  await page.waitForTimeout(5_000);
+  await expect(page.getByRole("status")).toHaveText("La bonne réponse : Léa");
+  await page.getByRole("button", { name: "Continuer" }).click();
+  await expect(page.getByRole("status")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Encore une fois" })).toBeVisible();
 });
 

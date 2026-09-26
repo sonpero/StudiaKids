@@ -283,12 +283,12 @@ Voir `docs/ui.md`, "Jouer (M4)". La liste vient de
 cette liste (l'ordre du cours), `nextExerciseId` ne sert qu'à marquer
 « À toi de jouer ! ».
 
-**Après une réponse fausse, la bonne réponse s'affiche brièvement**,
+**Après une réponse fausse, la bonne réponse s'affiche**,
 portée par la mascotte (décidé à la clôture de M4) : le serveur ne
 l'envoie qu'avec le résultat d'une réponse fausse (`correctionOf`,
 fonction pure, sous la forme d'une réponse donnée) — jamais avant que
 l'enfant ait répondu ; l'écran la montre sous la phrase de la mascotte
-pendant `CORRECTION_MS` (4 s, *à valider*), puis la retire.
+**jusqu'à un tap sur « Continuer »** (M5 ; plus de minuteur de 4 s).
 
 ## Hors périmètre
 

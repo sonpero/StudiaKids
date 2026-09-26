@@ -4,7 +4,7 @@ import type { PlayableExerciseDto } from "@studiakids/contracts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CORRECTION_MS, GameScreen } from "./GameScreen.js";
+import { GameScreen } from "./GameScreen.js";
 
 const api = vi.hoisted(() => ({ answerExercise: vi.fn(), gameLabel: (type: string) => type }));
 vi.mock("../lib/play.js", () => api);
@@ -33,9 +33,11 @@ async function answerWrong(exercise: PlayableExerciseDto, answer: () => void): P
 }
 
 // M4 closing decision: after a wrong answer, the right one is shown
-// briefly, carried by the mascot (texts « à valider »).
+// carried by the mascot, until « Continuer » (texts « à valider »).
 describe("GameScreen, the right answer after a wrong one", () => {
-  it("shows it next to the mascot, then takes it away after a few seconds", async () => {
+  // M5, T0 (decision): the right answer stays until « Continuer » is
+  // tapped, no longer 4 seconds.
+  it("shows it next to the mascot, and keeps it until « Continuer » is tapped", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     wrong({ chosenOption: "chante" });
     await answerWrong({ id: "e1", itemTitle: "x", type: "mcq", question: "Quel mot est le verbe ?", options: ["Léa", "chante", "une", "chanson"] }, () => {
@@ -45,15 +47,14 @@ describe("GameScreen, the right answer after a wrong one", () => {
     expect(screen.getByRole("status")).toHaveTextContent("La bonne réponse : chante");
     expect(screen.getByTestId("mascot")).toHaveAttribute("data-pose", "waiting");
     act(() => {
-      // A margin: this clock also moves on its own while the answer is awaited.
-      vi.advanceTimersByTime(CORRECTION_MS - 500);
+      vi.advanceTimersByTime(60_000);
     });
     expect(screen.getByText("La bonne réponse : chante")).toBeInTheDocument();
-    act(() => {
-      vi.advanceTimersByTime(500);
-    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     expect(screen.queryByText("La bonne réponse : chante")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Continuer" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Encore une fois" })).toBeInTheDocument();
   });
 
