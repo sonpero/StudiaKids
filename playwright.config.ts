@@ -41,5 +41,13 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE_PATH },
     },
+    // Decided at M2: phone emulation on the same Chromium (no other browser
+    // to download), for the scenarios tagged @mobile — at least the full
+    // photo journey and the capture screen.
+    {
+      name: "mobile",
+      grep: /@mobile/,
+      use: { ...devices["Pixel 7"], storageState: STORAGE_STATE_PATH },
+    },
   ],
 });

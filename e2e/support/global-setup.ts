@@ -6,6 +6,7 @@ import { Argon2PasswordHasher, createAccount, SqliteAccountRepository, uuidV7Gen
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { startWorker } from "./worker.js";
 import { BASE_URL, E2E_DATA_DIR, STORAGE_STATE_PATH, TEST_FIRST_NAME, TEST_GRADE, TEST_PASSWORD, TEST_USERNAME } from "./env.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../apps/api/drizzle", import.meta.url));
@@ -18,9 +19,12 @@ const migrationsFolder = fileURLToPath(new URL("../../apps/api/drizzle", import.
 // storageState for every other e2e test to reuse. The login flow itself is
 // NOT tested here: e2e/login.spec.ts exercises it for real, starting from a
 // blank storageState.
-export default async function globalSetup(): Promise<void> {
+// Returns the global teardown for the worker it starts (Playwright calls
+// the returned function once every test has run).
+export default async function globalSetup(): Promise<() => void> {
   await seedTestAccount();
   await loginAndSaveStorageState();
+  return startWorker();
 }
 
 async function seedTestAccount(): Promise<void> {
