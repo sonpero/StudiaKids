@@ -22,3 +22,11 @@ export { getGenerationStatus, type GetGenerationStatusDeps } from "./application
 export { regenerateItem, type RegenerateItemDeps } from "./application/regenerate-item.js";
 export { splitItemsJobHandler, generateExercisesJobHandler } from "./application/job-handlers.js";
 export { SPLIT_ITEMS_JOB, GENERATE_EXERCISES_JOB, type SplitItemsPayload, type GenerateExercisesPayload } from "./application/jobs.js";
+
+export { SqliteItemRepository, type ExerciseGeneratorDb } from "./infra/sqlite-item-repository.js";
+export { ClaudeItemSplitter } from "./infra/claude-item-splitter.js";
+export { ClaudeExerciseGenerator } from "./infra/claude-exercise-generator.js";
+export { PROMPTS_VERSION, splitPrompt, generationPrompt, ANCHORING_RULE } from "./infra/prompts.js";
+// Exported alongside the other modules' tables (drizzle-kit itself reads
+// infra/schema.ts by glob).
+export { itemsTable, exercisesTable, courseGenerationsTable } from "./infra/schema.js";

@@ -9,6 +9,7 @@ import {
   LocalFileStore,
   SqliteAccountRepository,
   SqliteCourseRepository,
+  SqliteItemRepository,
   SqliteJobQueue,
   startExtraction,
   uuidV7Generator,
@@ -75,5 +76,22 @@ describe("deleteAccountWithPhotos", () => {
 
     expect(count("accounts", lea.userId)).toBe(1);
     expect(existsSync(lea.file)).toBe(true);
+  });
+
+  // Decided at M3's opening: accounts:delete also removes the account's
+  // items, exercises and split outcomes (ON DELETE CASCADE on user_id).
+  it("removes the account's items, exercises and split outcomes too", async () => {
+    const lea = await accountWithCourse("lea");
+    const courseId = db.get<{ id: string }>(sql`SELECT id FROM courses WHERE user_id = ${lea.userId}`).id;
+    db.run(sql`UPDATE courses SET extraction_status = 'ready', confirmed = 1 WHERE id = ${courseId}`);
+    const items = new SqliteItemRepository(db);
+    const item = { id: "i0", courseId, userId: lea.userId, title: "Le verbe", body: "b", applicableGameTypes: ["mcq" as const], position: 0, createdAt: now.toISOString() };
+    await items.saveSplit(lea.userId, courseId, { items: [item], outcome: "items_ready", itemCount: 1 }, now);
+    await items.applyExercises(lea.userId, { remove: [], insert: [{ id: "e0", itemId: "i0", userId: lea.userId, type: "mcq", content: { type: "mcq", question: "q", options: ["a", "b", "c", "d"], answer: "a" }, createdAt: now.toISOString() }] });
+    expect([count("items", lea.userId), count("exercises", lea.userId), count("course_generations", lea.userId)]).toEqual([1, 1, 1]);
+
+    expect(await deleteAccountWithPhotos({ db, volumeRoot: volume }, "lea")).toBe("deleted");
+
+    expect([count("items", lea.userId), count("exercises", lea.userId), count("course_generations", lea.userId)]).toEqual([0, 0, 0]);
   });
 });
