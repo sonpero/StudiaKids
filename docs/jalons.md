@@ -210,7 +210,9 @@ pas été enregistrées par `pnpm fixtures:record` sur de vraies photos :
 - **M2 ne peut pas être clos**, quel que soit l'état des autres critères.
 
 **Dette assumée** — les poses `sorry` et `glitch` sont des **brouillons
-provisoires** dérivés des tracés de `idle`, en attendant leur dessin
+provisoires** dérivés des tracés de `idle`
+(`docs/design/mascotte-sorry-provisoire.svg`,
+`docs/design/mascotte-glitch-provisoire.svg`), en attendant leur dessin
 définitif dans `docs/design/` ; de même, les pastels de matière
 géographie, sciences, anglais et autre sont provisoires
 (`docs/design/tokens.md`), à valider visuellement.

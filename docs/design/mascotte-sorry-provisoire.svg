@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- BROUILLON PROVISOIRE (M2) — pose `sorry` (photo inexploitable).
+     Dérivé des tracés de la pose `idle` (docs/design/mascotte-etats.html) :
+     corps, antenne, feuille, joues et couleurs identiques ; seuls changent
+     les yeux (plissés, un peu gênés), la bouche (petit « oups » ondulé) et
+     le bras droit, levé vers la tête. Un « oups » doux, jamais triste ni
+     déçu (docs/ui.md). À remplacer par le dessin définitif (dette,
+     docs/jalons.md, M2). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" width="150" height="150" aria-hidden="true">
+  <path d="M70 46 V26" stroke="#2B2140" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="86" cy="22" rx="15" ry="8" fill="#3FC66B" stroke="#2B2140" stroke-width="4" transform="rotate(-18 86 22)"/>
+  <ellipse cx="24" cy="92" rx="12" ry="8" fill="#FFC642" stroke="#2B2140" stroke-width="4" transform="rotate(-22 24 92)"/>
+  <ellipse cx="70" cy="88" rx="46" ry="42" fill="#FFC642" stroke="#2B2140" stroke-width="4"/>
+  <!-- bras droit levé, main contre le côté de la tête -->
+  <ellipse cx="112" cy="56" rx="12" ry="8" fill="#FFC642" stroke="#2B2140" stroke-width="4" transform="rotate(-60 112 56)"/>
+  <!-- yeux plissés en arc, regard doux -->
+  <path d="M49 81 q7 -7 14 0" stroke="#2B2140" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M77 81 q7 -7 14 0" stroke="#2B2140" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="42" cy="96" rx="7" ry="4.5" fill="#FF5D8F" opacity="0.75"/>
+  <ellipse cx="98" cy="96" rx="7" ry="4.5" fill="#FF5D8F" opacity="0.75"/>
+  <!-- petite bouche ondulée : « oups », ni sourire ni tristesse -->
+  <path d="M60 101 q5 -4 10 0 q5 4 10 0" stroke="#2B2140" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
