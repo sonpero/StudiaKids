@@ -44,6 +44,8 @@ type Signal =
   | { type: "extraction-not-a-course-page" }
   | { type: "extraction-failed" }
   | { type: "generation-in-progress" }
+  | { type: "generation-ready" }                  // M3 : les jeux sont prêts
+  | { type: "generation-insufficient-coverage" }  // M3 : cours trop court, on reprend une photo
   | { type: "generation-failed" }
   | { type: "game-from-excerpt-in-progress" }   // chip "Fais-moi un jeu là-dessus", docs/modules/tutor.md
   | { type: "game-answer"; correct: boolean; streakBonus: boolean }
@@ -90,6 +92,8 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `extraction-not-a-course-page` | `sorry` — même dessin, phrase différente ("Je ne vois pas de leçon sur cette photo…") |
 | `extraction-failed` | `glitch` |
 | `generation-in-progress` | `waiting` |
+| `generation-ready` | `joy` (M3) |
+| `generation-insufficient-coverage` | `sorry` (M3) — un problème de photo (trop peu à apprendre), jamais une faute de l'enfant ; phrases « à valider » |
 | `generation-failed` | `glitch` |
 | `game-from-excerpt-in-progress` | `waiting` — même pose que `generation-in-progress`, mais avec sa propre phrase ("Je te prépare un jeu sur ce passage…"), voir `docs/modules/tutor.md` |
 | `game-answer` correcte, sans bonus | `joy` |

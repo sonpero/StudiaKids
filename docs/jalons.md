@@ -286,27 +286,45 @@ nombre de jeux prêts sur les cartes de l'accueil (M3), barre d'onglets
 
 ---
 
-## M3 — Lecteur de cours et génération d'exercices
+## M3 — Lecteur de cours et génération d'exercices (ouvert)
+
+Ouvert le 2026-09-26 (relecture croisée des specs, dry-run réel de la
+génération, décisions validées) : un appel de génération **par type pour
+tout le cours**, au plus 3 types par item ; **règle d'ancrage** — chaque
+exercice, réponse comprise, vérifiable à partir du texte du cours ;
+exercices invalides écartés un par un, type régénéré une seule fois sous
+le seuil ; découpage lancé par un seul bouton « Créer mes jeux » ; voix
+au premier geste de l'enfant. Détail dans `docs/modules/exercise-generator.md`
+et `docs/modules/reader.md`.
 
 **Périmètre**
 - Découpage du Markdown extrait en items, chaque item annoté par le modèle
   avec les types de jeu qui s'y appliquent (parmi les sept types définis
   dans `docs/modules/game-engine.md`)
-- Génération d'exercices une fois par item et par type applicable, stockage
-  permanent — jamais à la volée pendant qu'on joue
+- Génération d'exercices **un appel par type de jeu pour tout le cours**
+  (au plus 3 types par item), un exercice au plus par item et par type,
+  stockage permanent — jamais à la volée pendant qu'on joue ; **règle
+  d'ancrage** : chaque exercice, réponse comprise, vérifiable à partir du
+  texte du cours
 - Contrôle de couverture : si le cours produit moins de 8 items, le job
   échoue proprement et la mascotte invite à reprendre une photo (cours trop
   court ou extraction trop pauvre) plutôt que de générer des jeux sur une
   base insuffisante
-- Écran lecteur : affichage continu du texte du cours, bouton de lecture à
-  voix haute (Web Speech API), activé par défaut pour les niveaux CP et CE1
-- Déclenchement manuel de la génération depuis le lecteur ou l'accueil,
-  jamais automatique après l'extraction
+- Écran lecteur : affichage continu du texte du cours et de ses photos,
+  bouton de lecture à voix haute (Web Speech API) qui **démarre au premier
+  geste de l'enfant** (les navigateurs refusent une lecture sans geste ;
+  décidé à l'ouverture, remplace « activé par défaut pour CP et CE1 »)
+- Déclenchement manuel par un seul bouton **« Créer mes jeux »**, depuis le
+  lecteur ou l'accueil, jamais automatique après l'extraction ; la
+  progression est suivie en types de jeu terminés
 
 **Dette héritée de M2** — un jeu d'évaluation du prompt d'extraction
 sur de **vraies photos de téléphone** (éclairage, angle, écriture
 manuscrite, pages de CP à 6e) : les fixtures de M2 ont été enregistrées
 sur des images générées. Manuel et payant (`pnpm eval`), jamais en CI.
+**Non bloquante pour la clôture de M3** (aucune photo réelle
+disponible) : l'évaluation de M3 se fait sur un corpus d'images
+générées, avec dégradations de photo (`tests/eval/`).
 
 **Démo** — Depuis l'accueil, ouvrir un cours dans le lecteur, lire le texte
 (avec ou sans la voix), lancer la génération des exercices, voir sa
@@ -320,9 +338,11 @@ progression, revenir plus tard et constater qu'elle est terminée.
 - [ ] Contrat : une fixture produisant moins de 8 items échoue le job avec
       un message clair ; une fixture en produisant au moins 8 génère des
       exercices dans au moins deux types différents
-- [ ] Intégration : la génération est isolée par item (un item en échec
-      n'empêche pas les autres d'aboutir) ; une régénération remplace les
-      exercices d'un item sans dupliquer les lignes
+- [ ] Intégration : la génération est isolée par type et par exercice : un
+      exercice invalide est écarté seul, et un type en échec n'empêche pas
+      les autres types d'aboutir (critère reformulé et validé à
+      l'ouverture) ; une régénération remplace les exercices d'un item sans
+      dupliquer les lignes
 - [ ] Playwright : le lecteur affiche le texte du cours ; la lecture à voix
       haute démarre et s'arrête ; la génération se lance puis se termine ;
       le message "reprends une photo" apparaît sur un cours volontairement

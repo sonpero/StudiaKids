@@ -222,6 +222,14 @@ métier normaux qui bloquent la suite du pipeline.
 signal dont `exercise-generator` a besoin pour découper en items. Un
 extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
 
+**Exports pour M3** (`index.ts`) : le texte extrait d'un cours confirmé
+et prêt (`getExtractedText`), ses pages (`listCoursePages`), pour le
+lecteur et le générateur ; et `generateWithRetry`, que le générateur
+réutilise. **`generateWithRetry` répare les tableaux sérialisés** :
+`claude-sonnet-5` renvoie presque toujours un tableau racine encodé en
+chaîne JSON, parfois ré-emballé dans sa propre clé (6 appels sur 7 au
+dry-run de M3) ; la valeur est décodée et désemballée avant validation.
+
 **Forme du Markdown, imposée au modèle et vérifiée** (décidé après le
 premier vrai appel, 2026-09-25, appliqué le 2026-09-26) : **un seul titre
 `#`, le titre de la leçon** ; ses parties en `##` ; **l'en-tête de la
@@ -395,7 +403,7 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 | `POST /api/courses` | Crée un cours (vide), renvoie son id ; supprime le cours non confirmé précédent |
 | `POST /api/courses/:id/pages` | Multipart, une page JPEG. Répété par photo, 5 au plus. |
 | `POST /api/courses/:id/extract` | Enfile l'extraction |
-| `GET /api/courses` | Liste des cours confirmés du compte, avec couleur. **À partir de M3** : ajoute un champ optionnel, le nombre d'exercices prêts par cours (lu depuis `exercise-generator` via son `index.ts`, jamais une jointure directe sur ses tables), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts") — absent en M2, le module n'existant pas encore |
+| `GET /api/courses` | Liste des cours confirmés du compte, avec couleur. **À partir de M3** : le nombre de jeux prêts par cours (`exerciseCount`), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts"), **ajouté par la route API** qui compose `ingestion` et `exercise-generator` : `ingestion` n'importe jamais `exercise-generator`, qui dépend déjà de lui (cycle interdit) |
 | `GET /api/courses/unconfirmed` | Le cours non confirmé du compte (au plus un), ou `null` — bandeau de l'accueil |
 | `GET /api/courses/:id` | Détail, y compris statut d'extraction, `extractionStarted` (faux pour un cours `pending` sans aucun job `extract-course` : photos prises, lecture jamais lancée) et propositions titre/matière |
 | `GET /api/courses/:id/pages/:index/file` | Lecture de fichier authentifiée |

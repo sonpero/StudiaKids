@@ -10,47 +10,66 @@ décide **comment c'est joué et corrigé**.
 
 Fusionne, en le simplifiant, ce que StudIA sépare en deux modules
 (`content` pour le découpage en notions, `generation` pour les cartes) —
-voir `docs/inventaire-studia.md`, §6. La différence structurante par
-rapport à StudIA : ici, un item porte une liste de types de jeu
-**applicables**, choisie par le modèle parmi les sept types fermés définis
-dans `docs/modules/game-engine.md`, au lieu d'un type de carte fixe demandé
-par l'utilisateur.
+voir `docs/inventaire-studia.md`, §6. Différence structurante : ici un item
+porte une liste de types de jeu **applicables** (au plus 3), choisie par le
+modèle parmi les sept types fermés de `docs/modules/game-engine.md`, et la
+génération fait **un appel par type pour tout le cours**, pas un appel par
+item (décidé à l'ouverture de M3, validé par un dry-run réel : 7 appels et
+environ 0,05 à 0,07 $ par cours, au lieu de jusqu'à 281 appels).
 
-**Ce module est maintenant aussi appelé depuis `tutor`** (le chip "Fais-moi
-un jeu là-dessus", `docs/modules/tutor.md`) avec un simple extrait de
-cours plutôt qu'un cours entier — voir "Découpage à partir d'un extrait"
-plus bas. `exercise-generator` ne dépend jamais de `tutor` en retour ;
-seul `tutor` importe `exercise-generator` via son `index.ts`.
+**Ce module est aussi appelé depuis `tutor`** (le chip "Fais-moi un jeu
+là-dessus", `docs/modules/tutor.md`, M6) avec un simple extrait de cours
+— voir "Découpage à partir d'un extrait" plus bas. `exercise-generator` ne
+dépend jamais de `tutor` ; il dépend d'`ingestion` (texte extrait, niveau
+du cours, et `generateWithRetry`) via son `index.ts`, jamais l'inverse.
 
-Vocabulaire : voir `docs/glossaire.md` pour la correspondance entre les
-termes de prose (découpage, couverture, item...) et les identifiants
-anglais ci-dessous.
+Vocabulaire : voir `docs/glossaire.md`.
+
+## Règle d'ancrage — prioritaire sur toute autre règle de qualité
+
+**Chaque exercice, réponse comprise, doit être vérifiable à partir du
+texte du cours.** Aucun fait, aucun ordre, aucun exemple absent de la
+leçon : un QCM ne teste que ce que la leçon dit, un texte à trous ne troue
+qu'un mot de la leçon, une remise en ordre ne reprend qu'une suite que la
+leçon donne dans cet ordre, un calcul ne reprend qu'un calcul de la leçon.
+Décidé à l'ouverture de M3, après un dry-run où le modèle avait inventé
+l'ordre « fossé, pont-levis, murailles, donjon ».
+
+Inscrite dans la consigne de découpage (le corps d'un item recopie la
+leçon) et dans celle de génération, et **vérifiée mécaniquement** en
+`domain/` quand c'est possible (`anchoringProblem`) :
+
+| Type | Vérification mécanique (texte normalisé : casse, accents, espaces, apostrophes) |
+|---|---|
+| `cloze` | chaque réponse attendue figure dans le texte du cours |
+| `delayed_copy` | le mot ou la phrase figure tel quel dans le texte du cours |
+| `reordering` | chaque élément figure dans le texte, **dans cet ordre** (première occurrence croissante) |
+| `matching` | chaque élément de gauche et de droite figure dans le texte |
+| `mcq` | la bonne réponse figure dans le texte |
+| `mental_math` | le calcul est juste, et ses nombres figurent dans le texte |
+| `true_false` | la phrase ne contient pas sa propre réponse (« vrai », « faux », « c'est vrai ») ; sa justesse n'est pas vérifiable mécaniquement |
+
+Ce qui n'est pas vérifiable mécaniquement (justesse d'un vrai/faux, d'un
+QCM, d'une paire) est jugé par l'outil d'évaluation (`pnpm eval`, consigne
+de jugement versionnée dans `tests/eval/`), jamais en production. **Un
+type pour lequel la règle d'ancrage s'avère impossible à tenir est retiré
+de la liste proposée au découpage** (noté dans `docs/jalons.md`).
 
 ## Domaine
 
 ```ts
 // GameType vit dans packages/contracts (partagé avec game-engine, exposé
-// dans le contrat HTTP) : voir docs/modules/game-engine.md pour les sept
-// valeurs et ce que chacune signifie.
+// dans le contrat HTTP) : voir docs/modules/game-engine.md.
 import type { GameType } from "@studiakids/contracts";
-
-type GenerationStatus =
-  | "not_started"
-  | "splitting"
-  | "insufficient_coverage"
-  | "items_ready"
-  | "generating"
-  | "ready"
-  | "failed";
 
 type Item = {
   id: string;
   courseId: string;
   userId: string;
-  title: string;                 // 3 à 60 caractères, un groupe nominal
-  body: string;                  // Markdown, autonome
-  applicableGameTypes: GameType[];  // au moins 1, choisis par le modèle
-  position: number;              // contigu depuis 0, y compris pour les items ajoutés après coup (voir plus bas)
+  title: string;                   // 3 à 60 caractères, un groupe nominal, distinct dans le cours
+  body: string;                    // Markdown autonome, recopié de la leçon
+  applicableGameTypes: GameType[]; // 1 à 3, valeurs de l'énumération fermée
+  position: number;                // contigu depuis 0
   createdAt: string;
 };
 
@@ -59,107 +78,127 @@ type Exercise = {
   itemId: string;
   userId: string;
   type: GameType;
-  content: ExerciseContent;   // union discriminée par type, voir game-engine.md
+  content: ExerciseContent;        // union discriminée par type, voir game-engine.md
   createdAt: string;
 };
+
+// Issue du découpage, stockée ; le reste du statut est dérivé des jobs.
+type SplitOutcome = "items_ready" | "insufficient_coverage";
+type GenerationStatus = "not_started" | "splitting" | "insufficient_coverage" | "generating" | "ready" | "failed";
 ```
 
-**Invariants, appliqués en `domain/` et testés :**
+**Invariants, appliqués en `domain/` et testés (mutation testing sur la
+couverture et les validateurs, `CLAUDE.md`) :**
 
-- Positions contiguës depuis 0, sans trou, y compris après un ajout
-  d'items par extrait (voir plus bas) — les nouveaux items continuent la
-  numérotation, ils ne la recommencent jamais
-- `body` d'un item est autonome : doit se comprendre lu seul, hors de son
-  contexte, puisque c'est ainsi qu'il sera joué
-- Titres distincts au sein d'un cours, insensibles à la casse après trim
-- **Couverture d'un découpage, les deux bornes documentées ensemble :**
+- **Couverture** :
 
   ```ts
-  const COVERAGE_MIN_ITEMS = 8;    // valeur du brief, non négociable — en dessous, `insufficient_coverage`
-  const COVERAGE_MAX_ITEMS = 40;   // décidé, point de départ, révisable
+  const COVERAGE_MIN_ITEMS = 8;    // valeur du brief, non négociable — en dessous, insufficient_coverage
+  const COVERAGE_MAX_ITEMS = 40;   // décidé, révisable — au-delà, les 40 premiers items sont gardés
   ```
 
-  En dessous de `COVERAGE_MIN_ITEMS`, le job échoue explicitement
-  (`insufficient_coverage`) plutôt que de générer des jeux sur une base
-  trop pauvre — c'est cette borne qui déclenche, côté `ingestion`, le
-  message de la mascotte invitant à reprendre une photo. Au-delà de
-  `COVERAGE_MAX_ITEMS`, valeur de départ simple choisie parce qu'elle
-  laisse une marge large sans autoriser un cours qui exploserait en
-  contenu ingérable, révisable dès que de vraies photos de cours CP à 6e
-  auront été observées en éval (même démarche que StudIA pour ses propres
-  bornes, `docs/modules/content.md` de StudIA).
-- `applicableGameTypes` ne contient que des valeurs de l'énumération fermée
-  des sept types, jamais vide
+  La couverture se compte sur les items **valides** (titre de 3 à 60
+  caractères, corps non vide, au moins un type connu). En dessous de 8,
+  aucun item n'est écrit et la mascotte invite à reprendre une photo.
+- `applicableGameTypes` : seules les valeurs de l'énumération fermée sont
+  gardées, dans l'ordre donné, **au plus 3** (`ITEM_MAX_GAME_TYPES`) ; un
+  item sans aucun type connu est invalide
+- Positions contiguës depuis 0 ; titres distincts dans un cours,
+  insensibles à la casse après trim (un doublon est écarté)
+- **Validation exercice par exercice** (`exerciseProblem`) : forme propre
+  au type (QCM : 4 options distinctes, bonne réponse parmi elles ; texte à
+  trous : autant de trous `{{n}}` que de réponses ; appariement et remise
+  en ordre : 3 à 6 éléments ; copie différée : 1 à 6 mots ; calcul : un
+  nombre), item désigné dans la liste, puis règle d'ancrage. **Un exercice
+  invalide est écarté seul** ; les autres sont gardés.
+- **Seuil de régénération** (`needsRegeneration`) : un type est régénéré
+  **une seule fois** si moins de la moitié des exercices demandés sont
+  valides, ou si aucun ne l'est. Après cette unique régénération, les
+  exercices valides de la meilleure des deux réponses sont gardés, même
+  s'ils sont peu nombreux.
 
-`applicableGameTypes` est une **étiquette**, pas une garantie de qualité :
-c'est une entrée pour la génération d'exercices, pas une promesse que
-chaque type produira un bon exercice. La génération peut échouer pour un
-type donné sans invalider les autres (voir Cas d'usage).
+`applicableGameTypes` est une **étiquette**, pas une garantie : la
+génération peut ne produire aucun exercice valide pour un item et un type.
 
 ## Ports
 
 ```ts
 interface ItemSplitter {
-  split(input: {
-    markdown: string;    // le cours entier, OU un simple extrait (voir plus bas) — le port ne distingue pas les deux cas
-    grade: Grade;         // pour calibrer la difficulté du vocabulaire des consignes
-  }): Promise<Result<ItemProposal[], SplitError>>;
+  split(input: { markdown: string; grade: Grade }): Promise<Result<ItemProposal[], GenerationError>>;
 }
-type ItemProposal = { title: string; body: string; applicableGameTypes: GameType[] };
+type ItemProposal = { title: string; body: string; applicableGameTypes: string[] }; // filtré en domain/
 
 interface ExerciseGenerator {
+  // Un appel pour un type et tous les items qui le portent. Chaque exercice
+  // désigne son item par son numéro dans la liste donnée.
   generate(input: {
-    item: { title: string; body: string };
     type: GameType;
-  }): Promise<Result<ExerciseContent, GenerationError>>;
+    items: { title: string; body: string }[];
+    courseMarkdown: string;   // le texte de référence de la règle d'ancrage
+    grade: Grade;
+  }): Promise<Result<ExerciseProposal[], GenerationError>>;
 }
+type ExerciseProposal = { item: number; content: unknown }; // validé exercice par exercice en domain/
 ```
 
-Conventions Zod, comme `CLAUDE.md` :
+Conventions Zod (`CLAUDE.md`, règle 4, avec son exception) :
 
-- Un schéma par type de jeu, un appel par type — jamais une union
-  discriminée dans un seul appel (StudIA : "trois appels plats battent un
-  appel malin", même principe étendu à sept types).
-- Contraintes réelles dans `.describe()` : `title` est un groupe nominal
-  court, `body` est autonome, chaque type de jeu décrit sa propre forme de
-  sortie dans son schéma (voir `docs/modules/game-engine.md`).
-- `.refine()` porte les invariants métier de chaque type (ex. QCM : la
-  réponse est exactement l'une des quatre options).
+- **Un schéma plat par type de jeu, un appel par type** — jamais une union
+  discriminée dans un seul appel. La réponse est un objet `{ exercises: [...] }`.
+- Contraintes dans `.describe()`. **Pas de `.refine()` sur la forme d'un
+  exercice** : un exercice invalide ne doit pas faire échouer tout le lot,
+  il est écarté en `domain/` (exception à la règle 4, décidée à
+  l'ouverture de M3). Le retry unique de la règle 4 ne sert plus qu'à une
+  réponse qui ne se lit pas du tout (schéma global).
+- **Réparation des tableaux sérialisés** : `claude-sonnet-5` renvoie
+  presque toujours un tableau racine encodé en chaîne JSON (6 appels sur 7
+  au dry-run), parfois ré-emballé dans sa propre clé ;
+  `generateWithRetry` (`ingestion`) le décode avant validation.
 
 ## Cas d'usage
 
-- `startSplitting(userId, courseId, now)` — n'enfile le job que si le
-  cours est `confirmed` et `extractionStatus: 'ready'`. Enfile
-  `split-items`.
-- `handleSplittingJob(payload, ctx)` — lit l'extraction, appelle
-  `ItemSplitter`, valide le compte. **Idempotent** : supprime les items
-  existants du cours avant d'en écrire de nouveaux — utilisé uniquement
-  pour le découpage initial ou une régénération complète, jamais pour
-  l'ajout par extrait ci-dessous.
-  - moins de 8 items → `generationStatus = 'insufficient_coverage'`,
-    aucun item écrit, le job échoue avec un message clair
-  - 8 à 40 items → écrit les items, `generationStatus = 'items_ready'`
-- `startGeneration(userId, courseId, now)` — depuis `items_ready` ou
-  `ready` (régénération complète). **Jamais déclenché automatiquement**
-  après le découpage : la génération coûte des jetons et l'enfant (ou
-  l'écran lecteur) doit explicitement demander "Créer mes jeux" — même
-  règle que `generation` dans StudIA.
-  Enfile **un job par item**, jamais un job par cours : un item en échec
-  reste isolé, la progression est reportable `12/20`, chaque job reste
-  court — le choix le plus structurant du module, recopié tel quel de
-  StudIA (`docs/modules/generation.md`, "le choix le plus lourd de
-  conséquences du module").
-- `handleGenerationJob(payload, ctx)` — pour l'item du job, génère un
-  exercice pour chaque type dans `applicableGameTypes` (pas les sept,
-  seulement ceux annotés). **Idempotent** : remplace les exercices
-  existants de l'item.
-- `regenerateItem(userId, itemId, now)` — régénération manuelle d'un item
-- `listItems(userId, courseId, { createdAfter?: string })` — le filtre optionnel
-  sert à retrouver les items ajoutés par un job précis (voir plus bas),
-  jamais utilisé par l'écran lecteur qui veut toujours la liste complète
-- `listExercises(userId, itemId)`
-- `getGenerationStatus(userId, courseId)` — `{ status, done, total, failed }`,
-  dérivé de `jobs.listJobs('generate-item-exercises')` filtré par `payload.courseId`
+- `startGeneration(userId, courseId, now)` — le bouton **« Créer mes
+  jeux »** (lecteur ou accueil). Uniquement pour un cours `confirmed` et
+  `ready` dont le statut de génération est `not_started` ou `failed` ; sans
+  effet si un découpage ou une génération est déjà en cours (même succès).
+  Enfile `split-items`. **Jamais déclenché automatiquement** après
+  l'extraction.
+- `handleSplittingJob({ courseId }, ctx)` — lit le texte extrait et le
+  niveau via `ingestion`, appelle `ItemSplitter`, filtre et valide les
+  items en `domain/`, contrôle la couverture :
+  - moins de 8 items valides → issue `insufficient_coverage`, aucun item
+    écrit, le job se termine **avec succès** (résultat métier, jamais
+    retenté ni repayé) ;
+  - sinon → écrit les items (en remplaçant ceux d'un découpage précédent
+    sans exercice), issue `items_ready`, puis **enfile un job
+    `generate-exercises` par type présent** sur au moins un item.
+  - **Idempotent** : un cours qui a déjà ses items n'est pas redécoupé
+    (rien n'est repayé) ; seuls les jobs de type manquants sont enfilés.
+- `handleGenerationJob({ courseId, type, itemIds? }, ctx)` — les items du
+  cours qui portent ce type (ou seulement `itemIds`, pour une régénération
+  d'item), **un appel** `ExerciseGenerator`, validation exercice par
+  exercice, régénération unique sous le seuil, puis écriture :
+  - **un exercice au plus par item et par type** ;
+  - **comparaison avant écriture** (recopié de StudIA) : un exercice dont
+    le contenu n'a pas changé garde son id (et donc, à partir de M4, ses
+    tentatives et ses étoiles) ; un contenu changé remplace l'ancien sous
+    un nouvel id ; jamais de doublon.
+  - Une erreur technique (modèle, réseau) renvoie une erreur : le noyau
+    `jobs` retente. Un manque d'exercices valides n'est pas une erreur.
+- `regenerateItem(userId, itemId, now)` — enfile un job
+  `generate-exercises` par type de l'item, limité à cet item.
+- `listItems(userId, courseId, { createdAfter? })`, `listExercises(userId, itemId)`,
+  `countExercises(userId, courseId)` (le nombre de jeux prêts de l'accueil)
+- `getGenerationStatus(userId, courseId)` → `{ status, done, total, failed, itemCount }`,
+  **dérivé** (`generationStatus`, fonction pure de `domain/`, même
+  mécanisme que `failed` en M2) de l'issue stockée du découpage et des
+  jobs `split-items` et `generate-exercises` du cours :
+  - aucun job de découpage → `not_started` ; découpage en attente ou en
+    cours → `splitting` ; découpage épuisé sans issue → `failed` ;
+  - `insufficient_coverage` stocké → `insufficient_coverage` ;
+  - `items_ready` : un job de type en attente ou en cours → `generating`
+    (`done`/`total` en types) ; tous terminés → `ready`, même si certains
+    ont échoué (`failed` les compte) ; tous en échec → `failed`.
 
 **Aucun appel LLM à l'intérieur d'une transaction.**
 
@@ -186,12 +225,11 @@ Mécanisme :
 - `startGameFromExcerpt(userId, courseId, excerpt: string, now)` →
   `Result<{ jobId: string }, SplitError>`. Enfile **un seul job**,
   `game-from-excerpt`, qui fait le découpage ET la génération.
-  **Exception délibérée à la règle "un job par item"** ci-dessus : cette
-  règle protège un découpage en lot de dizaines d'items, où isoler les
-  échecs a de la valeur ; ici l'extrait produit normalement un seul item,
-  l'interaction est live (l'enfant attend, depuis l'écran tuteur), et
-  chaîner deux jobs distincts n'apporterait rien qu'un aller-retour de
-  latence supplémentaire.
+  **Exception délibérée à la règle "un job par type"** ci-dessus : cette
+  règle sert un cours entier, où isoler les types a de la valeur ; ici
+  l'extrait produit normalement peu d'items, l'interaction est live
+  (l'enfant attend, depuis l'écran tuteur), et chaîner des jobs distincts
+  n'apporterait qu'une latence supplémentaire.
 - `handleGameFromExcerptJob(payload, ctx)` :
   1. `ItemSplitter.split({ markdown: excerpt, grade })`
   2. Moins de 8 items → le job échoue, `last_error` commence par le préfixe
@@ -199,8 +237,9 @@ Mécanisme :
      `jobs` est frozen et n'a pas de champ de résultat structuré au-delà de
      `last_error`) ; aucun item écrit
   3. Sinon, écrit les nouveaux items **à la suite** des positions
-     existantes du cours (jamais un remplacement), puis génère un exercice
-     par type annoté pour chacun, dans ce même job
+     existantes du cours (jamais un remplacement), puis un appel de
+     génération par type présent sur ces items, dans ce même job, avec les
+     mêmes règles (ancrage, écart un par un, régénération sous le seuil)
 - `getGameFromExcerptStatus(userId, courseId, jobId)` — lit le job via
   `jobs.listJobs(userId, 'game-from-excerpt')`, et sur `status: 'done'`,
   retrouve les items créés via `listItems(userId, courseId, { createdAfter: job.createdAt })`
@@ -211,10 +250,10 @@ Mécanisme :
 CREATE TABLE items (
   id TEXT PRIMARY KEY,
   course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
-  game_types_json TEXT NOT NULL,   -- GameType[], voir game-engine.md
+  game_types_json TEXT NOT NULL,   -- GameType[], 1 à 3
   position INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   UNIQUE (course_id, position)
@@ -224,80 +263,96 @@ CREATE INDEX idx_items_course ON items(course_id, position);
 CREATE TABLE exercises (
   id TEXT PRIMARY KEY,
   item_id TEXT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('delayed_copy','mcq','matching','reordering','cloze','true_false','mental_math')),
   content_json TEXT NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  UNIQUE (item_id, type)
 );
 CREATE INDEX idx_exercises_item ON exercises(item_id);
+
+-- Issue du découpage d'un cours ; le reste du statut est dérivé des jobs.
+CREATE TABLE course_generations (
+  course_id TEXT PRIMARY KEY REFERENCES courses(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  split_outcome TEXT NOT NULL CHECK (split_outcome IN ('items_ready','insufficient_coverage')),
+  item_count INTEGER NOT NULL,
+  updated_at TEXT NOT NULL
+);
 ```
 
-Ajoutez `generation_status TEXT` à la table `courses` de `docs/modules/ingestion.md`
-(migration ultérieure, pas une nouvelle table). **Supprimer un exercice
-supprime ses tentatives en cascade**, ce qui détruit l'historique
-d'étoiles associé : une régénération doit donc remplacer par id quand la
-question n'a pas changé, exactement comme StudIA le fait pour ses cartes
-(`docs/modules/generation.md` : "diffez avant d'écrire").
+**`ON DELETE CASCADE` sur chaque `user_id`** (décidé à l'ouverture de M3) :
+`pnpm accounts:delete` efface items, exercices et issues de découpage,
+prouvé par un test. `course_generations` remplace la colonne
+`courses.generation_status` d'abord envisagée : l'issue du découpage
+appartient à ce module, pas à la table d'`ingestion`. **Supprimer un
+exercice supprime ses tentatives en cascade** (M4) : c'est pourquoi la
+comparaison avant écriture garde l'id d'un exercice inchangé.
 
 ## API
 
 | Route | Rôle |
 |---|---|
-| `GET /api/courses/:id/items` | Liste, ordonnée |
-| `POST /api/courses/:id/split` | Enfile le découpage en items |
-| `POST /api/courses/:id/generate` | Enfile un job de génération par item |
-| `GET /api/courses/:id/generation-status` | `{ status, done, total, failed }` |
-| `GET /api/items/:id/exercises` | Liste des exercices d'un item |
-| `POST /api/items/:id/regenerate` | Régénération manuelle |
+| `POST /api/courses/:id/generate` | « Créer mes jeux » : enfile le découpage ; `202` avec le statut courant |
+| `GET /api/courses/:id/generation-status` | `{ status, done, total, failed, itemCount }` |
+| `GET /api/courses/:id/items` | Liste ordonnée |
+| `GET /api/items/:id/exercises` | Exercices d'un item |
+| `POST /api/items/:id/regenerate` | Régénération d'un item |
 
-`startGameFromExcerpt`/`getGameFromExcerptStatus` ci-dessus ne sont
-**pas** exposés directement en HTTP par ce module : la route publique
-(`POST /api/conversations/:id/game`) vit dans `docs/modules/tutor.md`, qui
-appelle ces cas d'usage via l'`index.ts` de `exercise-generator`.
+Le nombre de jeux prêts affiché sur les cartes "Mes cours" est ajouté à
+`GET /api/courses` **dans la route API**, qui compose `ingestion` et ce
+module : `ingestion` n'importe jamais `exercise-generator` (cycle interdit
+par dependency-cruiser). 404 uniforme pour un cours ou un item d'un autre
+compte. `startGameFromExcerpt`/`getGameFromExcerptStatus` ne sont pas
+exposés ici : la route publique vit dans `docs/modules/tutor.md` (M6).
 
 ## Hors périmètre
 
 Jouer un exercice, le comparateur de réponse, le calcul des étoiles
-(`game-engine`, `progress`). Toute notion d'échéance ou de planification.
-Recherche plein texte dans les items (pas demandée par le brief).
+(`game-engine`, `progress`). Une régénération complète d'un cours déjà
+généré (seule la régénération d'un item existe en M3). Toute notion
+d'échéance. Recherche plein texte dans les items.
 
 ## Tests clés
 
-- Unitaire : contiguïté des positions ; unicité des titres ; le contrôle de
-  couverture se déclenche à 7 items et pas à 8
-- Unitaire : `applicableGameTypes` ne peut contenir que des valeurs de
-  l'énumération fermée, jamais un tableau vide
-- Contrat : une fixture structurée produit 8 à 40 items avec des titres
-  distincts ; une fixture à 5 items échoue le job avec
-  `insufficient_coverage` ; une réponse hors schéma retry une fois puis
-  échoue
-- Intégration : relancer le job de découpage deux fois laisse un seul jeu
-  d'items ; un item en échec de génération laisse les autres aboutir ; une
-  régénération dont les questions n'ont pas changé préserve les ids
-  d'exercice (**le test qui protège les étoiles déjà gagnées, à écrire
-  tôt**, même urgence que StudIA pour ses cartes)
-- Intégration : `handleGameFromExcerptJob` ajoute ses items à la suite des
-  positions existantes sans jamais toucher aux items déjà présents du
-  cours ; appelé deux fois avec deux extraits différents, les deux
-  ensembles d'items coexistent
-- Intégration : `handleGameFromExcerptJob` sur un extrait produisant moins
-  de 8 items n'écrit aucun item et laisse `last_error` préfixé
-  `INSUFFICIENT_COVERAGE:`
-- Sécurité : les items et exercices d'un autre compte sont absents des
-  listes et renvoient 404, indiscernable d'un identifiant inconnu
-  (`docs/securite.md`)
+- Unitaire : couverture à 7 refusée, à 8 acceptée, 40 gardés sur 41 ;
+  types hors énumération écartés, au plus 3, item sans type invalide ;
+  titres distincts ; positions contiguës
+- Unitaire : un validateur et une vérification d'ancrage par type (dont
+  l'ordre de la remise en ordre) ; seuil de régénération — mutation
+  testing
+- Unitaire : `generationStatus` dans chacun de ses cas
+- Contrat : une fixture de découpage produit au moins 8 items ; une
+  fixture de leçon courte en produit moins de 8 et le job se termine en
+  `insufficient_coverage` avec un message clair ; une fixture de
+  génération produit des exercices dans au moins deux types ; un tableau
+  sérialisé est réparé ; une réponse illisible retry une fois puis échoue
+- Intégration : **la génération est isolée par type et par exercice** —
+  un exercice invalide est écarté seul, un type en échec n'empêche pas les
+  autres d'aboutir ; une régénération dont le contenu n'a pas changé garde
+  les ids d'exercice, et ne duplique jamais de ligne (**le test qui protège
+  les étoiles, écrit tôt**)
+- Intégration : relancer le job de découpage laisse un seul jeu d'items et
+  ne rappelle pas le modèle ; `accounts:delete` efface items, exercices et
+  issues de découpage
+- Intégration : `handleGameFromExcerptJob` (M6) — voir plus haut
+- Sécurité : items et exercices d'un autre compte absents des listes et en
+  404, indiscernables d'un identifiant inconnu (`docs/securite.md`)
+- Évaluation (`pnpm eval`, manuel, payant, jamais en CI) : ancrage,
+  vrai/faux qui donnent leur réponse, trous bavards ou sans intérêt,
+  variété des types, validité — sur un corpus de pages générées
+  (`tests/eval/`)
 
 ## Questions ouvertes
 
-- Faut-il limiter le nombre de types de jeu générés par item (ex. jamais
-  plus de 3 même si le modèle en annote 5), pour ne pas multiplier les
-  appels et le temps d'attente sur un item très polyvalent ? Non tranché.
-- Le brief ne précise pas si l'enfant peut choisir *quels* types de jeu
-  jouer pour un item, ou si `game-engine` pioche automatiquement parmi les
-  exercices disponibles. Cette spec ne préjuge pas de la réponse — voir
-  `docs/modules/game-engine.md`.
-- ~~En-tête de page sorti en `#`~~ — **tranché à la source**
-  (2026-09-26) : l'extraction n'a qu'un `#`, le titre de la leçon, et
-  écrit l'en-tête de la page en texte simple (`docs/modules/ingestion.md`,
-  "Forme du Markdown"). Un cours de plusieurs pages concatène toutefois
-  un `#` par page qui en porte un : le découpage de M3 doit le prévoir.
+- Le brief ne précise pas si l'enfant choisit *quels* types jouer pour un
+  item, ou si `game-engine` pioche parmi les exercices disponibles — voir
+  `docs/modules/game-engine.md` (M4).
+- ~~Limiter les types par item~~ — **tranché** : au plus 3.
+- ~~En-tête de page sorti en `#`~~ — **tranché à la source** (2026-09-26,
+  `docs/modules/ingestion.md`, "Forme du Markdown"). Un cours de plusieurs
+  pages peut porter un `#` par page : la consigne de découpage le traite
+  comme un seul cours.
+- Jeu d'évaluation sur de **vraies photos de téléphone** : dette ouverte de
+  M3, non bloquante pour sa clôture (aucune photo réelle disponible ;
+  l'évaluation se fait sur un corpus d'images générées).

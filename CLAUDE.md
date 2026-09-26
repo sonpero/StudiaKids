@@ -89,11 +89,13 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**Aucun jalon ouvert.** M0, M1 et M2 sont acceptés (voir
-`docs/jalons.md`, M2 clos le 26/09/2026 après la démo sur téléphone
-réel, avec ses dettes reportées et leur jalon cible). M3 — Lecteur de
-cours et génération d'exercices — n'est pas encore ouvert. `jobs/` et
-`shared/` restent frozen.
+**M3 — Lecteur de cours et génération d'exercices — est ouvert** (voir
+`docs/jalons.md`), le 26/09/2026. M0, M1 et M2 sont acceptés. Modules
+touchés : `exercise-generator` (spec `docs/modules/exercise-generator.md`),
+`reader` (`docs/modules/reader.md`), `mascot` (signaux de génération),
+`ingestion` (exports pour le lecteur et le générateur, réparation des
+tableaux sérialisés dans `generateWithRetry`). `jobs/` et `shared/`
+restent frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.
@@ -219,6 +221,14 @@ appel par type.
 
 En cas d'échec de validation, un seul retry avec l'erreur renvoyée au modèle,
 puis échec du job avec `last_error` renseigné.
+
+**Exception, décidée à l'ouverture de M3 : une réponse qui est une liste
+d'éléments indépendants** (les exercices d'un type de jeu,
+`docs/modules/exercise-generator.md`) ne porte pas de `.refine()` sur ses
+éléments : chaque élément est validé en `domain/` et **un élément invalide
+est écarté seul** ; le lot n'est régénéré qu'une fois, et seulement s'il
+reste trop peu d'éléments valides. Le retry unique ci-dessus ne s'applique
+plus qu'à une réponse illisible dans son ensemble.
 
 ### 5. Les exercices sont générés une fois, jamais à la volée
 

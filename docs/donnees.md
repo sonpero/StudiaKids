@@ -69,8 +69,6 @@ CREATE TABLE courses (
   grade TEXT NOT NULL CHECK (grade IN ('CP','CE1','CE2','CM1','CM2','6e')),
   color TEXT NOT NULL DEFAULT '',
   extraction_status TEXT NOT NULL CHECK (extraction_status IN ('pending','running','illegible','not_a_course_page','ready')),
-  generation_status TEXT NOT NULL DEFAULT 'not_started' CHECK (generation_status IN
-    ('not_started','splitting','insufficient_coverage','items_ready','generating','ready','failed')),
   confirmed INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   last_accessed_at TEXT NOT NULL
@@ -102,12 +100,10 @@ CREATE TABLE extractions (
 la lecture du dernier job `extract-course` du cours
 (`docs/modules/ingestion.md`, "Statut `failed`").
 
-`generation_status` est déclarée ici (elle vit sur la table `courses`,
-propriété d'`ingestion`) mais uniquement écrite par `exercise-generator` —
-même schéma de propriété que StudIA pour ses colonnes composées entre
-modules voisins. **Elle n'existe pas encore** : elle arrive avec la
-migration de M3 (`docs/modules/exercise-generator.md`), la migration de
-M2 ne crée que les colonnes d'`ingestion`.
+Le statut de génération ne vit pas sur `courses` (décidé à l'ouverture de
+M3) : l'issue du découpage est stockée dans `course_generations`,
+propriété d'`exercise-generator`, et le reste du statut est dérivé des
+jobs (`docs/modules/exercise-generator.md`).
 
 **Les photos (`pages`, et les fichiers qu'elles référencent) sont
 conservées tant que le cours existe** — décision actée, `docs/securite.md`
@@ -121,10 +117,10 @@ deux dans le même appel, `docs/modules/ingestion.md`).
 CREATE TABLE items (
   id TEXT PRIMARY KEY,
   course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
-  game_types_json TEXT NOT NULL,   -- GameType[]
+  game_types_json TEXT NOT NULL,   -- GameType[], 1 à 3
   position INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   UNIQUE (course_id, position)
@@ -134,14 +130,26 @@ CREATE INDEX idx_items_course ON items(course_id, position);
 CREATE TABLE exercises (
   id TEXT PRIMARY KEY,
   item_id TEXT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN
     ('delayed_copy','mcq','matching','reordering','cloze','true_false','mental_math')),
   content_json TEXT NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  UNIQUE (item_id, type)
 );
 CREATE INDEX idx_exercises_item ON exercises(item_id);
+
+CREATE TABLE course_generations (
+  course_id TEXT PRIMARY KEY REFERENCES courses(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  split_outcome TEXT NOT NULL CHECK (split_outcome IN ('items_ready','insufficient_coverage')),
+  item_count INTEGER NOT NULL,
+  updated_at TEXT NOT NULL
+);
 ```
+
+`ON DELETE CASCADE` sur chaque `user_id` (décidé à l'ouverture de M3) :
+`pnpm accounts:delete` efface items, exercices et issues de découpage.
 
 `items` peut être alimentée par deux chemins : le découpage complet du
 cours (`split-items`, remplace tout) et l'ajout par extrait depuis le
@@ -241,7 +249,8 @@ CREATE INDEX idx_jobs_user ON jobs(user_id, type, created_at DESC);
 ```
 
 Types de job attendus : `extract-course` (`ingestion`), `split-items`,
-`generate-item-exercises` et `game-from-excerpt` (`exercise-generator`,
+`generate-exercises` (un par type de jeu et par cours) et
+`game-from-excerpt` (`exercise-generator`,
 ce dernier déclenché par `tutor` via l'`index.ts` de
 `exercise-generator`). Mécanisme de queue et machine à états
 entièrement recopiés de StudIA (`docs/inventaire-studia.md`, §8),

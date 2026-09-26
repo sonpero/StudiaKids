@@ -233,9 +233,34 @@ ce parcours :
 - **Cartes de "Mes cours" en M2** : affichées comme des boutons mais sans
   action (`aria-disabled`) — il n'y a rien à ouvrir avant le lecteur (M3).
 
-Pas de barre d'onglets en M2 : seul l'accueil existe, elle arrive avec le
-lecteur (M3). Pas de routeur non plus (navigation par état d'écran, comme
-StudIA et M1).
+Pas de barre d'onglets en M2 : seul l'accueil existe. Pas de routeur non
+plus (navigation par état d'écran, comme StudIA et M1).
+
+### Lire un cours et créer ses jeux (M3)
+
+Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
+*à valider*) :
+
+- **Carte de "Mes cours"** : un appui ouvre le lecteur ; la carte montre
+  le nombre de jeux prêts ("12 jeux prêts", `docs/design/accueil.png`)
+  quand il y en a.
+- **Lecteur** : bouton **« Écouter »** en haut (devient **« Stop »**
+  pendant la lecture) — la voix ne démarre **jamais d'office**, seulement
+  au premier appui de l'enfant ; le texte du cours (18 px) ; les photos
+  du cours en vignettes, agrandies d'un appui ; en bas, **« Créer mes
+  jeux »** et un bouton **« Accueil »**. La barre d'onglets arrive avec
+  l'écran « Jouer » (M4), le seul autre écran qui en aurait besoin.
+- **Création des jeux** (`docs/modules/exercise-generator.md`), portée par
+  la mascotte, phrases du catalogue :
+  - en cours : `waiting`, « Je prépare tes jeux… », et l'avancement en
+    types de jeu (« 2 sur 5 »), sans pourcentage inventé ;
+  - prêts : `joy`, *à valider* « Tes jeux sont prêts ! » ;
+  - cours trop court : `sorry`, *à valider* « Il n'y a pas assez à
+    apprendre sur cette photo. On en prend une autre ? » ;
+  - échec technique : `glitch`, phrase du catalogue, bouton « On
+    réessaie ».
+- L'enfant peut quitter le lecteur pendant la création : elle continue,
+  et la carte de l'accueil montre les jeux prêts à son retour.
 
 ---
 

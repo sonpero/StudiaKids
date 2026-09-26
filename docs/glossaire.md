@@ -158,10 +158,32 @@ assumées" plus haut.
 |---|---|---|
 | découpage (en items) | `splitting` / `split` (verbe), job `split-items` | |
 | couverture (contrôle de couverture) | `coverage` (`COVERAGE_MIN_ITEMS`, `COVERAGE_MAX_ITEMS`) | |
-| couverture insuffisante | `insufficient_coverage` | Valeur de `GenerationStatus`. |
-| items prêts | `items_ready` | Valeur de `GenerationStatus`. |
+| couverture insuffisante | `insufficient_coverage` | Issue du découpage (`SplitOutcome`) et valeur de `GenerationStatus`. |
+| items prêts | `items_ready` | Issue du découpage (`SplitOutcome`). |
+| issue du découpage | `SplitOutcome` / table `course_generations` (`split_outcome`) | Seule partie stockée du statut de génération. |
+| statut de génération | `GenerationStatus` (`generationStatus`, dérivé) | `not_started`, `splitting`, `insufficient_coverage`, `generating`, `ready`, `failed`. |
+| item | `Item` / table `items` | Une petite chose à apprendre, recopiée de la leçon. |
+| exercice | `Exercise` / table `exercises` | Au plus un par item et par type. |
+| types applicables | `applicableGameTypes` (`game_types_json`) | 1 à 3 (`ITEM_MAX_GAME_TYPES`). |
+| découpeur | `ItemSplitter` | Port. |
+| générateur (d'exercices) | `ExerciseGenerator` | Port (ne pas confondre avec le module `exercise-generator`). |
+| « Créer mes jeux » | `startGeneration`, route `POST /api/courses/:id/generate` | Lance le découpage, puis la génération. |
+| génération d'un type | job `generate-exercises` (`handleGenerationJob`) | Un appel pour un type et tous les items qui le portent. |
+| régénérer (un item) | `regenerateItem` | |
+| règle d'ancrage | `anchoringProblem` | Chaque exercice, réponse comprise, vérifiable à partir du texte du cours. |
+| exercice invalide | `exerciseProblem` | Écarté seul. |
+| seuil de régénération | `needsRegeneration` | Moins de la moitié d'exercices valides, ou aucun. |
+| jeux prêts | `exerciseCount` | Nombre d'exercices d'un cours, sur les cartes "Mes cours". |
 | corps (d'un item) | `body` | |
 | jeu depuis un extrait | `game-from-excerpt` | Nom de job ; côté domaine, `startGameFromExcerpt`. |
+
+## Lecteur (`reader`)
+
+| Terme de prose | Identifiant | Note |
+|---|---|---|
+| ouvrir pour lire | `openCourseForReading`, route `GET /api/courses/:id/text` | |
+| texte à lire à voix haute | `speakableText` (`speech` dans la réponse) | Le Markdown sans ses symboles. |
+| lecture à voix haute | synthèse vocale (`speechSynthesis`) | Démarre au premier geste de l'enfant, jamais d'office. |
 
 ## Types de jeu (`game-engine`)
 
