@@ -3,16 +3,20 @@ import { z } from "zod";
 import type { Result } from "../../shared/index.js";
 import type { CourseNamer, CourseNameSuggestion, ExtractionError } from "../domain/ports.js";
 import { SUBJECTS } from "../domain/subject.js";
+import { COURSE_TITLE_MAX_CHARS, COURSE_TITLE_MIN_CHARS, startsWithLessonCode } from "../domain/title.js";
 import { generateWithRetry } from "./generate-with-retry.js";
-
-const MAX_TITLE_WORDS = 3;
 
 const courseNameSchema = z.object({
   title: z
     .string()
-    .describe("Le titre du cours, trois mots au plus, en français, compréhensible par un enfant (ex. « Les fractions »).")
-    .refine((title) => title.trim().length > 0 && title.trim().split(/\s+/).length <= MAX_TITLE_WORDS, {
-      message: `Le titre doit faire entre un et ${String(MAX_TITLE_WORDS)} mots.`,
+    .describe(
+      `Le titre de la leçon tel qu'il est écrit sur la page, sans code ni numéro (ni « NUM1 », ni « Leçon 3 »), ${String(COURSE_TITLE_MAX_CHARS)} caractères au plus (ex. « Revoir les nombres jusqu'à 9999 »).`,
+    )
+    .refine((title) => title.trim().length >= COURSE_TITLE_MIN_CHARS && title.trim().length <= COURSE_TITLE_MAX_CHARS, {
+      message: `Le titre doit faire entre ${String(COURSE_TITLE_MIN_CHARS)} et ${String(COURSE_TITLE_MAX_CHARS)} caractères.`,
+    })
+    .refine((title) => !startsWithLessonCode(title), {
+      message: "Le titre ne commence jamais par un code ou un numéro de leçon (« NUM1 – », « Leçon 3 : ») : donne seulement le titre.",
     }),
   subject: z
     .enum(SUBJECTS)
@@ -20,7 +24,8 @@ const courseNameSchema = z.object({
 });
 
 const PROMPT =
-  "Voici le texte d'une leçon d'école primaire. Propose un titre très court et la matière, pour qu'un enfant reconnaisse son cours. " +
+  "Voici le texte d'une leçon d'école primaire. Donne le titre de la leçon tel qu'il est écrit sur la page, sans code ni numéro " +
+  `(ni « NUM1 », ni « Leçon 3 »), ${String(COURSE_TITLE_MAX_CHARS)} caractères au plus, et la matière, pour qu'un enfant reconnaisse son cours. ` +
   "Le niveau scolaire ne se devine pas : il ne t'est pas demandé.";
 
 // Text only: naming never needs the photo, nor the vision model.

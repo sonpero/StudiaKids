@@ -41,7 +41,7 @@ type Subject = "maths" | "french" | "history" | "geography" | "science" | "engli
 type Course = {
   id: string;
   userId: string;
-  title: string;            // proposé par le modèle, ≤ 3 mots, jamais édité
+  title: string;            // titre de la leçon tel qu'écrit, sans code ni numéro, 3 à 60 caractères ; jamais édité
   subject: Subject | null;  // proposée par le modèle, null jusqu'à l'extraction
   grade: Grade;             // hérité du compte à la création, jamais deviné
   color: string;            // nom du token pastel de la matière (ex. "matiere-maths"), jamais une valeur hexadécimale — cf. docs/ui.md

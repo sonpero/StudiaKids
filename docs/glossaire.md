@@ -89,7 +89,8 @@ compatibles anglais/français ou déjà en anglais).
 | couleur | `color` | Voir "Exceptions assumées" ci-dessus. |
 | confirmé (bouton "Oui, c'est ça !") | `confirmed` | |
 | dernier accès | `lastAccessedAt` | |
-| titre | `title` | Proposé par le modèle, trois mots au plus. |
+| titre | `title` | Titre de la leçon tel qu'écrit sur la page, sans code ni numéro (« NUM1 », « Leçon 3 »), 3 à 60 caractères (`COURSE_TITLE_MIN_CHARS` / `COURSE_TITLE_MAX_CHARS`, les bornes des titres d'items). |
+| code de leçon | `startsWithLessonCode` / `stripLessonCode` | Code ou numéro en tête d'un titre (« NUM1 – », « Leçon 3 : »), jamais repris dans le titre. |
 | cours non confirmé | `unconfirmed` (`getUnconfirmedCourse`, `GET /api/courses/unconfirmed`) | Au plus un par compte. |
 | confirmer / refuser (un cours) | `confirmCourse` / `rejectCourse` | "Oui, c'est ça !" / "Je reprends la photo". |
 | relancer (après un échec technique) | `retryExtraction` | Jamais après `illegible` ni `not_a_course_page`. |

@@ -154,7 +154,9 @@ suppression de compte qui efface aussi les photos. Détail dans
 - Écran de capture : miniatures des pages déjà prises, boutons "Une autre
   page" (masqué à partir de 5 pages) et "C'est tout !"
 - Écran de validation de l'extraction, adapté à un enfant : la photo,
-  un titre et une matière proposés (trois mots au plus) et le niveau du
+  le titre de la leçon tel qu'écrit (sans code ni numéro, 60 caractères
+  au plus — critère modifié le 2026-09-26, après l'échec d'une vraie
+  leçon sur l'ancienne limite de trois mots), la matière proposée et le niveau du
   compte (jamais deviné), deux boutons ("Oui, c'est ça !" / "Je reprends
   la photo"), aucun éditeur de texte
 - Écran d'accueil : bouton "Photographier un cours", bandeau du cours non

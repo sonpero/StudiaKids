@@ -98,9 +98,9 @@ describe("ClaudeCourseNamer", () => {
     expect(lastUserText(api.requests[0]!)).not.toContain("image");
   });
 
-  it("rejects a title over three words or a subject outside the list, then retries once", async () => {
+  it("rejects a title over 60 characters or a subject outside the list, then retries once", async () => {
     const api = stubApi([
-      { title: "Les fractions et les décimaux", subject: "maths" },
+      { title: "Les fractions, les nombres décimaux et leur place sur la droite graduée", subject: "maths" },
       { title: "Fractions", subject: "mathematics" },
     ]);
     const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: api.fetch }));
@@ -114,6 +114,47 @@ describe("ClaudeCourseNamer", () => {
 // dry run: the page header (subject, lesson number) came out as a second
 // `#`, and visual bullets as « – » lines that are not Markdown lists. Both
 // break the reader's rendering and the splitting of M3.
+// Decided at M2 (2026-09-26): a real lesson, « NUM1 – Revoir les nombres
+// jusqu'à 9999 », failed on the three-word rule.
+describe("ClaudeCourseNamer, lesson titles", () => {
+  const namerFor = (inputs: unknown[]) => {
+    const api = stubApi(inputs);
+    return { api, namer: new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: api.fetch })) };
+  };
+
+  it("asks for the lesson's title as written, without code or number, 60 characters at most", async () => {
+    const { api, namer } = namerFor([{ title: "Revoir les nombres jusqu'à 9999", subject: "maths" }]);
+
+    await namer.suggest({ markdown: "# NUM1 – Revoir les nombres jusqu'à 9999" });
+
+    const prompt = lastUserText(api.requests[0]!);
+    expect(prompt).toMatch(/tel qu'il est écrit/);
+    expect(prompt).toMatch(/sans code ni numéro/);
+    expect(prompt).toMatch(/60 caractères/);
+  });
+
+  it("accepts a real lesson title longer than three words on the first call", async () => {
+    const { api, namer } = namerFor([{ title: "Revoir les nombres jusqu'à 9999", subject: "maths" }]);
+
+    expect(await namer.suggest({ markdown: "# NUM1 – Revoir les nombres jusqu'à 9999" })).toEqual({
+      ok: true,
+      value: { title: "Revoir les nombres jusqu'à 9999", subject: "maths" },
+    });
+    expect(api.requests).toHaveLength(1);
+  });
+
+  it("a title led by the lesson's code triggers the single retry, with the rule fed back", async () => {
+    const { api, namer } = namerFor([
+      { title: "NUM1 – Revoir les nombres jusqu'à 9999", subject: "maths" },
+      { title: "Revoir les nombres jusqu'à 9999", subject: "maths" },
+    ]);
+
+    expect((await namer.suggest({ markdown: "# NUM1 – Revoir les nombres jusqu'à 9999" })).ok).toBe(true);
+    expect(api.requests).toHaveLength(2);
+    expect(lastUserText(api.requests[1]!)).toMatch(/code/);
+  });
+});
+
 describe("ClaudePhotoExtractor, Markdown shape", () => {
   const extractorFor = (inputs: unknown[]) => {
     const api = stubApi(inputs);

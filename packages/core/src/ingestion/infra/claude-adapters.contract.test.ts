@@ -63,14 +63,16 @@ describe(`ClaudePhotoExtractor contract (${FIXTURE_SOURCE} fixtures)`, () => {
 });
 
 describe(`ClaudeCourseNamer contract (${FIXTURE_SOURCE} fixtures)`, () => {
-  it("proposes a title of three words at most and a subject from the closed list", async () => {
+  it("proposes a title of 3 to 60 characters, not led by a lesson code, and a subject from the closed list", async () => {
     const replay = replayFetch(loadFixture("ingestion", "namer"));
     const namer = new ClaudeCourseNamer(createLanguageModel({ apiKey: "k", fetch: replay.fetch }));
 
     const result = await namer.suggest({ markdown: "# Les fractions" });
 
     if (!result.ok) throw new Error(result.error.message);
-    expect(result.value.title.split(/\s+/).length).toBeLessThanOrEqual(3);
+    expect(result.value.title.trim().length).toBeGreaterThanOrEqual(3);
+    expect(result.value.title.trim().length).toBeLessThanOrEqual(60);
+    expect(result.value.title).not.toMatch(/^\s*(NUM|NB|Leçon|Chapitre)\s*\d/i);
     expect(["maths", "french", "history", "geography", "science", "english", "other"]).toContain(result.value.subject);
   });
 });
