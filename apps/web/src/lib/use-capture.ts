@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { createCourse, startExtraction, uploadPage, type UploadError } from "./courses.js";
+import { createCourse, pageFileUrl, startExtraction, uploadPage, type UploadError } from "./courses.js";
 
 export type CaptureError = Exclude<UploadError, "not_found"> | "unreadable";
 export type CapturedPage = { index: number; url: string };
@@ -18,9 +18,17 @@ export function useCapture(reencode: (file: Blob) => Promise<Blob>) {
   const [busy, setBusy] = useState(false);
 
   function reset(): void {
-    for (const page of pages) URL.revokeObjectURL(page.url);
+    for (const page of pages) if (page.url.startsWith("blob:")) URL.revokeObjectURL(page.url);
     courseId.current = null;
     setPages([]);
+    setError(null);
+  }
+
+  // A course whose photos were taken but never sent to reading: its pages
+  // are shown from the authenticated route, and new ones join it.
+  function resume(id: string, pageCount: number): void {
+    courseId.current = id;
+    setPages(Array.from({ length: pageCount }, (_, index) => ({ index, url: pageFileUrl(id, index) })));
     setError(null);
   }
 
@@ -58,5 +66,5 @@ export function useCapture(reencode: (file: Blob) => Promise<Blob>) {
     return id;
   }
 
-  return { pages, error, busy, reset, addPhoto, finish };
+  return { pages, error, busy, reset, resume, addPhoto, finish };
 }

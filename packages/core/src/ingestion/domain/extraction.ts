@@ -23,3 +23,11 @@ export function displayStatus(stored: StoredExtractionStatus, latestJobStatus: J
   if (RESULT_STATUSES.has(stored)) return stored;
   return latestJobStatus === "failed" ? "failed" : stored;
 }
+
+// Whether the reading was ever launched. A pending course with no job yet
+// was left on the capture screen before « C'est tout ! »: the home banner
+// takes the child back there, never to a waiting screen with nothing
+// running (docs/ui.md).
+export function extractionStarted(stored: StoredExtractionStatus, latestJobStatus: JobStatus | null): boolean {
+  return stored !== "pending" || latestJobStatus !== null;
+}

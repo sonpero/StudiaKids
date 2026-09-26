@@ -249,6 +249,18 @@ describe("course routes", () => {
     expect(db.all(sql`SELECT id FROM jobs WHERE type = 'extract-course'`)).toHaveLength(1);
   });
 
+  it("the course says whether its reading was launched: not after the photos alone, yes after extract", async () => {
+    const id = await createCourse(lea);
+    await upload(lea, id, jpeg(1));
+
+    const before = await app.inject({ method: "GET", url: "/api/courses/unconfirmed", headers: { cookie: lea } });
+    expect(before.json()).toMatchObject({ course: { id, extractionStatus: "pending", extractionStarted: false } });
+    await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+
+    const after = await app.inject({ method: "GET", url: `/api/courses/${id}`, headers: { cookie: lea } });
+    expect(after.json()).toMatchObject({ extractionStatus: "pending", extractionStarted: true });
+  });
+
   it("extract answers the current state: pending when it enqueues", async () => {
     const id = await createCourse(lea);
     await upload(lea, id, jpeg(1));

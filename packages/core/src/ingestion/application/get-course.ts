@@ -1,12 +1,12 @@
 import type { JobQueue } from "../../jobs/index.js";
 import { err, ok, type Result } from "../../shared/index.js";
-import { displayStatus } from "../domain/extraction.js";
+import { displayStatus, extractionStarted } from "../domain/extraction.js";
 import type { CourseRepository } from "../domain/ports.js";
 import type { Course, ExtractionStatus } from "../domain/types.js";
 import type { NotFound } from "./errors.js";
 import { latestExtractionJobStatus } from "./latest-job.js";
 
-export type CourseView = Omit<Course, "extractionStatus"> & { extractionStatus: ExtractionStatus };
+export type CourseView = Omit<Course, "extractionStatus"> & { extractionStatus: ExtractionStatus; extractionStarted: boolean };
 
 export interface GetCourseDeps {
   repo: CourseRepository;
@@ -16,7 +16,7 @@ export interface GetCourseDeps {
 // `failed` only exists here, at read time: the stored status never holds it.
 export async function toCourseView(jobQueue: JobQueue, course: Course): Promise<CourseView> {
   const latest = await latestExtractionJobStatus(jobQueue, course.userId, course.id);
-  return { ...course, extractionStatus: displayStatus(course.extractionStatus, latest) };
+  return { ...course, extractionStatus: displayStatus(course.extractionStatus, latest), extractionStarted: extractionStarted(course.extractionStatus, latest) };
 }
 
 export async function getCourse(deps: GetCourseDeps, userId: string, courseId: string): Promise<Result<CourseView, NotFound>> {

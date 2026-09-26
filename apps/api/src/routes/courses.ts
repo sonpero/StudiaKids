@@ -90,6 +90,8 @@ function toDto(course: Course | CourseView): CourseDto {
     grade: course.grade,
     color: course.color,
     extractionStatus: course.extractionStatus,
+    // A confirmed course (the list) was necessarily read.
+    extractionStarted: "extractionStarted" in course ? course.extractionStarted : true,
     confirmed: course.confirmed,
     pageCount: course.pageCount,
     createdAt: course.createdAt,

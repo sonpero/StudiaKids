@@ -13,7 +13,7 @@ export type {
 export { SUBJECTS, subjectColor, type Subject } from "./domain/subject.js";
 export { MAX_PAGES_PER_COURSE, canAddPage, nextPageIndex } from "./domain/pages.js";
 export { MAX_PAGE_BYTES, isAcceptable, jpegSize, sniffImageType, stripJpegMetadata, type ImageType } from "./domain/photo.js";
-export { outcomeOfPages, displayStatus, type PagesOutcome } from "./domain/extraction.js";
+export { outcomeOfPages, displayStatus, extractionStarted, type PagesOutcome } from "./domain/extraction.js";
 
 export { createCourse, type CreateCourseDeps } from "./application/create-course.js";
 export { addPage, type AddPageDeps, type AddPageError } from "./application/add-page.js";

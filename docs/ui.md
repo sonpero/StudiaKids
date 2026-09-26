@@ -182,7 +182,12 @@ ce parcours :
   `docs/modules/ingestion.md`), un bandeau au-dessus de la liste y ramène,
   avec une phrase selon son état ("Je regarde encore ta photo…", "Ta photo
   est prête !", "Oups, on reprend la photo ?" ; pour un échec technique,
-  *à valider* : "Oh, quelque chose a coincé."). Prendre une nouvelle photo
+  *à valider* : "Oh, quelque chose a coincé."). **Photos prises mais
+  lecture jamais lancée** (l'enfant a quitté la capture avant « C'est
+  tout ! », `extractionStarted: false` dans l'API) : *à valider* "Tu n'as
+  pas fini tes photos. On continue ?", et le bandeau **ramène à la
+  capture** de ce cours, ses pages déjà prises affichées — jamais à un
+  écran d'attente où rien ne tourne. Prendre une nouvelle photo
   remplace ce cours en attente. **"Se déconnecter" reste sur l'accueil,
   discret** (petit bouton texte en bas, jamais à côté de l'action
   principale), bien que la maquette ne le montre pas.

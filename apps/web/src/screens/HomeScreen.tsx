@@ -1,5 +1,5 @@
 import { present } from "@studiakids/mascot";
-import type { ExtractionStatus } from "@studiakids/contracts";
+import type { CourseDto, ExtractionStatus } from "@studiakids/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
@@ -19,19 +19,22 @@ const BANNER: Record<ExtractionStatus, string> = {
   not_a_course_page: "Oups, on reprend la photo ?",
   failed: "Oh, quelque chose a coincé.",
 };
+// Photos taken, reading never launched: back to the capture (à valider).
+const NOT_LAUNCHED = "Tu n'as pas fini tes photos. On continue ?";
 
 export interface HomeScreenProps {
   firstName: string;
   onPhoto: (file: File) => void;
   onLogout: () => void;
   onOpenCourse?: (courseId: string) => void;
+  onResumeCapture?: (course: CourseDto) => void;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
-export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse }: HomeScreenProps) {
+export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onResumeCapture }: HomeScreenProps) {
   const courses = useQuery({ queryKey: COURSES_QUERY_KEY, queryFn: listCourses });
   const [openedAt] = useState(() => Date.now());
   const unconfirmed = useQuery({
@@ -79,10 +82,10 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse }: HomeS
         {pending && (
           <button
             type="button"
-            onClick={() => onOpenCourse?.(pending.id)}
+            onClick={() => (pending.extractionStarted === false ? onResumeCapture?.(pending) : onOpenCourse?.(pending.id))}
             className="min-h-[56px] w-full rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-soleil)] px-4 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
           >
-            {BANNER[pending.extractionStatus]}
+            {pending.extractionStarted === false ? NOT_LAUNCHED : BANNER[pending.extractionStatus]}
           </button>
         )}
         {list.length > 0 && (

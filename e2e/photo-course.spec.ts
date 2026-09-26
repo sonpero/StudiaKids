@@ -80,3 +80,19 @@ test("a technical failure shows the glitch mascot, and « On réessaie » relaun
   expect(retried).toBe(true);
   await expect(page.getByRole("heading", { name: "Le verbe" })).toBeVisible({ timeout: 20_000 });
 });
+
+// docs/ui.md, "Accueil": photos taken, then the app closed before
+// « C'est tout ! ». The banner resumes the capture, never a waiting screen
+// with nothing running.
+test("photos left before « C'est tout ! »: the banner resumes the capture, then the reading runs", async ({ page, child: _child }) => {
+  await page.goto("/");
+  await takePhoto(page, "Photographier un cours", photo("legible"));
+  await expect(page.getByRole("img", { name: "Page 1" })).toBeVisible();
+
+  await page.reload();
+  await page.getByRole("button", { name: "Tu n'as pas fini tes photos. On continue ?" }).click();
+
+  await expect(page.getByRole("img", { name: "Page 1" })).toBeVisible();
+  await page.getByRole("button", { name: "C'est tout !" }).click();
+  await expect(page.getByRole("heading", { name: "Le verbe" })).toBeVisible({ timeout: 20_000 });
+});

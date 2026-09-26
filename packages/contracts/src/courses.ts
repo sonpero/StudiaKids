@@ -15,6 +15,9 @@ export const courseSchema = z.object({
   grade: gradeSchema,
   color: z.string().describe("Nom de token de design (matiere-*), vide tant que l'extraction n'est pas prête"),
   extractionStatus: extractionStatusSchema,
+  // Optional so that a payload without it (an older client's or test's)
+  // still parses; the API always sends it. Absent means launched.
+  extractionStarted: z.boolean().optional().describe("Faux tant que « C'est tout ! » n'a pas lancé la lecture : le bandeau ramène alors à la capture"),
   confirmed: z.boolean(),
   pageCount: z.number().int(),
   createdAt: z.string(),

@@ -384,7 +384,7 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 | `POST /api/courses/:id/extract` | Enfile l'extraction |
 | `GET /api/courses` | Liste des cours confirmés du compte, avec couleur. **À partir de M3** : ajoute un champ optionnel, le nombre d'exercices prêts par cours (lu depuis `exercise-generator` via son `index.ts`, jamais une jointure directe sur ses tables), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts") — absent en M2, le module n'existant pas encore |
 | `GET /api/courses/unconfirmed` | Le cours non confirmé du compte (au plus un), ou `null` — bandeau de l'accueil |
-| `GET /api/courses/:id` | Détail, y compris statut d'extraction et propositions titre/matière |
+| `GET /api/courses/:id` | Détail, y compris statut d'extraction, `extractionStarted` (faux pour un cours `pending` sans aucun job `extract-course` : photos prises, lecture jamais lancée) et propositions titre/matière |
 | `GET /api/courses/:id/pages/:index/file` | Lecture de fichier authentifiée |
 | `POST /api/courses/:id/confirm` | Bouton "Oui, c'est ça !" |
 | `POST /api/courses/:id/reject` | Bouton "Je reprends la photo" (supprime) |

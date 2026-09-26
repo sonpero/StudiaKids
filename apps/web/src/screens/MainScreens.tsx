@@ -65,6 +65,11 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
       onLogout={onLogout}
       onPhoto={startCapture}
       onOpenCourse={(courseId) => setScreen({ name: "course", courseId })}
+      onResumeCapture={(course) => {
+        capture.reset();
+        capture.resume(course.id, course.pageCount);
+        setScreen({ name: "capture" });
+      }}
     />
   );
 }
