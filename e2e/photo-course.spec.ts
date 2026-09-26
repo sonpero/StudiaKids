@@ -23,8 +23,7 @@ async function photographLesson(page: Page, files: string[]): Promise<void> {
   await page.getByRole("button", { name: "C'est tout !" }).click();
 }
 
-// FIXME(11b): passes once commit 11b adds the waiting and confirmation screens.
-test.fixme("three photos become one course: waiting, confirmation, then listed under Mes cours @mobile", async ({ page, child: _child }) => {
+test("three photos become one course: waiting, confirmation, then listed under Mes cours @mobile", async ({ page, child: _child }) => {
   await page.goto("/");
   await photographLesson(page, [photo("legible"), photo("legible.2"), photo("legible.3")]);
 
@@ -42,8 +41,7 @@ test.fixme("three photos become one course: waiting, confirmation, then listed u
   await expect(page.getByRole("button", { name: /Ta photo est prête|Je regarde encore/ })).toHaveCount(0);
 });
 
-// FIXME(11b): passes once commit 11b adds the waiting screen and the banner.
-test.fixme("leaving during the reading: the home banner brings the child back to the ready course", async ({ page, child: _child }) => {
+test("leaving during the reading: the home banner brings the child back to the ready course", async ({ page, child: _child }) => {
   await page.goto("/");
   await photographLesson(page, [photo("legible")]);
   await page.getByRole("button", { name: "Retour à l'accueil" }).click();
@@ -58,8 +56,7 @@ test.fixme("leaving during the reading: the home banner brings the child back to
 
 // Decided at M2: a technical failure is simulated by page.route on the
 // status read, never by waiting out the jobs kernel's real backoff.
-// FIXME(11b): passes once commit 11b adds the glitch screen and its retry.
-test.fixme("a technical failure shows the glitch mascot, and « On réessaie » relaunches the reading", async ({ page, child: _child }) => {
+test("a technical failure shows the glitch mascot, and « On réessaie » relaunches the reading", async ({ page, child: _child }) => {
   let failed = true;
   let retried = false;
   await page.route(/\/api\/courses\/[^/]+$/, async (route) => {

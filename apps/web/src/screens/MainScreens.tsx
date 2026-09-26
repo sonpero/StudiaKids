@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useCapture } from "../lib/use-capture.js";
 import { CaptureScreen } from "./CaptureScreen.js";
+import { CourseScreen } from "./CourseScreen.js";
 import { COURSES_QUERY_KEY, HomeScreen } from "./HomeScreen.js";
 
 export interface MainScreensProps {
@@ -10,31 +11,43 @@ export interface MainScreensProps {
   reencode: (file: Blob) => Promise<Blob>;
 }
 
-type Screen = "home" | "capture";
+type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string };
 
 // Navigation by screen state, no router (docs/ui.md, M2).
 export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps) {
   const queryClient = useQueryClient();
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>({ name: "home" });
   const capture = useCapture(reencode);
 
   function goHome(): void {
     capture.reset();
-    setScreen("home");
+    setScreen({ name: "home" });
+    // The list and the banner (whose key starts with the same prefix).
     void queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY });
   }
 
   async function handlePhoto(file: File): Promise<void> {
-    setScreen("capture");
+    setScreen({ name: "capture" });
     if ((await capture.addPhoto(file)) === "gone") goHome();
   }
 
-  async function handleDone(): Promise<void> {
-    await capture.finish();
-    goHome();
+  function startCapture(file: File): void {
+    capture.reset();
+    void handlePhoto(file);
   }
 
-  if (screen === "capture") {
+  async function handleDone(): Promise<void> {
+    const courseId = await capture.finish();
+    capture.reset();
+    if (courseId) setScreen({ name: "course", courseId });
+    else goHome();
+  }
+
+  if (screen.name === "course") {
+    return <CourseScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} onPhoto={startCapture} />;
+  }
+
+  if (screen.name === "capture") {
     return (
       <CaptureScreen
         pages={capture.pages}
@@ -50,10 +63,8 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
     <HomeScreen
       firstName={firstName}
       onLogout={onLogout}
-      onPhoto={(file) => {
-        capture.reset();
-        void handlePhoto(file);
-      }}
+      onPhoto={startCapture}
+      onOpenCourse={(courseId) => setScreen({ name: "course", courseId })}
     />
   );
 }

@@ -1,25 +1,47 @@
 import { present } from "@studiakids/mascot";
+import type { ExtractionStatus } from "@studiakids/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
-import { listCourses } from "../lib/courses.js";
+import { getUnconfirmedCourse, listCourses, pollInterval } from "../lib/courses.js";
 import { subjectLabel } from "../lib/subjects.js";
 
 export const COURSES_QUERY_KEY = ["courses"];
+export const UNCONFIRMED_QUERY_KEY = ["courses", "unconfirmed"];
+
+// docs/ui.md, "Accueil": one sentence per state of the pending course.
+const BANNER: Record<ExtractionStatus, string> = {
+  pending: "Je regarde encore ta photo…",
+  running: "Je regarde encore ta photo…",
+  ready: "Ta photo est prête !",
+  illegible: "Oups, on reprend la photo ?",
+  not_a_course_page: "Oups, on reprend la photo ?",
+  failed: "Oh, quelque chose a coincé.",
+};
 
 export interface HomeScreenProps {
   firstName: string;
   onPhoto: (file: File) => void;
   onLogout: () => void;
+  onOpenCourse?: (courseId: string) => void;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
-export function HomeScreen({ firstName, onPhoto, onLogout }: HomeScreenProps) {
+export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse }: HomeScreenProps) {
   const courses = useQuery({ queryKey: COURSES_QUERY_KEY, queryFn: listCourses });
+  const [openedAt] = useState(() => Date.now());
+  const unconfirmed = useQuery({
+    queryKey: UNCONFIRMED_QUERY_KEY,
+    // Read at call time: a failure only hides the banner, never the home.
+    queryFn: () => getUnconfirmedCourse(),
+    refetchInterval: (query) => (query.state.data ? pollInterval(query.state.data.extractionStatus, Date.now() - openedAt) : false),
+  });
+  // A course with no page yet has nothing to come back to.
+  const pending = unconfirmed.data && unconfirmed.data.pageCount > 0 ? unconfirmed.data : null;
   // Which of the catalogue's lines to say; the choice is the caller's
   // (docs/modules/mascot.md, "variantIndex").
   const [variant] = useState(() => Math.floor(Math.random() * 2));
@@ -54,6 +76,15 @@ export function HomeScreen({ firstName, onPhoto, onLogout }: HomeScreenProps) {
         <Mascot pose={pose} />
         <p className={text}>{line}</p>
         <PhotoPicker label="Photographier un cours" variant="primary" onPhoto={onPhoto} />
+        {pending && (
+          <button
+            type="button"
+            onClick={() => onOpenCourse?.(pending.id)}
+            className="min-h-[56px] w-full rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-soleil)] px-4 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
+          >
+            {BANNER[pending.extractionStatus]}
+          </button>
+        )}
         {list.length > 0 && (
           <section className="flex w-full flex-col gap-3 text-left">
             <h2 className="font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]">Mes cours</h2>

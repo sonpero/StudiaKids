@@ -46,8 +46,7 @@ test("home, error: the glitch mascot, a child's sentence and a way to retry", as
 
 // Decided at M2 (docs/ui.md): a pending course replaced meanwhile answers
 // 404, and the screen goes back home silently, without any message.
-// FIXME(11b): passes once commit 11b adds the waiting screen.
-test.fixme("a course that answers 404 while waiting sends the child home silently", async ({ page, child: _child }) => {
+test("a course that answers 404 while waiting sends the child home silently", async ({ page, child: _child }) => {
   await page.goto("/");
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: "Photographier un cours" }).click();
@@ -63,8 +62,7 @@ test.fixme("a course that answers 404 while waiting sends the child home silentl
   await expect(page.getByText(/coincé|oups|introuvable/i)).toHaveCount(0);
 });
 
-// FIXME(11b): passes once commit 11b adds the confirmation screen.
-test.fixme("course screen, error: the glitch mascot and a retry, never a raw error", async ({ page, child: _child }) => {
+test("course screen, error: the glitch mascot and a retry, never a raw error", async ({ page, child: _child }) => {
   await page.goto("/");
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: "Photographier un cours" }).click();
@@ -76,7 +74,8 @@ test.fixme("course screen, error: the glitch mascot and a retry, never a raw err
   );
   await page.getByRole("button", { name: "C'est tout !" }).click();
 
-  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch");
+  // TanStack Query's default three retries (1 s, 2 s, 4 s) come first.
+  await expect(page.getByTestId("mascot")).toHaveAttribute("data-pose", "glitch", { timeout: 15_000 });
   await expect(page.getByText(/quelque chose a coincé/)).toBeVisible();
   broken = false;
   await page.getByRole("button", { name: "Réessaie" }).click();

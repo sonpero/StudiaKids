@@ -222,7 +222,8 @@ ce parcours :
   erreur de l'accueil, mascotte `glitch` : "Oh, quelque chose a coincé. On
   réessaie ?" avec un bouton "Réessaie" (celui de la vérification de
   session, M1) ; envoi d'une photo en cours, sur l'écran de capture :
-  "J'envoie ta photo…".
+  "J'envoie ta photo…" ; sur l'écran d'attente, le lien discret
+  "Retour à l'accueil".
 - **Cartes de "Mes cours" en M2** : affichées comme des boutons mais sans
   action (`aria-disabled`) — il n'y a rien à ouvrir avant le lecteur (M3).
 

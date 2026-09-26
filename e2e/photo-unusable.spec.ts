@@ -23,8 +23,7 @@ async function retakeLeavesNoCourse(page: Page): Promise<void> {
   expect(await (await page.request.get("/api/courses")).json()).toEqual({ courses: [] });
 }
 
-// FIXME(11b): passes once commit 11b adds the sorry screen.
-test.fixme("a blurred photo: the sorry mascot says so, never the model's reason, and the child retakes it", async ({ page, child: _child }) => {
+test("a blurred photo: the sorry mascot says so, never the model's reason, and the child retakes it", async ({ page, child: _child }) => {
   await page.goto("/");
   await photographOnce(page, photo("illegible"));
 
@@ -35,8 +34,7 @@ test.fixme("a blurred photo: the sorry mascot says so, never the model's reason,
   await retakeLeavesNoCourse(page);
 });
 
-// FIXME(11b): passes once commit 11b adds the sorry screen.
-test.fixme("a photo with no lesson: same sorry mascot, its own sentence", async ({ page, child: _child }) => {
+test("a photo with no lesson: same sorry mascot, its own sentence", async ({ page, child: _child }) => {
   await page.goto("/");
   await photographOnce(page, photo("not-a-course"));
 

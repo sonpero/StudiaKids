@@ -1,4 +1,14 @@
-import { courseErrorSchema, courseListResponseSchema, createCourseResponseSchema, addPageResponseSchema, type CourseDto, type CourseError } from "@studiakids/contracts";
+import {
+  addPageResponseSchema,
+  courseErrorSchema,
+  courseListResponseSchema,
+  courseSchema,
+  createCourseResponseSchema,
+  unconfirmedCourseResponseSchema,
+  type CourseDto,
+  type CourseError,
+  type ExtractionStatus,
+} from "@studiakids/contracts";
 
 export type UploadError = CourseError | "upload_failed";
 export type UploadResult = { ok: true; index: number } | { ok: false; error: UploadError };
@@ -35,4 +45,40 @@ export async function uploadPage(courseId: string, photo: Blob): Promise<UploadR
 
 export async function startExtraction(courseId: string): Promise<void> {
   expectOk(await fetch(`/api/courses/${courseId}/extract`, { method: "POST" }), "POST /api/courses/:id/extract");
+}
+
+// A course that answers 404 was replaced meanwhile by a new photo (one
+// unconfirmed course per account): null, and the screen goes home
+// silently (docs/ui.md).
+export async function getCourse(courseId: string): Promise<CourseDto | null> {
+  const res = await fetch(`/api/courses/${courseId}`);
+  if (res.status === 404) return null;
+  return courseSchema.parse(await expectOk(res, "GET /api/courses/:id").json());
+}
+
+export async function getUnconfirmedCourse(): Promise<CourseDto | null> {
+  const res = expectOk(await fetch("/api/courses/unconfirmed"), "GET /api/courses/unconfirmed");
+  return unconfirmedCourseResponseSchema.parse(await res.json()).course;
+}
+
+async function post(courseId: string, action: "confirm" | "reject" | "retry"): Promise<void> {
+  expectOk(await fetch(`/api/courses/${courseId}/${action}`, { method: "POST" }), `POST /api/courses/:id/${action}`);
+}
+
+export const confirmCourse = (courseId: string) => post(courseId, "confirm");
+export const rejectCourse = (courseId: string) => post(courseId, "reject");
+export const retryExtraction = (courseId: string) => post(courseId, "retry");
+
+// Photos are never static files (CLAUDE.md, Fichiers).
+export function pageFileUrl(courseId: string, index: number): string {
+  return `/api/courses/${courseId}/pages/${String(index)}/file`;
+}
+
+const SLOW_AFTER_MS = 30_000;
+
+// docs/ui.md, "Travail asynchrone": refetchInterval while the status is not
+// final, slowed after 30 seconds, as in StudIA.
+export function pollInterval(status: ExtractionStatus, elapsedMs: number): number | false {
+  if (status !== "pending" && status !== "running") return false;
+  return elapsedMs < SLOW_AFTER_MS ? 1000 : 5000;
 }
