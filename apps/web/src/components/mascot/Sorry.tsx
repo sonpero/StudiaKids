@@ -1,9 +1,9 @@
 // PROVISIONAL: traced from docs/design/mascotte-sorry-provisoire.svg, a
 // draft derived from idle's paths until the final drawing lands in
 // docs/design/ (M2 debt, docs/jalons.md). An embarrassed "oops", never sad.
-export function Sorry() {
+export function Sorry({ motion }: { motion?: "dance" }) {
   return (
-    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="sorry">
+    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="sorry" data-motion={motion}>
       <path d="M70 46 V26" stroke="#2B2140" strokeWidth="4" strokeLinecap="round" />
       <ellipse cx="86" cy="22" rx="15" ry="8" fill="#3FC66B" stroke="#2B2140" strokeWidth="4" transform="rotate(-18 86 22)" />
       <ellipse cx="24" cy="92" rx="12" ry="8" fill="#FFC642" stroke="#2B2140" strokeWidth="4" transform="rotate(-22 24 92)" />

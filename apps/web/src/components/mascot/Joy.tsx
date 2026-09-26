@@ -1,8 +1,8 @@
 // Traced literally from docs/design/mascotte-etats.html's `joy` pose
 // (docs/ui.md, "La mascotte": the paths are never redrawn).
-export function Joy() {
+export function Joy({ motion }: { motion?: "dance" }) {
   return (
-    <svg viewBox="0 0 160 160" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="joy">
+    <svg viewBox="0 0 160 160" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="joy" data-motion={motion}>
       <path d="M14 116 q6 -16 2 -30" stroke="#21C1B4" strokeWidth="5" fill="none" strokeLinecap="round" />
       <path d="M146 116 q-6 -16 -2 -30" stroke="#21C1B4" strokeWidth="5" fill="none" strokeLinecap="round" />
       <path d="M80 44 V22" stroke="#2B2140" strokeWidth="4" strokeLinecap="round" />

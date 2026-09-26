@@ -1,0 +1,60 @@
+/* docs/ui.md "Icônes et mouvement", docs/modules/mascot.md (M5): the
+   mascot breathes at rest, dances on a streak bonus or a comeback, and
+   the counter's star bounces when it rises. Every animation stops under
+   prefers-reduced-motion: the pose changes without moving. */
+
+@keyframes mascot-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* Two jumps with a 4-degree alternate rotation (docs/design/mascotte-etats.html). */
+@keyframes mascot-dance {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-14px) rotate(-4deg);
+  }
+  75% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+@keyframes star-bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+}
+
+[data-testid="mascot"][data-pose="idle"] {
+  transform-origin: 50% 100%;
+  animation: mascot-breathe 3s ease-in-out infinite;
+}
+
+[data-testid="mascot"][data-motion="dance"] {
+  transform-origin: 50% 100%;
+  animation: mascot-dance 0.9s ease-in-out 2;
+}
+
+[data-bounce] svg {
+  animation: star-bounce 0.5s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="mascot"],
+  [data-bounce] svg {
+    animation: none !important;
+  }
+}

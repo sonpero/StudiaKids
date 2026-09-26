@@ -25,8 +25,7 @@ async function play(page: Page, item: string, answer: "Vrai" | "Faux", back = tr
   if (back) await page.getByRole("button", { name: "Tous les jeux" }).click();
 }
 
-// fixme until M5 commit 7 « web: joy dance and session summary » (needs the counter of commit 6 too) (seen failing: no counter, dance, summary nor resume yet).
-test.fixme("five right answers in a row: the counter climbs live, the fifth brings the bonus and the joy dance @mobile", async ({ page, child }) => {
+test("five right answers in a row: the counter climbs live, the fifth brings the bonus and the joy dance @mobile", async ({ page, child }) => {
   seedCourseWithGames(child.username, "Les fractions", TRUE_FALSE_GAMES);
   await openCourse(page, "Les fractions");
 
@@ -41,14 +40,14 @@ test.fixme("five right answers in a row: the counter climbs live, the fifth brin
   await expect(page.getByText(/Super série !|Quelle série, bravo !/)).toBeVisible();
   await expect(mascot(page)).toHaveAttribute("data-pose", "joy");
   await expect(mascot(page)).toHaveAttribute("data-motion", "dance");
+  await expect(mascot(page)).toHaveCSS("animation-name", "mascot-dance");
   await expect(counter(page)).toHaveAccessibleName("6 étoiles");
   await page.getByRole("button", { name: "Tous les jeux" }).click();
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Accueil" }).click();
   await expect(counter(page)).toHaveAccessibleName("6 étoiles");
 });
 
-// fixme until M5 commit 7 « web: joy dance and session summary » (needs the counter of commit 6 too) (seen failing: no counter, dance, summary nor resume yet).
-test.fixme("a wrong answer takes nothing away; the first success after it is celebrated @mobile", async ({ page, child }) => {
+test("a wrong answer takes nothing away; the first success after it is celebrated @mobile", async ({ page, child }) => {
   seedCourseWithGames(child.username, "Les fractions", TRUE_FALSE_GAMES);
   await openCourse(page, "Les fractions");
   await play(page, "Point un", "Vrai");
@@ -65,8 +64,7 @@ test.fixme("a wrong answer takes nothing away; the first success after it is cel
   await expect(counter(page)).toHaveAccessibleName("2 étoiles");
 });
 
-// fixme until M5 commit 7 « web: joy dance and session summary » (seen failing: no counter, dance, summary nor resume yet).
-test.fixme("with reduced motion, the mascot takes the joy pose without moving", async ({ page, child }) => {
+test("with reduced motion, the mascot takes the joy pose without moving", async ({ page, child }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   seedCourseWithGames(child.username, "Les fractions", TRUE_FALSE_GAMES);
   await openCourse(page, "Les fractions");
@@ -78,8 +76,7 @@ test.fixme("with reduced motion, the mascot takes the joy pose without moving", 
   await expect(mascot(page)).toHaveCSS("animation-name", "none");
 });
 
-// fixme until M5 commit 7 « web: joy dance and session summary » (seen failing: no counter, dance, summary nor resume yet).
-test.fixme("the session summary shows only what was won, never a mistake @mobile", async ({ page, child }) => {
+test("the session summary shows only what was won, never a mistake @mobile", async ({ page, child }) => {
   seedCourseWithGames(child.username, "Les fractions", TRUE_FALSE_GAMES);
   await openCourse(page, "Les fractions");
   await play(page, "Point un", "Vrai");

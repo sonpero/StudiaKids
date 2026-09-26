@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { getProgress, starsLabel } from "../lib/progress.js";
 
 // Shared by every counter on screen; each answer writes its new progress
@@ -9,11 +10,23 @@ export const PROGRESS_QUERY_KEY = ["progress"];
 // Nothing while unknown: a counter never guesses.
 export function StarCounter() {
   const progress = useQuery({ queryKey: PROGRESS_QUERY_KEY, queryFn: () => getProgress() });
-  if (!progress.data) return null;
-  const { total } = progress.data;
+  const total = progress.data?.total;
+  // The star bounces when the total rises (styles/motion.css), never when it stays.
+  const previous = useRef<number | undefined>(undefined);
+  const [bounce, setBounce] = useState(0);
+  useEffect(() => {
+    if (total !== undefined && previous.current !== undefined && total > previous.current) setBounce((n) => n + 1);
+    previous.current = total;
+  }, [total]);
+  if (total === undefined) return null;
   return (
     <p
+      key={bounce}
       data-testid="star-counter"
+      data-bounce={bounce > 0 ? "" : undefined}
+      // aria-label is not allowed on a paragraph: the star and its number
+      // read as one image, « 3 étoiles ».
+      role="img"
       aria-label={starsLabel(total)}
       className="flex items-center gap-1 font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]"
     >

@@ -97,10 +97,12 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   } else if (send.data) {
     const result: ComparisonResultDto = send.data;
     const correct = result.units.every((unit) => unit.correct);
-    const { pose, line } = present({ type: "game-answer", correct, streakBonus: false }, variant);
+    // The joy dance: a streak bonus or a comeback (docs/modules/progress.md).
+    const celebrate = correct ? (send.data.progress?.celebrate ?? null) : null;
+    const { pose, line } = present({ type: "game-answer", correct, streakBonus: celebrate === "streak-bonus" }, variant);
     feedback = (
       <>
-        <Mascot pose={pose} />
+        <Mascot pose={pose} motion={celebrate === null ? undefined : "dance"} />
         <p className={text}>{line}</p>
         {showCorrection && correction !== undefined && (
           <div role="status" className="flex flex-col gap-1 rounded-[15px] border-[3px] border-[var(--color-ink)] bg-white p-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">

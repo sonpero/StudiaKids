@@ -1,8 +1,8 @@
 // Traced literally from docs/design/mascotte-etats.html's `watching` pose
 // (docs/ui.md, "La mascotte": the paths are never redrawn).
-export function Watching() {
+export function Watching({ motion }: { motion?: "dance" }) {
   return (
-    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="watching">
+    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="watching" data-motion={motion}>
       <g transform="rotate(-5 70 90)">
         <path d="M70 46 V26" stroke="#2B2140" strokeWidth="4" strokeLinecap="round" />
         <ellipse cx="86" cy="22" rx="15" ry="8" fill="#3FC66B" stroke="#2B2140" strokeWidth="4" transform="rotate(-18 86 22)" />

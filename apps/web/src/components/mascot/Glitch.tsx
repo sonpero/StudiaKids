@@ -1,9 +1,9 @@
 // PROVISIONAL: traced from docs/design/mascotte-glitch-provisoire.svg, a
 // draft derived from idle's paths until the final drawing lands in
 // docs/design/ (M2 debt, docs/jalons.md). A harmless breakdown, no drama.
-export function Glitch() {
+export function Glitch({ motion }: { motion?: "dance" }) {
   return (
-    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="glitch">
+    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="glitch" data-motion={motion}>
       <path d="M70 46 V36 L80 28" stroke="#2B2140" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       <ellipse cx="88" cy="34" rx="15" ry="8" fill="#3FC66B" stroke="#2B2140" strokeWidth="4" transform="rotate(38 88 34)" />
       <path d="M104 14 l-6 8 h7 l-6 9" stroke="#2B2140" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />

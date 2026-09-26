@@ -12,24 +12,27 @@ export type MascotPose = "idle" | "watching" | "waiting" | "joy" | "sorry" | "gl
 
 export interface MascotProps {
   pose: MascotPose;
+  // The joy dance, asked for by the screen (streak bonus, comeback): an
+  // animation of styles/motion.css, still under prefers-reduced-motion.
+  motion?: "dance";
   size?: "sm" | "md" | "lg" | "avatar";
 }
 
 // Robustness rule (docs/ui.md): an unrecognized or not-yet-drawn pose
 // renders `idle`, never an exception or an empty element.
-export function Mascot({ pose }: MascotProps) {
+export function Mascot({ pose, motion }: MascotProps) {
   switch (pose) {
     case "waiting":
-      return <Waiting />;
+      return <Waiting motion={motion} />;
     case "sorry":
-      return <Sorry />;
+      return <Sorry motion={motion} />;
     case "glitch":
-      return <Glitch />;
+      return <Glitch motion={motion} />;
     case "joy":
-      return <Joy />;
+      return <Joy motion={motion} />;
     case "watching":
-      return <Watching />;
+      return <Watching motion={motion} />;
     default:
-      return <Idle />;
+      return <Idle motion={motion} />;
   }
 }

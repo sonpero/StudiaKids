@@ -57,4 +57,26 @@ describe("StarCounter", () => {
 
     expect(screen.queryByTestId("star-counter")).not.toBeInTheDocument();
   });
+
+  it("bounces when the total rises, never when it stays", async () => {
+    api.getProgress.mockResolvedValue({ total: 1, currentStreak: 1, bestStreak: 1 });
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <StarCounter />
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByTestId("star-counter")).not.toHaveAttribute("data-bounce");
+
+    act(() => {
+      client.setQueryData(PROGRESS_QUERY_KEY, { total: 1, currentStreak: 0, bestStreak: 1 });
+    });
+    await waitFor(() => expect(screen.getByTestId("star-counter")).toHaveAccessibleName("1 étoile"));
+    expect(screen.getByTestId("star-counter")).not.toHaveAttribute("data-bounce");
+    act(() => {
+      client.setQueryData(PROGRESS_QUERY_KEY, { total: 3, currentStreak: 2, bestStreak: 2 });
+    });
+
+    await waitFor(() => expect(screen.getByTestId("star-counter")).toHaveAttribute("data-bounce"));
+  });
 });
