@@ -106,7 +106,7 @@ test("a lesson too short: the mascot is sorry and proposes to take another photo
 
   await page.getByRole("button", { name: "Créer mes jeux" }).click();
 
-  await expect(page.getByText(/pas assez à apprendre sur cette photo/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Cette photo est un peu courte pour faire des jeux/)).toBeVisible({ timeout: 30_000 });
   await expect(mascot(page)).toHaveAttribute("data-pose", "sorry");
   await expect(page.getByRole("button", { name: "Prendre une autre photo" })).toBeVisible();
 });

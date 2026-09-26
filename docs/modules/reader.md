@@ -94,9 +94,13 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur dans
 
 Précisé à l'implémentation (M3, décisions prises seul) :
 
-- états : chargement (`waiting`, « J'ouvre ton cours… », *à valider*),
+- états : chargement (`waiting`, « J'ouvre ton cours… », validé le 2026-09-26),
   erreur (`glitch`, « Réessaie »), cours supprimé entre-temps → retour à
-  l'accueil. **Pas d'état vide** : un cours confirmé a toujours un texte ;
+  l'accueil. **Pas d'état vide, état impossible par construction** (décidé
+  le 2026-09-26, exception documentée dans `docs/ui.md`, "États requis") :
+  le lecteur ne s'ouvre que sur un cours confirmé, et seul un cours `ready`
+  avec un texte extrait peut être confirmé ; un cours qui n'en aurait pas
+  reçoit `409 not_ready`, affiché comme une erreur ;
 - le bouton « Écouter » est masqué si le navigateur n'a pas de synthèse
   vocale ; la voix s'arrête quand l'enfant quitte l'écran ;
 - les liens d'une leçon sont affichés comme du texte, jamais suivis :

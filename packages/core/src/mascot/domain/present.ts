@@ -36,9 +36,9 @@ const LINES = {
   notACoursePage: ["Je ne vois pas de leçon sur cette photo. On essaie encore ?", "Hum, ce n'est pas une page de cours. On reprend la photo ?"],
   extractionFailed: ["Oh, quelque chose a coincé. On réessaie ?", "Ça n'a pas marché cette fois. On recommence ?"],
   generationInProgress: ["Je prépare tes jeux…", "Tes jeux arrivent…"],
-  // Both « à valider » (docs/ui.md, M3).
+  // Validated 2026-09-26 (docs/ui.md, M3).
   generationReady: ["Tes jeux sont prêts !"],
-  insufficientCoverage: ["Il n'y a pas assez à apprendre sur cette photo. On en prend une autre ?"],
+  insufficientCoverage: ["Cette photo est un peu courte pour faire des jeux. On en prend une autre ?"],
   generationFailed: ["Tes jeux ne sont pas prêts. On réessaie ?", "Oh, les jeux ont coincé. On recommence ?"],
   gameFromExcerptInProgress: ["Je te prépare un jeu sur ce passage…"],
   correct: ["Bravo !", "Bien joué !", "C'est ça !"],

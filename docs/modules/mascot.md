@@ -93,7 +93,7 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `extraction-failed` | `glitch` |
 | `generation-in-progress` | `waiting` |
 | `generation-ready` | `joy` (M3 ; pose dessinée en M3, recopiée de `mascotte-etats.html`) |
-| `generation-insufficient-coverage` | `sorry` (M3) — un problème de photo (trop peu à apprendre), jamais une faute de l'enfant ; phrases « à valider » |
+| `generation-insufficient-coverage` | `sorry` (M3) — un problème de photo (trop peu à apprendre), jamais une faute de l'enfant ; phrase validée le 2026-09-26 : « Cette photo est un peu courte pour faire des jeux. On en prend une autre ? » |
 | `generation-failed` | `glitch` |
 | `game-from-excerpt-in-progress` | `waiting` — même pose que `generation-in-progress`, mais avec sa propre phrase ("Je te prépare un jeu sur ce passage…"), voir `docs/modules/tutor.md` |
 | `game-answer` correcte, sans bonus | `joy` |

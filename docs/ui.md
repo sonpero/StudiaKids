@@ -254,17 +254,17 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
   la mascotte, phrases du catalogue :
   - en cours : `waiting`, « Je prépare tes jeux… », et l'avancement en
     types de jeu (« 2 sur 5 »), sans pourcentage inventé ;
-  - prêts : `joy`, *à valider* « Tes jeux sont prêts ! » ;
-  - cours trop court : `sorry`, *à valider* « Il n'y a pas assez à
-    apprendre sur cette photo. On en prend une autre ? » ;
+  - prêts : `joy`, « Tes jeux sont prêts ! » ;
+  - cours trop court : `sorry`, « Cette photo est un peu courte pour faire
+    des jeux. On en prend une autre ? » ;
   - échec technique : `glitch`, phrase du catalogue, bouton « On
     réessaie ».
 - L'enfant peut quitter le lecteur pendant la création : elle continue,
   et la carte de l'accueil montre les jeux prêts à son retour.
 
-Textes ajoutés à l'implémentation, tous *à valider* : « J'ouvre ton
-cours… » (chargement du lecteur), « Fermer » (photo agrandie), « 2 sur 5 »
-(avancement), « Prendre une autre photo » (cours trop court), « 12 jeux
+Textes ajoutés à l'implémentation, **validés le 2026-09-26** : « J'ouvre
+ton cours… » (chargement du lecteur), « Fermer » (photo agrandie), « 2 sur
+5 » (avancement), « Prendre une autre photo » (cours trop court), « 12 jeux
 prêts » / « 1 jeu prêt » (carte). La pose `joy` est dessinée depuis M3,
 recopiée de `docs/design/mascotte-etats.html`.
 
@@ -303,6 +303,14 @@ seconde, pas sept (`apps/web/src/lib/query-client.ts`).
 Chaque écran qui charge des données implémente quatre états. Un écran qui
 en oublie un est incomplet, et son scénario Playwright doit couvrir les
 quatre.
+
+**Exception documentée (décidée le 2026-09-26) : le lecteur n'a pas
+d'état vide**, parce que cet état est impossible par construction. Le
+lecteur ne s'ouvre que sur un cours confirmé, et un cours n'est confirmable
+que si sa lecture est `ready` avec un texte extrait ; sinon l'API répond
+`409 not_ready`, et c'est l'état d'erreur qui s'affiche
+(`docs/modules/reader.md`). Les trois autres états sont implémentés et
+testés.
 
 | État | Règle |
 |---|---|

@@ -64,7 +64,7 @@ describe("GenerationPanel", () => {
     api.getGenerationStatus.mockResolvedValue(status("insufficient_coverage"));
     const { onPhoto } = renderPanel();
 
-    expect(await screen.findByText("Il n'y a pas assez à apprendre sur cette photo. On en prend une autre ?")).toBeInTheDocument();
+    expect(await screen.findByText("Cette photo est un peu courte pour faire des jeux. On en prend une autre ?")).toBeInTheDocument();
     expect(pose()).toBe("sorry");
     const file = new File(["a"], "a.jpg");
     fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [file] } });

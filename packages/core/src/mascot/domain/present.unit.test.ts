@@ -151,7 +151,7 @@ describe("present, generation outcomes", () => {
     const { pose, line } = present({ type: "generation-insufficient-coverage" }, 0);
 
     expect(pose).toBe("sorry");
-    expect(line).toBe("Il n'y a pas assez à apprendre sur cette photo. On en prend une autre ?");
+    expect(line).toBe("Cette photo est un peu courte pour faire des jeux. On en prend une autre ?");
     expect(ALL_LINES).toContain(line);
   });
 });
