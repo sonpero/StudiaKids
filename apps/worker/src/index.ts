@@ -2,9 +2,15 @@ import path from "node:path";
 import {
   EXTRACT_COURSE_JOB,
   extractCourseJobHandler,
+  GENERATE_EXERCISES_JOB,
+  generateExercisesJobHandler,
+  IngestionCourseTexts,
   LocalFileStore,
   runWorkerLoop,
+  SPLIT_ITEMS_JOB,
+  splitItemsJobHandler,
   SqliteCourseRepository,
+  SqliteItemRepository,
   SqliteJobQueue,
   systemClock,
   uuidV7Generator,
@@ -22,13 +28,19 @@ runMigrations(db);
 
 // Handlers register at startup (docs/modules/jobs.md). The file store gets
 // the volume root: it adds photos/ itself, like the API's.
+const adapters = selectModelAdapters(process.env);
+const courseRepository = new SqliteCourseRepository(db);
+const jobQueue = new SqliteJobQueue(db, uuidV7Generator);
+const generation = { courses: new IngestionCourseTexts(courseRepository), repo: new SqliteItemRepository(db), idGenerator: uuidV7Generator };
 const handlers = new Map<string, JobHandler>([
-  [EXTRACT_COURSE_JOB, extractCourseJobHandler({ repo: new SqliteCourseRepository(db), fileStore: new LocalFileStore(root), ...selectModelAdapters(process.env) })],
+  [EXTRACT_COURSE_JOB, extractCourseJobHandler({ repo: courseRepository, fileStore: new LocalFileStore(root), extractor: adapters.extractor, namer: adapters.namer })],
+  [SPLIT_ITEMS_JOB, splitItemsJobHandler({ ...generation, splitter: adapters.splitter, jobQueue })],
+  [GENERATE_EXERCISES_JOB, generateExercisesJobHandler({ ...generation, generator: adapters.generator })],
 ]);
 
 const signal = { stopped: false };
 console.log(`[worker] started, handling: ${[...handlers.keys()].join(", ")}`);
-void runWorkerLoop({ jobQueue: new SqliteJobQueue(db, uuidV7Generator), handlers, clock: systemClock }, signal).catch((error: unknown) => {
+void runWorkerLoop({ jobQueue, handlers, clock: systemClock }, signal).catch((error: unknown) => {
   console.error(error);
   process.exit(1);
 });
