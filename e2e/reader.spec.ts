@@ -42,8 +42,7 @@ async function recordSpeech(page: Page): Promise<void> {
 const spoken = (page: Page) => page.evaluate(() => (globalThis as unknown as { __speech: SpeechLog }).__speech.spoken);
 const cancelled = (page: Page) => page.evaluate(() => (globalThis as unknown as { __speech: SpeechLog }).__speech.cancelled());
 
-// fixme until M3 commit 12 « web: reader » (seen failing: the cards cannot be opened yet).
-test.fixme("a course card opens the reader: the course's text and its photos @mobile", async ({ page, child: _child }) => {
+test("a course card opens the reader: the course's text and its photos @mobile", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible");
 
   await openCourse(page, /Le verbe/);
@@ -55,8 +54,7 @@ test.fixme("a course card opens the reader: the course's text and its photos @mo
   await expect(page.getByRole("img", { name: "Photo 1 du cours, en grand" })).toBeVisible();
 });
 
-// fixme until M3 commit 12 « web: reader » (seen failing: the cards cannot be opened yet).
-test.fixme("reading aloud never starts by itself, starts on « Écouter » and stops on « Stop », by keyboard too", async ({ page, child: _child }) => {
+test("reading aloud never starts by itself, starts on « Écouter » and stops on « Stop », by keyboard too", async ({ page, child: _child }) => {
   await recordSpeech(page);
   await confirmedCourse(page.request, "legible");
   await openCourse(page, /Le verbe/);
@@ -141,8 +139,7 @@ test.fixme("a technical failure of the games shows the glitch mascot, and « On 
   await expect(page.getByText("Tes jeux sont prêts !")).toBeVisible({ timeout: 30_000 });
 });
 
-// fixme until M3 commit 12 « web: reader » (seen failing: the cards cannot be opened yet).
-test.fixme("the reader's error state: the glitch mascot and a way to try again", async ({ page, child: _child }) => {
+test("the reader's error state: the glitch mascot and a way to try again", async ({ page, child: _child }) => {
   let broken = true;
   await page.route(/\/api\/courses\/[^/]+\/text$/, async (route) => (broken ? route.fulfill({ status: 500, body: "" }) : route.fallback()));
   await confirmedCourse(page.request, "legible");

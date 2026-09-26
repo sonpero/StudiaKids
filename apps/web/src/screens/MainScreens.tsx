@@ -4,6 +4,7 @@ import { useCapture } from "../lib/use-capture.js";
 import { CaptureScreen } from "./CaptureScreen.js";
 import { CourseScreen } from "./CourseScreen.js";
 import { COURSES_QUERY_KEY, HomeScreen } from "./HomeScreen.js";
+import { ReaderScreen } from "./ReaderScreen.js";
 
 export interface MainScreensProps {
   firstName: string;
@@ -11,7 +12,7 @@ export interface MainScreensProps {
   reencode: (file: Blob) => Promise<Blob>;
 }
 
-type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string };
+type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string } | { name: "reader"; courseId: string };
 
 // Navigation by screen state, no router (docs/ui.md, M2).
 export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps) {
@@ -47,6 +48,10 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
     return <CourseScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} onPhoto={startCapture} />;
   }
 
+  if (screen.name === "reader") {
+    return <ReaderScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} />;
+  }
+
   if (screen.name === "capture") {
     return (
       <CaptureScreen
@@ -65,6 +70,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
       onLogout={onLogout}
       onPhoto={startCapture}
       onOpenCourse={(courseId) => setScreen({ name: "course", courseId })}
+      onReadCourse={(courseId) => setScreen({ name: "reader", courseId })}
       onResumeCapture={(course) => {
         capture.reset();
         capture.resume(course.id, course.pageCount);
