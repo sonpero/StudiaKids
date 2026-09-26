@@ -10,6 +10,7 @@ const course = {
   grade: "CM1",
   color: "",
   extractionStatus: "running",
+  extractionStarted: true,
   confirmed: false,
   pageCount: 1,
   createdAt: "2026-09-26T10:00:00.000Z",
