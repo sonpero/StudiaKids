@@ -235,9 +235,13 @@ extracteur qui renvoie du texte plat a échoué même s'il a renvoyé du texte.
   par le client n'est jamais consulté. Erreurs : `not-found`, `locked`
   (le cours n'est plus `pending` : ses photos sont déjà lues),
   `unsupported`, `too-large`, `too-many-pages`, `duplicate`.
-- `startExtraction(userId, courseId, now)` — enfile un job `extract-course`,
-  uniquement pour un cours `pending` avec au moins une page ; sans effet
-  si un job de ce cours attend déjà (double appui sur "C'est tout !")
+- `startExtraction(userId, courseId, now)` — enfile un job `extract-course`
+  pour un cours `pending` avec au moins une page ; **sans effet si la
+  lecture est déjà lancée** (job en attente, lecture en cours, terminée
+  ou en échec technique) : même succès, aucun nouveau job (double appui
+  sur "C'est tout !", écran qui revient sur un cours déjà lu). Un échec
+  technique se relance par `retryExtraction`, jamais par ici. Erreurs :
+  `not-found`, `no-pages`, `already-confirmed`
 - `handleExtractionJob(payload, ctx)` — se termine sans rien faire si le
   cours n'existe plus (refusé ou remplacé entre-temps) ou si son résultat
   est déjà stocké (job rejoué après un crash : rien n'est repayé) ; sinon
@@ -376,20 +380,24 @@ sinon, comme pour un identifiant inconnu). Elle répond
 `Content-Type: image/jpeg`, `X-Content-Type-Options: nosniff` et
 `Cache-Control: private, no-store`.
 
-**Codes de réponse.** Création et upload : `201` ; extraction et relance :
-`202` sans corps ; confirmation, refus et suppression : `204`. Tout refus
+**Codes de réponse.** Création et upload : `201` ; extraction : `202`
+avec l'état courant de la lecture (`{ extractionStatus }`), le même
+qu'elle vienne d'être lancée ou qu'elle l'ait déjà été ; relance : `202`
+sans corps ; confirmation, refus et suppression : `204`. Tout refus
 porte un corps `{ error: <code> }` stable, d'où l'écran tire le message
 de la mascotte (`courseErrorSchema`, `packages/contracts`) :
 `not_found` (404, identique pour un identifiant inconnu et le cours d'un
 autre compte), `missing_file` (400), `too_large` (413), `unsupported`
 (415), et en 409 `locked`, `too_many_pages`, `duplicate`, `no_pages`,
-`not_pending`, `not_ready`, `already_confirmed`, `not_failed`.
+`not_ready`, `already_confirmed`, `not_failed`.
 
-**Upload** : une seule photo lue par requête (la première, les suivantes
-sont ignorées), plafonnée à 7 500 000 octets
-dès la lecture du flux multipart (`limits.fileSize`, `limits.files: 1`),
-avant tout appel à `addPage` : un fichier trop gros n'atteint ni le
-disque ni la base. `addPage` refait le contrôle de taille sur les octets.
+**Upload** : une photo par requête, plafonnée à 7 500 000 octets dès la
+lecture du flux multipart (`limits.fileSize`, `limits.files: 1`), avant
+tout appel à `addPage` : un fichier trop gros n'atteint ni le disque ni
+la base. `addPage` refait le contrôle de taille sur les octets. **Une
+requête qui porte plusieurs fichiers n'est pas refusée : seule la
+première photo est lue et stockée (`201`), les suivantes sont ignorées**
+— l'écran de capture n'en envoie jamais qu'une à la fois.
 
 ## Enregistrement des fixtures
 

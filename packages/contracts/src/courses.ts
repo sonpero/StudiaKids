@@ -26,6 +26,7 @@ export const courseParamsSchema = z.object({ id: z.string() });
 export const pageFileParamsSchema = z.object({ id: z.string(), index: z.coerce.number().int().min(0) });
 
 export const createCourseResponseSchema = z.object({ id: z.string() });
+export const startExtractionResponseSchema = z.object({ extractionStatus: extractionStatusSchema });
 export const addPageResponseSchema = z.object({ index: z.number().int() });
 export const courseListResponseSchema = z.object({ courses: z.array(courseSchema) });
 export const unconfirmedCourseResponseSchema = z.object({ course: courseSchema.nullable() });
@@ -43,7 +44,6 @@ export const courseErrorSchema = z.object({
     "too_many_pages",
     "duplicate",
     "no_pages",
-    "not_pending",
     "not_ready",
     "already_confirmed",
     "not_failed",

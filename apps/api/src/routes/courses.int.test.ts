@@ -252,6 +252,44 @@ describe("course routes", () => {
     expect(db.all(sql`SELECT id FROM jobs WHERE type = 'extract-course'`)).toHaveLength(1);
   });
 
+  it("extract answers the current state: pending when it enqueues", async () => {
+    const id = await createCourse(lea);
+    await upload(lea, id, jpeg(1));
+
+    const res = await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+
+    expect(res.statusCode).toBe(202);
+    expect(res.json()).toEqual({ extractionStatus: "pending" });
+  });
+
+  it("extract on a course whose reading is over answers the same success with its state, and enqueues nothing", async () => {
+    const id = await createCourse(lea);
+    await upload(lea, id, jpeg(1));
+    await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+    const handlers = new Map([["extract-course", extractCourseHandler(db, volume, legibleExtractor, mathsNamer)]]);
+    await runWorkerTick({ jobQueue: new SqliteJobQueue(db, uuidV7Generator), handlers }, new Date());
+
+    const res = await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+
+    expect(res.statusCode).toBe(202);
+    expect(res.json()).toEqual({ extractionStatus: "ready" });
+    expect(db.all(sql`SELECT id FROM jobs`)).toHaveLength(1);
+  });
+
+  it("extract on a confirmed course is refused", async () => {
+    const id = await createCourse(lea);
+    await upload(lea, id, jpeg(1));
+    await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+    const handlers = new Map([["extract-course", extractCourseHandler(db, volume, legibleExtractor, mathsNamer)]]);
+    await runWorkerTick({ jobQueue: new SqliteJobQueue(db, uuidV7Generator), handlers }, new Date());
+    await app.inject({ method: "POST", url: `/api/courses/${id}/confirm`, headers: { cookie: lea } });
+
+    const res = await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: "already_confirmed" });
+  });
+
   it("status transitions are visible through the API, up to a confirmed course listed on the home screen", async () => {
     const id = await createCourse(lea);
     await upload(lea, id, jpeg(1));

@@ -207,3 +207,39 @@ describe("getCourse and retryExtraction", () => {
     expect(await retryExtraction(base, "u1", "course-0", now)).toEqual({ ok: false, error: "not-failed" });
   });
 });
+
+// "Sans effet si la lecture est déjà lancée": whatever the course's current
+// state, a launched reading answers success and never enqueues again.
+describe("startExtraction once the reading is launched", () => {
+  const launchedStates = [
+    { name: "running", stored: "running", job: "running" },
+    { name: "ready", stored: "ready", job: "done" },
+    { name: "illegible", stored: "illegible", job: "done" },
+    { name: "not_a_course_page", stored: "not_a_course_page", job: "done" },
+    { name: "failed before the handler ran", stored: "pending", job: "failed" },
+    { name: "failed while running", stored: "running", job: "failed" },
+  ] as const;
+
+  for (const state of launchedStates) {
+    it(`${state.name}: succeeds without enqueuing another job`, async () => {
+      const { jobQueue, repo, base } = await courseWithPages(1);
+      await startExtraction(base, "u1", "course-0", now);
+      await repo.setExtractionStatus("u1", "course-0", state.stored);
+      jobQueue.rows[0]!.status = state.job;
+
+      expect(await startExtraction(base, "u1", "course-0", now)).toEqual({ ok: true, value: undefined });
+      expect(jobQueue.rows).toHaveLength(1);
+    });
+  }
+
+  it("refuses a confirmed course", async () => {
+    const { jobQueue, repo, base } = await courseWithPages(1);
+    await startExtraction(base, "u1", "course-0", now);
+    await repo.setExtractionStatus("u1", "course-0", "ready");
+    jobQueue.rows[0]!.status = "done";
+    await repo.confirmCourse("u1", "course-0");
+
+    expect(await startExtraction(base, "u1", "course-0", now)).toEqual({ ok: false, error: "already-confirmed" });
+    expect(jobQueue.rows).toHaveLength(1);
+  });
+});

@@ -6,6 +6,7 @@ import {
   courseSchema,
   createCourseResponseSchema,
   pageFileParamsSchema,
+  startExtractionResponseSchema,
   unconfirmedCourseResponseSchema,
   type CourseDto,
   type CourseError,
@@ -43,7 +44,7 @@ export interface CourseRoutesOptions {
   clock: Clock;
 }
 
-type DomainError = AddPageError | "no-pages" | "not-pending" | "not-ready" | "already-confirmed" | "not-failed";
+type DomainError = AddPageError | "no-pages" | "not-ready" | "already-confirmed" | "not-failed";
 
 const CODES: Record<DomainError | "missing-file", CourseError> = {
   "not-found": "not_found",
@@ -54,7 +55,6 @@ const CODES: Record<DomainError | "missing-file", CourseError> = {
   "too-many-pages": "too_many_pages",
   duplicate: "duplicate",
   "no-pages": "no_pages",
-  "not-pending": "not_pending",
   "not-ready": "not_ready",
   "already-confirmed": "already_confirmed",
   "not-failed": "not_failed",
@@ -69,7 +69,6 @@ const STATUSES: Record<CourseError, 400 | 404 | 409 | 413 | 415> = {
   too_many_pages: 409,
   duplicate: 409,
   no_pages: 409,
-  not_pending: 409,
   not_ready: 409,
   already_confirmed: 409,
   not_failed: 409,
@@ -156,13 +155,20 @@ export const courseRoutes: FastifyPluginCallback<CourseRoutesOptions> = (fastify
     },
   );
 
-  // startExtraction is idempotent while a job is waiting, so a double tap
-  // on "C'est tout !" gets the same 202 twice.
-  app.post("/api/courses/:id/extract", { schema: { params: courseParamsSchema, response: { 202: empty, ...errors } } }, async (request, reply) => {
-    const result = await startExtraction({ repo, jobQueue }, request.user!.id, request.params.id, opts.clock.now());
-    if (!result.ok) return sendError(reply, result.error);
-    return reply.code(202).send();
-  });
+  // Same 202 whatever the reading's state once launched, carrying that
+  // state, so a double tap or a screen coming back never sees an error.
+  app.post(
+    "/api/courses/:id/extract",
+    { schema: { params: courseParamsSchema, response: { 202: startExtractionResponseSchema, ...errors } } },
+    async (request, reply) => {
+      const userId = request.user!.id;
+      const started = await startExtraction({ repo, jobQueue }, userId, request.params.id, opts.clock.now());
+      if (!started.ok) return sendError(reply, started.error);
+      const course = await getCourse({ repo, jobQueue }, userId, request.params.id);
+      if (!course.ok) return sendError(reply, course.error);
+      return reply.code(202).send({ extractionStatus: course.value.extractionStatus });
+    },
+  );
 
   app.get("/api/courses/:id/pages/:index/file", { schema: { params: pageFileParamsSchema, response: { 200: photo, ...errors } } }, async (request, reply) => {
     const result = await readPageFile({ repo, fileStore }, request.user!.id, request.params.id, request.params.index);

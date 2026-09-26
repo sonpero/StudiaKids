@@ -28,6 +28,7 @@ export {
   pageFileParamsSchema,
   createCourseResponseSchema,
   addPageResponseSchema,
+  startExtractionResponseSchema,
   courseListResponseSchema,
   unconfirmedCourseResponseSchema,
   courseErrorSchema,

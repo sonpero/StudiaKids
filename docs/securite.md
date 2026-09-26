@@ -153,6 +153,14 @@ par le navigateur (JPEG, à la taille native du modèle, jamais au-delà), dépo
 côté serveur avant stockage et avant tout envoi — jamais le fichier
 d'origine de l'appareil photo, avec ses coordonnées GPS.
 
+**Pas de limitation de débit sur l'extraction en M2** (décidé pendant
+M2, le 2026-09-26). Les comptes ne sont créés que par la CLI (`docs/modules/auth.md`) :
+aucun inconnu ne peut déclencher d'appel modèle. Le plafond de coût
+repose sur la limite de dépense configurée sur la clé d'API chez le
+fournisseur, pas sur l'application. **Un plafond par compte sera à
+spécifier si l'inscription s'ouvre un jour.** La seule limitation de
+débit existante porte sur les échecs de connexion (M1).
+
 ---
 
 ## Historique du tuteur : consultable, jamais secret
