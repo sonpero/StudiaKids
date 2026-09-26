@@ -262,7 +262,7 @@ n'existent pas (`docs/jalons.md`, M0) :
 
 ```
 RAILWAY_VOLUME_MOUNT_PATH/db/studiakids.db
-RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.{ext}
+RAILWAY_VOLUME_MOUNT_PATH/photos/{userId}/{courseId}/{pageIndex}.jpg
 RAILWAY_VOLUME_MOUNT_PATH/backups/studiakids-{date ISO}.db
 ```
 

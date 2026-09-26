@@ -94,6 +94,12 @@ compatibles anglais/français ou déjà en anglais).
 | confirmer / refuser (un cours) | `confirmCourse` / `rejectCourse` | "Oui, c'est ça !" / "Je reprends la photo". |
 | relancer (après un échec technique) | `retryExtraction` | Jamais après `illegible` ni `not_a_course_page`. |
 | enregistrer un accès | `recordAccess` | |
+| lancer la lecture (bouton "C'est tout !") | `startExtraction` | Sans effet si la lecture est déjà lancée : même succès, aucun nouveau job. |
+| supprimer un cours | `deleteCourse` | Lignes et fichiers, dans le même appel. |
+| supprimer les photos d'un compte | `deleteAccountFiles` (`FileStore`) | Tout `photos/{userId}`, pour `accounts:delete`. |
+| taille native (d'une photo) | `nativePhotoSize` (`packages/contracts`) | La plus grande taille que le modèle voit sans la réduire ; le navigateur réencode à cette taille. |
+| tâche de lecture d'un cours | job `extract-course` (`EXTRACT_COURSE_JOB`, `extractCourseJobHandler`) | Enregistrée par le worker au démarrage. |
+| adaptateur fixture | `FixturePhotoExtractor` / `FixtureCourseNamer` | Choisis par le worker avec `LLM_ADAPTER=fixture` ; aucune requête réseau. |
 | page (photo d'un cours) | `Page` / table `pages` | |
 | plafond de pages | `MAX_PAGES_PER_COURSE` | 5. |
 | chemin stocké | `storedPath` | Relatif à la racine du volume, jamais absolu. |

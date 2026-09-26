@@ -185,7 +185,11 @@ ce parcours :
   et deux boutons — "Une autre page" (turquoise, secondaire) et "C'est
   tout !" (mandarine, principal). **"Une autre page" disparaît à la
   cinquième page** (plafond de 5). "C'est tout !" lance la lecture des
-  photos.
+  photos. Chaque photo est **toujours réencodée par le navigateur**
+  (canvas, JPEG, à la taille renvoyée par `nativePhotoSize` de
+  `packages/contracts`) avant envoi, jamais le fichier d'origine :
+  c'est ce qui redresse la photo et retire ses métadonnées
+  (`docs/modules/ingestion.md`).
 - **Attente** : mascotte `waiting` + phrase courte, l'enfant peut revenir
   à l'accueil à tout moment (le bandeau le ramènera).
 - **Photo inexploitable** : mascotte `sorry`, une phrase selon le cas

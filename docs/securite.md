@@ -242,7 +242,8 @@ ajoutée en cours d'implémentation qui ne figure pas dans
   politique de rétention que le reste
 - Aucun partage de données entre comptes : `user_id` cloisonne strictement
   (règle n°1 de `CLAUDE.md`). **Une ressource d'un autre compte répond 404,
-  exactement comme un identifiant inconnu** (même statut, même corps) :
+  exactement comme un identifiant inconnu** (même statut, même corps,
+  mêmes en-têtes) :
   l'API ne révèle jamais qu'un identifiant existe ailleurs. Décidé à M2
   pour les cours (`docs/modules/ingestion.md`), et appliqué à toutes les
   specs de modules (lecteur, générateur, moteur de jeu, tuteur)
