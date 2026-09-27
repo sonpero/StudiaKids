@@ -619,7 +619,21 @@ affichée jusqu'à « Continuer ».
 
 ---
 
-## M6 — Tuteur
+## M6 — Tuteur (ouvert)
+
+Ouvert le 27/09/2026 en session autonome (plan au journal de session,
+décisions d'Alexandre) : échec du classifieur → aucun appel au modèle de
+réponse, message fixe ; refus hors-sujet à texte fixe ; plafond de 40
+questions par jour de Paris, jamais pour la détresse ; modèle du
+classifieur et pré-filtre lexical tranchés par le jeu d'or ; aucune
+alerte vers l'adulte, aucune mémoire entre cours ; budget d'appels réels
+de 5 $ ; aucune nouvelle dépendance. Détail dans `docs/modules/tutor.md` et
+`docs/securite.md`.
+
+**Condition de clôture, en plus des cases ci-dessous : le texte de
+l'issue détresse proposé dans `docs/securite.md` est À VALIDER PAR UN
+ADULTE, IDÉALEMENT UN PROFESSIONNEL. M6 ne peut pas être clos sans cette
+validation.**
 
 **Périmètre**
 - Chat scopé à un cours : répond aux questions sur son contenu et à toute

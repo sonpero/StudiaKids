@@ -42,6 +42,9 @@ type Citation = { text: string };
 // jamais un pointeur vivant vers un index de section.
 
 type RefusalReason = "off_topic" | "sensitive";
+// M6 : deux issues fixes de plus, jamais générées — le classifieur a
+// échoué (`unavailable`), ou le plafond du jour est atteint (`daily_limit`).
+type FixedIssue = RefusalReason | "distress" | "unavailable" | "daily_limit";
 
 type Answer =
   | { kind: "complete"; text: string; citations: Citation[] }
@@ -70,7 +73,7 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   citations: Citation[] | null;
-  issue: RefusalReason | "distress" | null;   // renseigné seulement pour role='assistant' hors 'complete'
+  issue: FixedIssue | null;   // renseigné seulement pour role='assistant' hors 'complete'
   outOfBand: boolean;   // true uniquement pour issue='distress' : ne s'affiche pas comme une bulle parmi d'autres
   partial: boolean;
   createdAt: string;
@@ -83,6 +86,37 @@ StudIA (`splitIntoSections`, `truncateTitle`) — mécanismes purs et déjà
 `docs/inventaire-studia.md`, §7, pour le détail que cette spec ne
 reproduit pas.
 
+## Décisions de l'ouverture de M6
+
+(Journal de session ; en cas de doute, l'option la plus prudente pour
+l'enfant.)
+
+- **Échec du classifieur** (erreur, délai dépassé, sortie invalide après le
+  retry) : **aucun appel au modèle de réponse**. L'enfant voit un message
+  fixe de la mascotte l'invitant à reposer sa question ; l'échange est
+  conservé (issue `unavailable`).
+- **Plafond : 40 questions par compte et par jour calendaire de Paris**
+  (*à valider*), toutes questions comptées. Au-delà, le classifieur est
+  **quand même** appelé pour que la détresse ne soit **jamais** bloquée :
+  détresse → bloc détresse ; sinon message fixe « On continue demain ? »
+  (issue `daily_limit`), aucun appel au modèle de réponse.
+- **Hors-sujet : refus bienveillant, texte fixe, sans suggestion générée**
+  (tranche la question ouverte) : il invite à poser une question sur le
+  cours, et ne coûte aucun appel au modèle de réponse. **Sensible** : le
+  texte de `docs/securite.md`, sans invitation.
+- **Historique donné au modèle de réponse** : seules les questions ayant eu
+  une réponse complète, et ces réponses — jamais un échange refusé, de
+  détresse, en échec ou au plafond. Aucune mémoire entre cours.
+- **Entrée du classifieur** : titre, matière, niveau **et texte du cours**
+  (sans le texte, « en rapport avec le cours » se juge mal).
+- **Modèle du classifieur** (`CLASSIFIER_MODEL`) et **pré-filtre lexical
+  de détresse** : tranchés par le jeu d'or (rappel détresse d'abord, puis
+  exactitude, puis latence ; le pré-filtre n'est adopté que s'il améliore
+  le rappel détresse sans aucun faux positif sur les questions en rapport
+  avec les cours).
+- **Conversation à l'écran** : ouvrir le tuteur sur un cours reprend sa
+  dernière conversation, sinon en crée une.
+
 ## Ports
 
 ```ts
@@ -93,6 +127,7 @@ interface QuestionClassifier {
   classify(input: {
     question: string;
     courseSubject: { title: string; subject: string; grade: Grade };
+    courseMarkdown: string;   // M6 : le texte du cours, pour juger « en rapport »
   }): Promise<Result<{ onTopic: boolean; sensitive: boolean; distress: boolean }, ClassificationError>>;
 }
 
@@ -273,7 +308,7 @@ les deux numéros d'aide publics à relayer, pas ici.
 ```sql
 CREATE TABLE conversations (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   title TEXT,
   created_at TEXT NOT NULL
@@ -286,7 +321,7 @@ CREATE TABLE messages (
   role TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content TEXT NOT NULL,
   citations_json TEXT,
-  issue TEXT CHECK (issue IN ('off_topic','sensitive','distress')),
+  issue TEXT CHECK (issue IN ('off_topic','sensitive','distress','unavailable','daily_limit')),
   out_of_band INTEGER NOT NULL DEFAULT 0,   -- 1 uniquement pour issue='distress' ; deviendra une colonne `kind` si d'autres messages hors fil apparaissent, voir docs/donnees.md
   partial INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
@@ -423,6 +458,6 @@ limite.
   est trop visible, envisager de fusionner classification et réponse en un
   seul appel structuré suivi d'un flux conditionnel — au prix d'une
   architecture plus complexe que celle décrite ici.
-- Le tuteur doit-il proposer explicitement de reformuler une question
-  hors-sujet en une question sur le cours, ou se contenter d'un refus
-  bienveillant sans suggestion ? Non tranché.
+- ~~Reformuler une question hors-sujet ?~~ — **tranché à l'ouverture de
+  M6** : refus bienveillant à texte fixe qui invite à une question sur le
+  cours, sans suggestion générée.

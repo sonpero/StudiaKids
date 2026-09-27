@@ -353,6 +353,31 @@ ouvre une nouvelle session ; la liste Jouer porte « J'ai fini ». Les
 animations vivent dans `apps/web/src/styles/motion.css`.
 - Aucun classement, aucune comparaison, aucune notification.
 
+### Tuteur (M6)
+
+Décidé à l'ouverture de M6 (textes *à valider*, sauf ceux de
+`docs/securite.md`) :
+
+- **Accès** : un onglet **Tuteur** dans la barre d'onglets du cours, et un
+  bouton « Poser une question » sur le lecteur et sur la carte du dernier
+  cours de l'accueil. L'écran reprend la dernière conversation du cours,
+  sinon en crée une.
+- **Première fois** (une seule par compte) : la mascotte `idle` et le texte
+  de `docs/securite.md` sur la consultation par un adulte.
+- **Fil** : les questions de l'enfant à droite ; les réponses à gauche avec
+  le médaillon de la mascotte (`size: "avatar"`) ; sous une réponse, ses
+  citations « Dans ton cours : « … » » ; pendant la réponse, mascotte
+  `waiting` et « Je cherche dans ton cours… ».
+- **Refus, échec, plafond** : une bulle de la mascotte à texte fixe
+  (`docs/modules/mascot.md`), jamais un texte généré.
+- **Détresse** : un **bloc distinct, hors du fil**, fixé au-dessus de la
+  zone de saisie, toujours visible sans défiler ; texte de
+  `docs/securite.md` (**à valider par un adulte, idéalement un
+  professionnel**), numéros en gros et appelables (`tel:119`,
+  `tel:3018`).
+- **Saisie** : un champ « Écris ta question… » (vrai `<label>`), bouton
+  « Envoyer » ; pas de micro (hors périmètre).
+
 ---
 
 ## Travail asynchrone

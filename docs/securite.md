@@ -80,6 +80,12 @@ refus bref, neutre, porté par la mascotte (pose `refusal`,
 `docs/modules/mascot.md`), sans reformuler ni détailler la question :
 "Je ne peux pas répondre à ça, je ne connais que ton cours."
 
+**Décidé à l'ouverture de M6** : pour un **hors-sujet**, le même refus
+invite en plus à revenir au cours (texte fixe, jamais une suggestion
+générée) : "Je ne peux pas répondre à ça, je ne connais que ton cours.
+Pose-moi une question sur ta leçon !" (*à valider*). Pour une question
+**sensible**, le texte ci-dessus reste tel quel, sans invitation.
+
 ### `distress` : hors du fil normal, jamais un simple refus
 
 **Décidé, contenu et rendu :**
@@ -95,6 +101,27 @@ refus bref, neutre, porté par la mascotte (pose `refusal`,
   (harcèlement). Le texte exact reste à rédiger et à valider avec un
   regard professionnel de la protection de l'enfance avant M6 — ce
   document fixe l'intention et les deux numéros, pas la formulation finale.
+
+  **Proposition rédigée à l'ouverture de M6 — À VALIDER PAR UN ADULTE,
+  IDÉALEMENT UN PROFESSIONNEL. M6 ne peut pas être clos sans cette
+  validation.**
+
+  > Ce que tu écris est important.
+  >
+  > Parles-en à un adulte en qui tu as confiance : quelqu'un de ta
+  > famille, ta maîtresse ou ton maître, l'infirmière de l'école.
+  >
+  > Tu peux aussi appeler, c'est gratuit :
+  > le **119**, à toute heure, si tu es en danger ou si quelqu'un te fait
+  > du mal ;
+  > le **3018**, si on te harcèle ou si on se moque de toi, à l'école ou
+  > sur internet.
+
+  Choix de rédaction : aucune promesse (« tout va s'arranger »), aucun
+  conseil, aucune question posée à l'enfant, aucun horaire (qui pourrait
+  devenir faux) ; « c'est gratuit » plutôt que « anonyme », à confirmer par
+  le professionnel. Le bloc s'affiche **même quand le plafond de questions
+  du jour est atteint**.
 - **Cette réponse sort du fil normal du tuteur** : elle ne s'affiche pas
   comme une bulle de conversation parmi d'autres. Déclenchement et rendu
   précis dans `docs/modules/tutor.md`, "Rendu de l'issue distress".
@@ -159,7 +186,10 @@ aucun inconnu ne peut déclencher d'appel modèle. Le plafond de coût
 repose sur la limite de dépense configurée sur la clé d'API chez le
 fournisseur, pas sur l'application. **Un plafond par compte sera à
 spécifier si l'inscription s'ouvre un jour.** La seule limitation de
-débit existante porte sur les échecs de connexion (M1).
+débit existante porte sur les échecs de connexion (M1). **Le tuteur, lui,
+a un plafond depuis M6** : 40 questions par compte et par jour de Paris
+(*à valider*) ; la détresse n'y est jamais soumise
+(`docs/modules/tutor.md`).
 
 ---
 
@@ -262,11 +292,12 @@ de cours dans `docs/modules/ingestion.md`, vérifiée par un test dédié).
 
 ## Questions ouvertes
 
-- Le texte exact des messages `distress` doit être rédigé avec, si
-  possible, l'avis d'un professionnel de la protection de l'enfance avant
-  d'être implémenté — ce document fixe l'intention et les deux numéros
-  (119, 3018), pas un texte final.
-- La forme exacte de la consultation de l'historique par l'adulte titulaire
-  (script CLI dédié, ou simple accès direct à la base documenté) reste à
-  choisir avant M6 — cette spec penche pour un script CLI par cohérence
-  avec le reste des commandes d'administration du projet.
+- Le texte exact des messages `distress` doit être validé avec, si
+  possible, l'avis d'un professionnel de la protection de l'enfance —
+  **une proposition est rédigée plus haut, À VALIDER PAR UN ADULTE,
+  IDÉALEMENT UN PROFESSIONNEL ; condition de clôture de M6.**
+- ~~Forme de la consultation de l'historique~~ — **tranché à l'ouverture
+  de M6** : `pnpm tutor:history <username>` écrit sur la sortie standard
+  tout l'historique du compte, tous cours confondus (cours, date, qui
+  parle, texte, issue), détresse comprise et signalée ; `--json` donne
+  l'export brut.

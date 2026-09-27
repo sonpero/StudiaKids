@@ -245,6 +245,11 @@ Liste fermée, sept poses :
 | hors-fil | `outOfBand` (`out_of_band` en base) | Booléen : `true` uniquement pour un message `issue: 'distress'`, qui ne s'affiche pas comme une bulle de conversation. **Pourra devenir une colonne `kind`** si d'autres types de message hors fil apparaissent — voir `docs/donnees.md`, table `messages`. |
 | rôle du message (l'enfant) | `Message.role: "user"` | `user` désigne l'enfant dans ce schéma, parce que cette colonne alimente directement les appels au modèle (`ChatModel.stream`) ; une convention différente (ex. `child`) imposerait une couche de correspondance permanente à l'appel du modèle. |
 | aucun passage disponible | `no-excerpt-available` | Erreur de `generateGameFromConversation`. |
+| échec du classifieur | issue `unavailable` | Aucun appel au modèle de réponse ; message fixe « repose ta question » (M6). |
+| plafond du jour | issue `daily_limit`, `TUTOR_DAILY_LIMIT` | 40 questions par jour de Paris ; jamais pour la détresse (M6). |
+| issue fixe | `FixedIssue` | `off_topic`, `sensitive`, `distress`, `unavailable`, `daily_limit` : un texte fixe, jamais généré. |
+| pré-filtre lexical de détresse | `distressLexicon` (si adopté) | Liste de mots, testée sur le jeu d'or (M6). |
+| découpage en sections | `splitIntoSections` | Repris de StudIA, déterministe. |
 | message d'information sur la consultation par l'adulte | `showDisclosure` (retour de `createConversation`), table `tutor_disclosures` | Affiché une seule fois par compte, jamais lié au cycle de vie d'une conversation précise — voir `docs/securite.md`, "Historique du tuteur : consultable, jamais secret". |
 
 ## Progression (`progress`)

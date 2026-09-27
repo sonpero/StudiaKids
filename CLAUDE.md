@@ -89,8 +89,14 @@ code sans passer par cette correspondance.
 
 ## Jalon courant
 
-**Aucun jalon n'est ouvert.** M0 à M5 sont acceptés (M5 le 27/09/2026).
-`jobs/` et `shared/` restent frozen.
+**M6 — Tuteur — est ouvert** (voir `docs/jalons.md`), le 27/09/2026. M0
+à M5 sont acceptés. Modules touchés : `tutor` (spec
+`docs/modules/tutor.md`, créé dans ce jalon), `mascot` (pose `refusal`,
+signaux du tuteur), `ingestion` (texte du cours pour le tuteur). **Jalon le
+plus sensible du projet** : `docs/securite.md` prime ; en cas de doute,
+l'option la plus prudente pour l'enfant. Condition de clôture : le texte
+de détresse validé par un adulte, idéalement un professionnel. `jobs/` et
+`shared/` restent frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même
 commit.

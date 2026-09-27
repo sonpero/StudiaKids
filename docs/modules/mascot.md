@@ -51,7 +51,10 @@ type Signal =
   | { type: "game-answer"; correct: boolean; streakBonus: boolean }
   | { type: "session-complete"; starsEarned: number }
   | { type: "tutor-thinking" }
-  | { type: "tutor-refusal" };
+  | { type: "tutor-refusal"; reason: "off_topic" | "sensitive" }   // M6 : deux textes fixes distincts
+  | { type: "tutor-unavailable" }    // M6 : le classifieur a échoué, « repose ta question »
+  | { type: "tutor-daily-limit" }    // M6 : plafond du jour atteint, « On continue demain ? »
+  | { type: "tutor-disclosure" };    // M6 : un adulte peut relire (une seule fois par compte)
 
 type Presentation = { pose: MascotPose; line: string };  // MascotPose : docs/ui.md
 
@@ -110,7 +113,14 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `game-answer` incorrecte | `waiting` — décision délibérée de réutiliser une pose calme plutôt que d'inventer une huitième pose ; jamais `sorry` (réservée à la photo) ni `glitch` (réservée à l'échec technique), ni aucune pose qui suggérerait la déception |
 | `session-complete` | `joy` |
 | `tutor-thinking` | `waiting` |
-| `tutor-refusal` | `refusal` |
+| `tutor-refusal` | `refusal` — hors-sujet : « Je ne peux pas répondre à ça, je ne connais que ton cours. Pose-moi une question sur ta leçon ! » (*à valider*) ; sensible : le texte exact de `docs/securite.md` |
+| `tutor-unavailable` | `glitch` — un vrai échec technique ; « Oups, je n'ai pas pu lire ta question. Tu peux la reposer ? » (*à valider*) |
+| `tutor-daily-limit` | `idle` — « Tu as posé beaucoup de questions aujourd'hui ! On continue demain ? » (*à valider*) ; jamais pour la détresse |
+| `tutor-disclosure` | `idle` — le texte de `docs/securite.md` (« Ce que tu écris ici, un grand de chez toi peut le relire… ») |
+
+**Pose `refusal` (M6)** : aucun dessin de référence n'existait ; brouillon
+provisoire dérivé des tracés d'`idle` (comme `sorry` et `glitch`), à
+valider à l'œil.
 
 **`distress` n'apparaît pas dans cette table.** Son déclenchement et son
 rendu sont spécifiés dans `docs/modules/tutor.md` ("Rendu de l'issue

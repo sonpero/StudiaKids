@@ -184,7 +184,7 @@ SQL direct — aucune table propre à `progress` (`docs/modules/progress.md`).
 ```sql
 CREATE TABLE conversations (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES accounts(id),
+  user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   title TEXT,
   created_at TEXT NOT NULL
@@ -197,7 +197,7 @@ CREATE TABLE messages (
   role TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content TEXT NOT NULL,
   citations_json TEXT,
-  issue TEXT CHECK (issue IN ('off_topic','sensitive','distress')),
+  issue TEXT CHECK (issue IN ('off_topic','sensitive','distress','unavailable','daily_limit')),
   out_of_band INTEGER NOT NULL DEFAULT 0,   -- 1 uniquement pour issue='distress'
   partial INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
