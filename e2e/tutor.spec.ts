@@ -53,6 +53,9 @@ test("a question on the course: an answer next to the mascot's avatar, with a ci
   const answer = thread(page).getByRole("article").filter({ hasText: "Bonne question ! Un verbe" });
   await expect(answer).toBeVisible();
   await expect(answer.getByTestId("mascot")).toHaveAttribute("data-size", "avatar");
+  // The lesson's passages are hidden behind a discreet button (decided after M6's build).
+  await expect(answer.getByText("Dans ton cours :")).toHaveCount(0);
+  await answer.getByRole("button", { name: "Voir le passage de ton cours" }).click();
   await expect(answer.getByText("Dans ton cours :")).toBeVisible();
   await expect(thread(page).getByText(ON_TOPIC)).toBeVisible();
 });
@@ -104,6 +107,17 @@ test("past 40 questions today: the mascot says « see you tomorrow »", async ({
   await send(page, ON_TOPIC);
 
   await expect(thread(page).getByText("Tu as posé beaucoup de questions aujourd'hui ! On continue demain ?")).toBeVisible();
+});
+
+// Decided after M6's build: the field stands clearly above the tab bar.
+test("the question field stands clearly above the tab bar @mobile", async ({ page, child: _child }) => {
+  await confirmedCourse(page.request, "legible");
+  await openTutorFromReader(page);
+
+  const field = await page.getByRole("textbox", { name: "Écris ta question…" }).boundingBox();
+  const tabs = await page.getByRole("navigation", { name: "Onglets" }).boundingBox();
+  if (!field || !tabs) throw new Error("field or tab bar not laid out");
+  expect(tabs.y - (field.y + field.height)).toBeGreaterThanOrEqual(32);
 });
 
 test("the tutor opens from the home screen's last course too, and from the course's tab bar", async ({ page, child: _child }) => {

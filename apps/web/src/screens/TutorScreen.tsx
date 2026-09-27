@@ -40,24 +40,44 @@ function Answer({ pose, content, citations, partial }: { pose: MascotPose; conte
           <p key={i}>{line}</p>
         ))}
         {partial && <p className={text}>Ma réponse a été coupée. Tu peux reposer ta question.</p>}
-        {citations && citations.length > 0 && (
-          <div className="flex flex-col gap-1 border-t-[2px] border-[var(--color-ink)] pt-2">
-            <p className="font-[family-name:var(--font-display)] text-[16px] font-bold">Dans ton cours :</p>
-            {citations.map((citation, i) => (
-              <blockquote key={i} className={text}>
-                « {citation.text} »
-              </blockquote>
-            ))}
-          </div>
-        )}
+        {citations && citations.length > 0 && <Citations citations={citations} />}
       </div>
     </article>
   );
 }
 
+// The lesson's passages behind a discreet button, shown on the child's tap
+// (decided after M6's build: always shown, they weighed down the thread).
+function Citations({ citations }: { citations: { text: string }[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-label={open ? "Cacher le passage de ton cours" : "Voir le passage de ton cours"}
+        onClick={() => setOpen(!open)}
+        className="h-[44px] min-w-[44px] self-start rounded-[15px] px-2 font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink-soft)]"
+      >
+        …
+      </button>
+      {open && (
+        <div className="flex flex-col gap-1 border-t-[2px] border-[var(--color-ink)] pt-2">
+          <p className="font-[family-name:var(--font-display)] text-[16px] font-bold">Dans ton cours :</p>
+          {citations.map((citation, i) => (
+            <blockquote key={i} className={text}>
+              « {citation.text} »
+            </blockquote>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // docs/modules/tutor.md, "Rendu de l'issue distress": out of the thread,
 // always in view above the field, the two public numbers callable. Its text
-// is the fixed one the server stored (docs/securite.md, À VALIDER).
+// is the fixed one the server stored (docs/securite.md, validated).
 function HelpBlock({ content }: { content: string }) {
   return (
     <section aria-label="Besoin d'aide" className="flex flex-col gap-2 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-peche)] p-4 text-left">
@@ -178,7 +198,8 @@ export function TutorScreen({ courseId, onHome }: TutorScreenProps) {
           </>
         )}
       </section>
-      <div className="sticky bottom-0 flex flex-col gap-3 bg-[var(--color-canvas)] pt-2 pb-[88px]">
+      {/* Clear of the fixed tab bar and the phone's safe area (decided after M6's build). */}
+      <div className="sticky bottom-0 flex flex-col gap-3 bg-[var(--color-canvas)] pt-2 pb-[calc(100px+env(safe-area-inset-bottom))]">
         {distress && <HelpBlock content={distress.content} />}
         <form onSubmit={(event) => void send(event)} className="flex items-end gap-2">
           <div className="flex flex-1 flex-col gap-1 text-left">

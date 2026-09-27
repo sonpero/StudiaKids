@@ -82,8 +82,23 @@ describe("TutorScreen, the four states", () => {
     expect(within(thread()).getByText("c koi un verbe ?")).toBeInTheDocument();
     expect(within(answer).getByText("Un verbe, c'est une action.")).toBeInTheDocument();
     expect(within(answer).getByTestId("mascot")).toHaveAttribute("data-size", "avatar");
+    // Decided after M6's build: the lesson's passages are hidden behind a
+    // discreet button, shown on the child's tap.
+    expect(within(answer).queryByText("« Le verbe indique ce que fait le sujet. »")).not.toBeInTheDocument();
+    const toggle = within(answer).getByRole("button", { name: "Voir le passage de ton cours" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(toggle);
+
     expect(within(answer).getByText("Dans ton cours :")).toBeInTheDocument();
     expect(within(answer).getByText("« Le verbe indique ce que fait le sujet. »")).toBeInTheDocument();
+    expect(within(answer).getByRole("button", { name: "Cacher le passage de ton cours" })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("an answer with no citation has no button for them", async () => {
+    renderTutor({ showDisclosure: false }, [msg("user", "q"), msg("assistant", "Une explication.", { citations: [] })]);
+    const answer = await within(await screen.findByRole("log")).findByRole("article");
+    expect(within(answer).queryByRole("button")).not.toBeInTheDocument();
   });
 });
 
