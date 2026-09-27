@@ -159,6 +159,14 @@ affiché à l'enfant est un verbe, pas le nom du module technique** :
 | **Jouer** | dé/manette | `game-engine` | les exercices générés pour le cours en cours |
 | **Tuteur** | bulle de chat | `tutor` | le chat sur le cours en cours |
 
+**Rendu (aligné sur `docs/design/tuteur.png`, 27/09/2026)** : fond crème
+(`--color-canvas`, le « creme » de `docs/design/tokens.md`), zone de
+sécurité comprise, bordure haute 3px encre ; quatre onglets de largeur
+égale (44px minimum), chacun une icône au trait (2px, encre) au-dessus de
+son libellé en Baloo 2 ; l'onglet actif est une pastille
+`--color-peche`, contour 3px encre, rayon 20px, décollée des bords de
+l'onglet. Le jaune soleil n'y sert plus.
+
 Ne pas renommer les modules `reader`/`game-engine` en "lire"/"jouer" dans le
 code pour autant : ce sont des noms de module (`packages/core/src/...`),
 distincts du libellé affiché sur le bouton de navigation — seul ce dernier

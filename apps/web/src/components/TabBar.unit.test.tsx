@@ -33,3 +33,43 @@ describe("TabBar", () => {
     expect([onHome, onRead, onPlay, onTutor].map((fn) => fn.mock.calls.length)).toEqual([1, 1, 1, 1]);
   });
 });
+
+// docs/design/tuteur.png and docs/ui.md, "Navigation": the tab bar as the
+// mockup draws it.
+describe("TabBar, as drawn in the mockup", () => {
+  const renderBar = () => render(<TabBar current="tutor" onHome={vi.fn()} onRead={vi.fn()} onPlay={vi.fn()} onTutor={vi.fn()} />);
+
+  it("sits on cream, safe area included, under a 3px ink border", () => {
+    renderBar();
+    const nav = screen.getByRole("navigation", { name: "Onglets" });
+    expect(nav.className).toContain("bg-[var(--color-canvas)]");
+    expect(nav.className).toContain("border-t-[3px]");
+    expect(nav.className).toContain("pb-[env(safe-area-inset-bottom)]");
+    expect(nav.className).not.toContain("bg-white");
+  });
+
+  it("each tab: a line icon above its label, four equal widths, 44px at least", () => {
+    renderBar();
+    for (const button of within(screen.getByRole("navigation", { name: "Onglets" })).getAllByRole("button")) {
+      const icon = button.querySelector("svg");
+      expect(icon, button.textContent ?? "").not.toBeNull();
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(icon).toHaveAttribute("stroke-width", "2");
+      expect(button.className).toContain("flex-1");
+      expect(button.className).toContain("min-h-[44px]");
+      expect(button.className).toContain("font-[family-name:var(--font-display)]");
+    }
+  });
+
+  it("the current tab is a peach pill with an ink outline, never sun yellow", () => {
+    renderBar();
+    const tabs = within(screen.getByRole("navigation", { name: "Onglets" }));
+    const pill = tabs.getByRole("button", { name: "Tuteur" }).querySelector("[data-pill]");
+    expect(tabs.getByRole("button", { name: "Tuteur" })).toHaveAttribute("aria-current", "page");
+    expect(pill?.className).toContain("bg-[var(--color-peche)]");
+    expect(pill?.className).toContain("border-[3px]");
+    expect(pill?.className).toContain("rounded-[20px]");
+    expect(tabs.getByRole("button", { name: "Lire" }).querySelector("[data-pill]")?.className ?? "").not.toContain("peche");
+    expect(screen.getByRole("navigation", { name: "Onglets" }).innerHTML).not.toContain("soleil");
+  });
+});
