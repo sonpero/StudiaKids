@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Mascot } from "../../components/mascot/Mascot.js";
 import type { GameBodyProps } from "./ChoiceGames.js";
+import { field } from "../../components/ui/styles.js";
 import { prompt, text } from "./styles.js";
 
-const field =
-  "h-12 rounded-bouton border-3 border-ink bg-white px-3 font-text text-corps-l text-ink";
+// A blank sits in a line of text: smaller than the shared field.
+const blank = "h-12 rounded-bouton border-3 border-ink bg-white px-3 font-text text-corps-l text-ink focus:border-mandarine focus:outline-none";
 
 // The text with a field in place of each {{n}}; complete once every blank
 // holds something other than spaces.
@@ -30,7 +31,7 @@ export function ClozeGame({ text: lesson, blankCount, onAnswer }: { text: string
             aria-label={`Trou ${String(index + 1)}`}
             value={values[index] ?? ""}
             onChange={(event) => change(index, event.target.value)}
-            className={`${field} mx-1 w-36`}
+            className={`${blank} mx-1 w-36`}
           />
         );
       })}
@@ -53,7 +54,7 @@ export function MentalMathGame({ question, onAnswer }: { question: string } & Ga
             setValue(event.target.value);
             onAnswer(event.target.value.trim() === "" ? null : { value: event.target.value });
           }}
-          className={field}
+          className={`${field} text-center font-display text-titre font-bold`}
         />
       </label>
     </>
