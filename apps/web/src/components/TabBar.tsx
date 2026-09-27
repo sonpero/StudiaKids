@@ -69,10 +69,13 @@ export function TabBar({ current, onHome, onRead, onPlay, onTutor }: TabBarProps
   };
   return (
     <nav aria-label="Onglets" className="fixed inset-x-0 bottom-0 flex border-t-3 border-ink bg-canvas pb-[env(safe-area-inset-bottom)]">
-      {tab("home", "Accueil", onHome)}
-      {tab("read", "Lire", onRead)}
-      {tab("play", "Jouer", onPlay)}
-      {tab("tutor", "Tuteur", onTutor)}
+      {/* The screens' own column (max-w-md): a phone's proportions on a wide screen. */}
+      <div className="mx-auto flex w-full max-w-md">
+        {tab("home", "Accueil", onHome)}
+        {tab("read", "Lire", onRead)}
+        {tab("play", "Jouer", onPlay)}
+        {tab("tutor", "Tuteur", onTutor)}
+      </div>
     </nav>
   );
 }

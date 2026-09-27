@@ -31,3 +31,20 @@ test("the tab bar at 375px: four equal tabs of 44px at least, the current one a 
   expect(await page.evaluate<string>(`getComputedStyle(document.querySelector('nav[aria-label="Onglets"]')).backgroundColor`)).toBe("rgb(255, 246, 233)");
   expect(await page.evaluate<number>("document.documentElement.scrollWidth")).toBeLessThanOrEqual(375);
 });
+
+// At desktop width the tabs keep a phone's proportions, centred like the
+// screens above them, the cream bar still running edge to edge.
+test("the tab bar at 1280px: tabs kept in the content column, the bar edge to edge", async ({ page, child: _child }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await confirmedCourse(page.request, "legible");
+  await page.goto("/");
+  await page.getByRole("button", { name: /Le verbe/ }).first().click();
+
+  const nav = await page.getByRole("navigation", { name: "Onglets" }).boundingBox();
+  expect(nav?.width).toBe(1280);
+  const tabs = await Promise.all((await page.getByRole("navigation", { name: "Onglets" }).getByRole("button").all()).map((tab) => tab.boundingBox()));
+  const left = Math.min(...tabs.map((box) => box?.x ?? 0));
+  const right = Math.max(...tabs.map((box) => (box?.x ?? 0) + (box?.width ?? 0)));
+  expect(right - left).toBeLessThanOrEqual(448);
+  expect(Math.abs(left + (right - left) / 2 - 640)).toBeLessThanOrEqual(1);
+});
