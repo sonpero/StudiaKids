@@ -384,7 +384,11 @@ Décidé à l'ouverture de M6 (textes *à valider*, sauf ceux de
   professionnel**), numéros en gros et appelables (`tel:119`,
   `tel:3018`).
 - **Saisie** : un champ « Écris ta question… » (vrai `<label>`), bouton
-  « Envoyer » ; pas de micro (hors périmètre).
+  « Envoyer » ; pas de micro (hors périmètre). Aligné sur
+  `docs/design/tuteur.png` (27/09/2026) : le libellé n'est plus visible
+  (il reste pour les lecteurs d'écran, le même texte sert de placeholder) ;
+  « Envoyer » est un bouton carré mandarine de 56px avec une icône (nom
+  accessible « Envoyer ») ; le tout tient dans 375px de large.
 - **Après la construction de M6** (décisions d'Alexandre, 27/09/2026) :
   sous une réponse qui cite le cours, une pastille compacte « Dans ton
   cours » (comme `docs/design/tuteur.png`) ouvre le lecteur sur les

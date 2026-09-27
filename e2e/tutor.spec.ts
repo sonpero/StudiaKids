@@ -122,6 +122,21 @@ test("the question field stands clearly above the tab bar @mobile", async ({ pag
   expect(tabs.y - (field.y + field.height)).toBeGreaterThanOrEqual(32);
 });
 
+// docs/design/tuteur.png: the field and its square send button fit a
+// 375px-wide phone, and nothing on the screen runs past its width.
+test("at 375px wide, nothing runs past the screen, the send button included @mobile", async ({ page, child: _child }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await confirmedCourse(page.request, "legible");
+  await openTutorFromReader(page);
+  await send(page, ON_TOPIC);
+  await expect(thread(page).getByRole("article").first()).toBeVisible();
+
+  const button = await page.getByRole("button", { name: "Envoyer" }).boundingBox();
+  expect((button?.x ?? 0) + (button?.width ?? 0)).toBeLessThanOrEqual(375);
+  expect(await page.evaluate<number>("Math.max(...[...document.querySelectorAll('body *')].map((e) => e.getBoundingClientRect().right))")).toBeLessThanOrEqual(375);
+  expect(await page.evaluate<number>("document.documentElement.scrollWidth")).toBeLessThanOrEqual(375);
+});
+
 test("the tutor opens from the home screen's last course too, and from the course's tab bar", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible");
   await page.goto("/");

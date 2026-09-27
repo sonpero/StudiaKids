@@ -192,21 +192,29 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
       {/* Clear of the fixed tab bar and the phone's safe area (decided after M6's build). */}
       <div className="sticky bottom-0 flex flex-col gap-3 bg-[var(--color-canvas)] pt-2 pb-[calc(100px+env(safe-area-inset-bottom))]">
         {distress && <HelpBlock content={distress.content} />}
-        <form onSubmit={(event) => void send(event)} className="flex items-end gap-2">
-          <div className="flex flex-1 flex-col gap-1 text-left">
-            <label htmlFor={fieldId} className="font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--color-ink)]">
-              Écris ta question…
-            </label>
-            <input
-              id={fieldId}
-              value={question}
-              maxLength={QUESTION_MAX_LENGTH}
-              onChange={(event) => setQuestion(event.target.value)}
-              className="h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-white px-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]"
-            />
-          </div>
-          <button type="submit" disabled={!canSend} className={`${secondary} disabled:opacity-50`}>
-            Envoyer
+        <form onSubmit={(event) => void send(event)} className="flex w-full min-w-0 items-center gap-2">
+          {/* docs/design/tuteur.png shows only the placeholder; the real label stays for screen readers. */}
+          <label htmlFor={fieldId} className="sr-only">
+            Écris ta question…
+          </label>
+          <input
+            id={fieldId}
+            value={question}
+            maxLength={QUESTION_MAX_LENGTH}
+            placeholder="Écris ta question…"
+            onChange={(event) => setQuestion(event.target.value)}
+            className="h-[56px] min-w-0 flex-1 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white px-3 font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink)] placeholder:text-[var(--color-ink-soft)]"
+          />
+          <button
+            type="submit"
+            aria-label="Envoyer"
+            disabled={!canSend}
+            className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)] disabled:opacity-50"
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M21 3 3 10l7 3 3 7z" />
+              <path d="M10 13l4-4" />
+            </svg>
           </button>
         </form>
       </div>

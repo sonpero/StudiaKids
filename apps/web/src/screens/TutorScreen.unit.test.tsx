@@ -196,4 +196,18 @@ describe("TutorScreen, asking", () => {
     expect(screen.getByRole("button", { name: "Envoyer" })).toBeDisabled();
     await waitFor(() => expect(api.askTutor).not.toHaveBeenCalled());
   });
+
+  // docs/design/tuteur.png: a square mandarine send button with an icon,
+  // the field's text as its placeholder, its label kept for screen readers.
+  it("the send button is a square mandarine icon button; the field keeps its label", async () => {
+    renderTutor();
+    const input = await screen.findByRole("textbox", { name: "Écris ta question…" });
+    expect(input).toHaveAttribute("placeholder", "Écris ta question…");
+    const send = screen.getByRole("button", { name: "Envoyer" });
+    expect(send.className).toContain("bg-[var(--color-mandarine)]");
+    expect(send.className).toContain("h-[56px]");
+    expect(send.className).toContain("w-[56px]");
+    expect(send.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(send.textContent).toBe("");
+  });
 });
