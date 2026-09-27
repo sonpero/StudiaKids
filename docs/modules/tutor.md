@@ -119,7 +119,8 @@ l'enfant.)
 - **Tranché par le jeu d'or (27/09/2026, prompts v1,
   `tests/eval/results/tutor-prompts-v1.json`)** : classifieur
   **claude-sonnet-5** (rappel détresse 100 % sur deux passages, contre
-  96,4 % pour claude-haiku-4-5 ; *à valider*) ; **pré-filtre lexical
+  96,4 % pour claude-haiku-4-5 ; **validé par Alexandre le 27/09/2026 :
+  le rappel détresse prime sur la latence**) ; **pré-filtre lexical
   écarté** (il ne récupère aucune détresse manquée) — l'étape reste dans
   `decide()` avec la valeur `false`. Aucune violation des contraintes de
   texte sur les 40 réponses du jeu d'or.
@@ -143,7 +144,15 @@ l'enfant.)
   terminal. Si l'enfant quitte l'écran pendant la réponse, le flux est lu
   jusqu'au bout et l'échange enregistré.
 - Le tuteur ne s'ouvre que sur un cours **confirmé et lu** (409 sinon).
-- Le plafond compte les questions des conversations existantes du compte.
+- Le plafond compte les questions des conversations existantes du compte :
+  supprimer une conversation fait sortir ses questions du compte du jour.
+  **Accepté par Alexandre (27/09/2026), noté en dette.**
+- **Frontière hors sujet / sensible** : inchangée (décision d'Alexandre,
+  27/09/2026), même si des questions sur les goûts du tuteur tombent en
+  « sensible » — un refus dans les deux cas.
+- **Citations** (décision d'Alexandre, 27/09/2026) : masquées sous chaque
+  réponse derrière un bouton discret « … » (« Voir le passage de ton
+  cours »), affichées au toucher.
 - Sans modèles configurés, l'API ne génère rien : chaque question reçoit le
   message fixe `unavailable`.
 

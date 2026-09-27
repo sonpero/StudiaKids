@@ -1,9 +1,8 @@
 import { present } from "../../mascot/index.js";
 
-// ⚠️ À VALIDER PAR UN ADULTE, IDÉALEMENT UN PROFESSIONNEL (docs/securite.md,
-// "distress"). A proposal written at M6's opening: no advice, no promise,
-// no question put to the child, the two public numbers. M6 cannot be
-// closed until it is validated.
+// docs/securite.md, "distress": written at M6's opening, validated by
+// Alexandre on 2026-09-27. No advice, no promise, no question put to the
+// child, the two public numbers. Never change it without a new validation.
 export const DISTRESS_TEXT = [
   "Ce que tu écris est important.",
   "Parles-en à un adulte en qui tu as confiance : quelqu'un de ta famille, ta maîtresse ou ton maître, l'infirmière de l'école.",

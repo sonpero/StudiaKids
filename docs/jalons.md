@@ -631,17 +631,21 @@ de 5 $ ; aucune nouvelle dépendance. Détail dans `docs/modules/tutor.md` et
 `docs/securite.md`.
 
 **Condition de clôture, en plus des cases ci-dessous : le texte de
-l'issue détresse proposé dans `docs/securite.md` est À VALIDER PAR UN
-ADULTE, IDÉALEMENT UN PROFESSIONNEL. M6 ne peut pas être clos sans cette
-validation.**
+l'issue détresse proposé dans `docs/securite.md` validé par un adulte,
+idéalement un professionnel — levée : texte validé par Alexandre le
+27/09/2026.**
 
 **État au 27/09/2026 (fin de la session autonome, rien n'est coché)** :
 tout le périmètre est construit, suites vertes (unit + intégration +
-contrat, e2e 72/72). Conditions de clôture restantes : **validation du
-texte de détresse par un adulte, idéalement un professionnel** ; la démo ;
-les valeurs *à valider* (plafond de 40, classifieur claude-sonnet-5,
-textes fixes et d'écran, pose `refusal` provisoire, 500 caractères par
-question). Détail et table critère → tests dans le journal de session.
+contrat, e2e 72/72). Décisions d'Alexandre le 27/09/2026 : texte de
+détresse validé ; classifieur claude-sonnet-5 validé (le rappel détresse
+prime sur la latence) ; frontière hors sujet / sensible inchangée ;
+sources du cours masquées derrière un bouton discret ; zone de saisie
+remontée. Restent : la démo, et les valeurs encore *à valider* (plafond
+de 40, textes fixes et d'écran, pose `refusal` provisoire, 500 caractères
+par question). **Dette** : les questions d'une conversation supprimée
+sortent du compte du plafond du jour (accepté). Détail et table critère →
+tests dans le journal de session.
 
 **Périmètre**
 - Chat scopé à un cours : répond aux questions sur son contenu et à toute

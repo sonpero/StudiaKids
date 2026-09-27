@@ -102,9 +102,9 @@ Pose-moi une question sur ta leçon !" (*à valider*). Pour une question
   regard professionnel de la protection de l'enfance avant M6 — ce
   document fixe l'intention et les deux numéros, pas la formulation finale.
 
-  **Proposition rédigée à l'ouverture de M6 — À VALIDER PAR UN ADULTE,
-  IDÉALEMENT UN PROFESSIONNEL. M6 ne peut pas être clos sans cette
-  validation.**
+  **Proposition rédigée à l'ouverture de M6, validée par Alexandre le
+  27/09/2026** (condition de clôture de M6 levée ; pas d'avis d'un
+  professionnel de la protection de l'enfance à ce jour).
 
   > Ce que tu écris est important.
   >
@@ -294,8 +294,8 @@ de cours dans `docs/modules/ingestion.md`, vérifiée par un test dédié).
 
 - Le texte exact des messages `distress` doit être validé avec, si
   possible, l'avis d'un professionnel de la protection de l'enfance —
-  **une proposition est rédigée plus haut, À VALIDER PAR UN ADULTE,
-  IDÉALEMENT UN PROFESSIONNEL ; condition de clôture de M6.**
+  **texte validé par Alexandre le 27/09/2026** (plus haut) ; un avis
+  professionnel reste souhaitable.
 - ~~Forme de la consultation de l'historique~~ — **tranché à l'ouverture
   de M6** : `pnpm tutor:history <username>` écrit sur la sortie standard
   tout l'historique du compte, tous cours confondus (cours, date, qui

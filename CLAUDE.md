@@ -94,8 +94,8 @@ code sans passer par cette correspondance.
 `docs/modules/tutor.md`, créé dans ce jalon), `mascot` (pose `refusal`,
 signaux du tuteur), `ingestion` (texte du cours pour le tuteur). **Jalon le
 plus sensible du projet** : `docs/securite.md` prime ; en cas de doute,
-l'option la plus prudente pour l'enfant. Condition de clôture : le texte
-de détresse validé par un adulte, idéalement un professionnel. `jobs/` et
+l'option la plus prudente pour l'enfant. Condition de clôture (texte de
+détresse validé) levée le 27/09/2026. `jobs/` et
 `shared/` restent frozen.
 
 Une fois un nouveau jalon ouvert, mettez à jour cette section dans le même

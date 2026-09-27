@@ -377,6 +377,11 @@ Décidé à l'ouverture de M6 (textes *à valider*, sauf ceux de
   `tel:3018`).
 - **Saisie** : un champ « Écris ta question… » (vrai `<label>`), bouton
   « Envoyer » ; pas de micro (hors périmètre).
+- **Après la construction de M6** (décisions d'Alexandre, 27/09/2026) :
+  les citations sont masquées derrière un bouton discret « … » (nom
+  accessible « Voir le passage de ton cours »), affichées au toucher ; la
+  zone de saisie est remontée pour se dégager nettement de la barre
+  d'onglets (au moins 32 px, zone de sécurité du téléphone comprise).
 - **Construit en M6** (textes *à valider*) : chargement « Je prépare ton
   tuteur… » ; vide « Pose-moi une question sur ton cours. » ; erreur
   mascotte `glitch` + « Réessaie » ; réponse coupée « Ma réponse a été
