@@ -3,12 +3,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { nativePhotoSize } from "@studiakids/contracts";
 import {
+  ClaudeChatModel,
+  ClaudeCitationExtractor,
   ClaudeCourseNamer,
   ClaudeExerciseGenerator,
   ClaudeItemSplitter,
   ClaudePhotoExtractor,
+  ClaudeQuestionClassifier,
   createLanguageModel,
   DEFAULT_MODEL,
+  sectionsOf,
   sniffImageType,
   stripJpegMetadata,
   validItems,
@@ -16,8 +20,10 @@ import {
   type Grade,
   type ValidItem,
 } from "@studiakids/core";
-import { parseArgs, type GeneratorCase, type PhotoCase } from "./args.js";
+import { categoryOf } from "../eval/tutor-scoring.js";
+import { parseArgs, type GeneratorCase, type PhotoCase, type TutorCase } from "./args.js";
 import { splitMismatch } from "./generator-recording.js";
+import { sanitizeStream, streamSmokeReport, TUTOR_ANSWER_QUESTION, TUTOR_CLASSIFY_CASES } from "./tutor-recording.js";
 import { assertWritable, buildFixture, dimensionCollision, jpegSize, sanitizeExchange, smokeReport, type PhotoSize, type RawExchange, type RecordedExchange } from "./recording.js";
 
 // See USAGE in args.ts and docs/modules/ingestion.md. Manual, costs money,
@@ -35,6 +41,7 @@ const EXPECTED: Record<PhotoCase, { legible: boolean; isCoursePage: boolean | nu
 const repoRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 const fixturesDir = path.join(repoRoot, "tests/fixtures/ingestion");
 const generatorFixturesDir = path.join(repoRoot, "tests/fixtures/exercise-generator");
+const tutorFixturesDir = path.join(repoRoot, "tests/fixtures/tutor");
 // The level the splitting and generation fixtures are recorded for; the
 // fixture adapters answer whatever the account's level.
 const FIXTURE_GRADE: Grade = "CE2";
@@ -304,6 +311,56 @@ async function recordGeneration({ force, dryRun, show, apiKey, model }: RunOptio
   write(written, force);
 }
 
+// The tutor's recordings all start from ingestion's recorded lesson, the
+// one the e2e fixture adapter serves.
+async function recordTutor(fixtureCase: TutorCase, { force, dryRun, show, apiKey, model }: RunOptions): Promise<void> {
+  const markdown = recordedMarkdown("legible");
+  const source = "ingestion/legible.json";
+  const written: Record<string, string> = {};
+  const target = (name: string) => path.join(tutorFixturesDir, `${name}.json`);
+
+  if (fixtureCase === "classify") {
+    for (const c of TUTOR_CLASSIFY_CASES) {
+      const raw: RawExchange[] = [];
+      const classifier = new ClaudeQuestionClassifier(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) }));
+      const result = await classifier.classify({ question: c.question, course: { title: "Le verbe", subject: "français", grade: FIXTURE_GRADE, markdown } });
+      const exchanges = raw.map(sanitizeExchange);
+      console.log(`--- ${c.fixtureCase} : « ${c.question} » ---`);
+      report(exchanges, result.ok);
+      if (show && result.ok) console.log(JSON.stringify(result.value));
+      const got = categoryOf(result);
+      if (got !== c.expected) fail(`ARRÊT : décision « ${got} », attendue « ${c.expected} ». Rien n'a été écrit.`);
+      written[target(c.fixtureCase)] = `${JSON.stringify({ ...buildFixture({ module: "tutor", fixtureCase: c.fixtureCase, model, recordedAt: new Date().toISOString(), source, exchanges }), question: c.question }, null, 2)}\n`;
+    }
+  } else {
+    const sections = sectionsOf(markdown);
+    const raw: RawExchange[] = [];
+    const chat = new ClaudeChatModel(createLanguageModel({ apiKey, model, fetch: recordingFetch(raw) }));
+    let text = "";
+    for await (const chunk of chat.stream({ question: TUTOR_ANSWER_QUESTION, sections, history: [], grade: FIXTURE_GRADE })) text += chunk;
+    const streamed = raw.map((exchange) => ({ status: exchange.status, latencyMs: exchange.latencyMs, body: sanitizeStream(exchange.bodyText) }));
+    const first = streamed[0];
+    if (streamed.length !== 1 || !first) fail(`ARRÊT : ${String(streamed.length)} appels pour une réponse en flux. Rien n'a été écrit.`);
+    const smoke = streamSmokeReport(first, text);
+    console.log(smoke.lines.join("\n"));
+    if (!smoke.ok) fail("ARRÊT : le test de fumée a échoué, rien n'a été écrit.");
+    if (show) console.log(`--- réponse ---\n${text}\n--- fin ---`);
+    written[target("answer")] = `${JSON.stringify({ ...buildFixture({ module: "tutor", fixtureCase: "answer", model, recordedAt: new Date().toISOString(), source, exchanges: streamed }), question: TUTOR_ANSWER_QUESTION }, null, 2)}\n`;
+
+    const citationRaw: RawExchange[] = [];
+    const citations = await new ClaudeCitationExtractor(createLanguageModel({ apiKey, model, fetch: recordingFetch(citationRaw) })).extract({ answer: text, sections });
+    const exchanges = citationRaw.map(sanitizeExchange);
+    console.log("--- citations ---");
+    report(exchanges, citations.ok);
+    if (!citations.ok) return;
+    console.log(`sections citées : ${citations.value.sectionIndexes.join(", ")} (sur ${String(sections.length)})`);
+    if (citations.value.sectionIndexes.length === 0) fail("ARRÊT : aucune section citée pour une réponse tirée du cours. Rien n'a été écrit.");
+    written[target("citations")] = `${JSON.stringify(buildFixture({ module: "tutor", fixtureCase: "citations", model, recordedAt: new Date().toISOString(), source: "tutor/answer.json", exchanges }), null, 2)}\n`;
+  }
+  if (dryRun) return console.log("--dry-run : rien n'a été écrit.");
+  write(written, force);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!args.ok) fail(args.error);
@@ -313,6 +370,7 @@ async function main(): Promise<void> {
   console.log(`modèle : ${model}${args.value.dryRun ? " (--dry-run)" : ""}`);
 
   const options = { force: args.value.force, dryRun: args.value.dryRun, show: args.value.show, apiKey, model };
+  if (args.value.module === "tutor") return recordTutor(args.value.fixtureCase, options);
   if (args.value.module === "exercise-generator") {
     const generatorCase = args.value.fixtureCase;
     return generatorCase === "generate" ? recordGeneration(options) : recordSplit(generatorCase, options);

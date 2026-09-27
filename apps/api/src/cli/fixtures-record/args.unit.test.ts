@@ -80,3 +80,21 @@ describe("parseArgs, M3 cases", () => {
     expect(parseArgs(["exercise-generator", "namer"]).ok).toBe(false);
   });
 });
+
+// M6: the tutor's classifications (one per decision), its streamed answer
+// and the citations of that answer, all on ingestion's recorded lesson.
+describe("parseArgs, M6 cases", () => {
+  it("reads the tutor cases, which take no photo", () => {
+    for (const fixtureCase of ["classify", "answer"]) {
+      expect(parseArgs(["tutor", fixtureCase, "--dry-run"])).toEqual({
+        ok: true,
+        value: { module: "tutor", fixtureCase, photoPath: null, force: false, dryRun: true, show: false },
+      });
+    }
+  });
+
+  it("refuses a tutor case with a photo, or an unknown one", () => {
+    expect(parseArgs(["tutor", "classify", "--photo", "p.jpg"]).ok).toBe(false);
+    expect(parseArgs(["tutor", "split"]).ok).toBe(false);
+  });
+});

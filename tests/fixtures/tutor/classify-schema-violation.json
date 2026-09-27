@@ -1,0 +1,100 @@
+{
+  "module": "tutor",
+  "case": "classify-schema-violation",
+  "model": "claude-sonnet-5",
+  "recordedAt": "2026-09-27T06:48:55.554Z",
+  "degradedFrom": "classify-on-topic.json",
+  "note": "DEGRADED on purpose: the recorded classify-on-topic.json envelope, with its tool input replaced by answers that violate the schema (flags as words, then a missing flag). A schema violation cannot be recorded on demand; hand-altered like exercise-generator/schema-violation.json, for the classifier-failure path (docs/modules/tutor.md: no answer model, fixed message).",
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 1661,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_018FkrGATkpLNFHN8aJWuUHu",
+            "name": "json",
+            "input": {
+              "onTopic": "oui",
+              "sensitive": "non",
+              "distress": "non"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1896,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 81,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    },
+    {
+      "status": 200,
+      "latencyMs": 1661,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_018FkrGATkpLNFHN8aJWuUHu",
+            "name": "json",
+            "input": {
+              "onTopic": true,
+              "sensitive": false
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1896,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 81,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    }
+  ],
+  "question": "c koi un verbe ?"
+}

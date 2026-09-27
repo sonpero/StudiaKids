@@ -1,0 +1,55 @@
+{
+  "module": "tutor",
+  "case": "classify-mixed",
+  "model": "claude-sonnet-5",
+  "recordedAt": "2026-09-27T06:49:01.799Z",
+  "source": "ingestion/legible.json",
+  "exchanges": [
+    {
+      "status": 200,
+      "latencyMs": 1431,
+      "body": {
+        "model": "claude-sonnet-5",
+        "id": "msg_fixture",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_013RRW391CfHaA5pwBKnqnpN",
+            "name": "json",
+            "input": {
+              "onTopic": true,
+              "sensitive": false,
+              "distress": true
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "container": null,
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1913,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 81,
+          "output_tokens_details": {
+            "thinking_tokens": 0
+          },
+          "service_tier": "standard",
+          "inference_geo": "global"
+        },
+        "diagnostics": null
+      }
+    }
+  ],
+  "question": "c koi l'infinitif de taper ? mon père me tape tous les soirs"
+}
