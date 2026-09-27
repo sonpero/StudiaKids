@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
 import { StarCounter } from "../components/StarCounter.js";
+import { SubjectChip } from "../components/ui/SubjectChip.js";
+import { bubble, button, card } from "../components/ui/styles.js";
 import { getUnconfirmedCourse, listCourses, pollInterval } from "../lib/courses.js";
 import { subjectLabel } from "../lib/subjects.js";
 
@@ -37,7 +39,7 @@ export interface HomeScreenProps {
   onAskCourse?: (courseId: string) => void;
 }
 
-const text = "font-text text-corps text-ink-soft";
+const gamesReady = (count: number) => (count === 1 ? "1 jeu prêt" : `${String(count)} jeux prêts`);
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
@@ -59,24 +61,26 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
   // Jouer when the course's games are ready, otherwise Lire.
   const openConfirmed = (course: { id: string; exerciseCount: number }) => (course.exerciseCount > 0 ? onPlayCourse?.(course.id) : onReadCourse?.(course.id));
 
+  // docs/design/accueil.png: the mascot speaks from a turquoise hero card.
+  const hero = (pose: Parameters<typeof Mascot>[0]["pose"], line: string) => (
+    <section data-testid="hero" className="flex w-full flex-col items-center gap-3 rounded-grande-carte border-3 border-ink bg-turquoise px-4 pt-4 pb-2 shadow-grande-carte">
+      <p data-bubble className={`${bubble} relative w-full bg-white text-center`}>
+        {line}
+        {/* The bubble's tail, pointing at the mascot. */}
+        <span aria-hidden="true" className="absolute -bottom-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-r-3 border-b-3 border-ink bg-white" />
+      </p>
+      <Mascot pose={pose} size="md" />
+    </section>
+  );
+
   let body;
   if (courses.isPending) {
-    body = (
-      <>
-        <Mascot pose="waiting" />
-        <p className={text}>Je cherche tes cours…</p>
-      </>
-    );
+    body = hero("waiting", "Je cherche tes cours…");
   } else if (courses.isError) {
     body = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
-        <button
-          type="button"
-          onClick={() => void courses.refetch()}
-          className="h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne"
-        >
+        {hero("glitch", "Oh, quelque chose a coincé. On réessaie ?")}
+        <button type="button" onClick={() => void courses.refetch()} className={button.secondary}>
           Réessaie
         </button>
       </>
@@ -89,14 +93,13 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
     const { pose, line } = present({ type: "home", hasExistingCourses: list.length > 0 }, variant);
     body = (
       <>
-        <Mascot pose={pose} />
-        <p className={text}>{line}</p>
+        {hero(pose, line)}
         <PhotoPicker label="Photographier un cours" variant="primary" onPhoto={onPhoto} />
         {pending && (
           <button
             type="button"
             onClick={() => (pending.extractionStarted === false ? onResumeCapture?.(pending) : onOpenCourse?.(pending.id))}
-            className="min-h-14 w-full rounded-carte border-3 border-ink bg-soleil px-4 font-display text-corps-l font-bold text-ink shadow-moyenne"
+            className={`${card} min-h-14 w-full bg-peche px-4 font-display text-corps-l font-bold text-ink`}
           >
             {pending.extractionStarted === false ? NOT_LAUNCHED : BANNER[pending.extractionStatus]}
           </button>
@@ -106,40 +109,24 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
             <h2 className="font-display text-sous-titre font-bold text-ink">Mes cours</h2>
             <ul className="flex flex-col gap-3">
               {list.map((course) => (
-                <li key={course.id}>
-                  <button
-                    type="button"
-                    onClick={() => openConfirmed(course)}
-                    className="flex min-h-14 w-full items-center gap-3 rounded-carte border-3 border-ink bg-white p-3 text-left shadow-moyenne"
-                  >
-                    <span
-                      data-subject-chip
-                      style={{ backgroundColor: `var(--${course.color})` }}
-                      className="h-11 w-11 shrink-0 rounded-bouton border-2 border-ink"
-                    />
-                    <span className="flex flex-col">
+                <li key={course.id} className="flex flex-col gap-2">
+                  <button type="button" onClick={() => openConfirmed(course)} className={`${card} flex min-h-14 w-full items-center gap-3 p-3 text-left`}>
+                    <SubjectChip subject={course.subject} color={course.color} />
+                    <span className="flex min-w-0 flex-col gap-0.5">
                       <span className="font-display text-corps-l font-bold text-ink">{course.title}</span>
-                      <span className="text-petit text-ink-soft">
-                        {course.subject ? subjectLabel(course.subject) : ""} · {course.grade}
+                      <span className="font-text text-mini text-ink-soft">
+                        {[course.subject ? subjectLabel(course.subject) : null, course.grade, course.exerciseCount > 0 ? gamesReady(course.exerciseCount) : null].filter((part) => part !== null).join(" · ")}
                       </span>
                       {course.id === lastOpened?.id && (
-                        <span className="self-start rounded-pastille border-2 border-ink bg-turquoise px-2 text-petit font-bold text-ink">
-                          On reprend ?
-                        </span>
-                      )}
-                      {course.exerciseCount > 0 && (
-                        <span className="text-petit font-bold text-ink">
-                          {course.exerciseCount === 1 ? "1 jeu prêt" : `${String(course.exerciseCount)} jeux prêts`}
-                        </span>
+                        <span className="self-start rounded-pastille border-2 border-ink bg-turquoise px-2 font-display text-mini font-bold text-ink">On reprend ?</span>
                       )}
                     </span>
                   </button>
                   {course.id === lastOpened?.id && onAskCourse && (
-                    <button
-                      type="button"
-                      onClick={() => onAskCourse(course.id)}
-                      className="mt-2 min-h-11 rounded-bouton border-3 border-ink bg-turquoise px-4 font-display text-corps font-bold text-ink shadow-moyenne"
-                    >
+                    <button type="button" onClick={() => onAskCourse(course.id)} className="flex min-h-11 items-center gap-2 self-start rounded-pastille border-3 border-ink bg-white px-4 font-display text-corps font-bold text-ink shadow-petite">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M5 5h14v10h-9l-4 4v-4H5z" />
+                      </svg>
                       Poser une question
                     </button>
                   )}

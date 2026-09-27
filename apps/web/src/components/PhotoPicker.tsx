@@ -1,4 +1,5 @@
 import { useRef, type ChangeEvent } from "react";
+import { button } from "./ui/styles.js";
 
 export interface PhotoPickerProps {
   label: string;
@@ -6,11 +7,6 @@ export interface PhotoPickerProps {
   disabled?: boolean;
   onPhoto: (file: File) => void;
 }
-
-const VARIANTS = {
-  primary: "bg-mandarine shadow-primaire",
-  secondary: "bg-turquoise shadow-moyenne",
-};
 
 // The camera input the jalon names (docs/jalons.md, M2): on a phone or a
 // tablet it opens the camera. The button opens it; the input stays hidden.
@@ -30,8 +26,13 @@ export function PhotoPicker({ label, variant, disabled = false, onPhoto }: Photo
         type="button"
         disabled={disabled}
         onClick={() => input.current?.click()}
-        className={`h-14 w-full rounded-bouton border-3 border-ink px-6 font-display text-corps-l font-bold text-ink disabled:opacity-60 ${VARIANTS[variant]}`}
+        className={button[variant]}
       >
+        {/* docs/design/accueil.png: a camera before the label. */}
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+          <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+          <circle cx="12" cy="13" r="3.5" />
+        </svg>
         {label}
       </button>
       <input ref={input} type="file" accept="image/*" capture hidden onChange={handleChange} />
