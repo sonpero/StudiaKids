@@ -120,7 +120,9 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 
 **Pose `refusal` (M6)** : aucun dessin de référence n'existait ; brouillon
 provisoire dérivé des tracés d'`idle` (comme `sorry` et `glitch`), à
-valider à l'œil.
+valider à l'œil — **dessiné en M6** (`Refusal.tsx` : une main levée paume
+ouverte, bouche droite et calme ; jamais fâché). Le composant prend aussi
+sa prop `size` (`sm` 64 px, `md` 110, `lg` 150 par défaut, `avatar` 40).
 
 **`distress` n'apparaît pas dans cette table.** Son déclenchement et son
 rendu sont spécifiés dans `docs/modules/tutor.md` ("Rendu de l'issue

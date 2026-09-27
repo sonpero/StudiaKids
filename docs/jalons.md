@@ -635,6 +635,14 @@ l'issue détresse proposé dans `docs/securite.md` est À VALIDER PAR UN
 ADULTE, IDÉALEMENT UN PROFESSIONNEL. M6 ne peut pas être clos sans cette
 validation.**
 
+**État au 27/09/2026 (fin de la session autonome, rien n'est coché)** :
+tout le périmètre est construit, suites vertes (unit + intégration +
+contrat, e2e 72/72). Conditions de clôture restantes : **validation du
+texte de détresse par un adulte, idéalement un professionnel** ; la démo ;
+les valeurs *à valider* (plafond de 40, classifieur claude-sonnet-5,
+textes fixes et d'écran, pose `refusal` provisoire, 500 caractères par
+question). Détail et table critère → tests dans le journal de session.
+
 **Périmètre**
 - Chat scopé à un cours : répond aux questions sur son contenu et à toute
   question en rapport

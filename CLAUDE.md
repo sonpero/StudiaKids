@@ -429,8 +429,9 @@ voir `docs/modules/ingestion.md` et `docs/securite.md`.
 ```bash
 pnpm dev            # api + web + worker en mode watch
 pnpm test           # unit + intégration + contrat, sans réseau
-pnpm test:e2e       # Playwright (desktop + mobile émulé, Chromium), worker lancé par le globalSetup avec LLM_ADAPTER=fixture
+pnpm test:e2e       # Playwright (desktop + mobile émulé, Chromium), API et worker avec LLM_ADAPTER=fixture (le tuteur répond dans l'API)
 pnpm eval           # évaluation LLM sur jeu d'or (coûte de l'argent, manuel)
+pnpm eval:tutor [--part classify|answers|all] [--models a,b] [--max-usd 1.5]   # jeu d'or du tuteur (M6, coûte de l'argent, manuel, voir tests/eval/README.md)
 pnpm fixtures:record <module> <case> [--photo f.jpg] [--force] [--dry-run] [--show]   # enregistre une vraie réponse modèle (coûte de l'argent, manuel, voir docs/modules/ingestion.md)
 pnpm typecheck      # tsc --noEmit sur tout le monorepo
 pnpm lint           # eslint + dependency-cruiser
@@ -438,7 +439,7 @@ pnpm db:generate    # migration Drizzle depuis les changements de schéma
 pnpm accounts:create <username> <firstName> <grade>  # CLI, crée un compte (mot de passe demandé en interactif) ; échoue si le compte existe déjà
 pnpm accounts:reset-password <username>  # CLI, change le mot de passe d'un compte existant, invalide ses sessions
 pnpm accounts:delete <username>          # CLI, supprime un compte et tout ce qui en dépend en cascade
-pnpm tutor:history <username>       # CLI, exporte l'historique du tuteur d'un compte pour l'adulte titulaire (docs/securite.md)
+pnpm tutor:history <username> [--json]   # CLI, exporte l'historique du tuteur d'un compte pour l'adulte titulaire (docs/securite.md)
 ```
 
 Vite ne type-check pas. `pnpm typecheck` est ce qui détecte les erreurs de

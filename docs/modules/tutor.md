@@ -116,6 +116,36 @@ l'enfant.)
   avec les cours).
 - **Conversation à l'écran** : ouvrir le tuteur sur un cours reprend sa
   dernière conversation, sinon en crée une.
+- **Tranché par le jeu d'or (27/09/2026, prompts v1,
+  `tests/eval/results/tutor-prompts-v1.json`)** : classifieur
+  **claude-sonnet-5** (rappel détresse 100 % sur deux passages, contre
+  96,4 % pour claude-haiku-4-5 ; *à valider*) ; **pré-filtre lexical
+  écarté** (il ne récupère aucune détresse manquée) — l'étape reste dans
+  `decide()` avec la valeur `false`. Aucune violation des contraintes de
+  texte sur les 40 réponses du jeu d'or.
+
+## Décisions prises en construisant M6
+
+(Journal de session ; *à valider*.)
+
+- **Plafond de la réponse** : 600 tokens, passés à la fabrique du modèle
+  (`createLanguageModel({ maxTokens })`) — la fabrique réécrit
+  `max_tokens` à chaque requête, une option de `streamText` serait
+  écrasée.
+- **Réponse interrompue** : ai 4.x termine `textStream` normalement sur une
+  erreur de flux ; l'adaptateur lit `fullStream` et lève sur une erreur ou
+  sur toute fin autre que naturelle (plafond atteint compris) → `partial`.
+  Pas de relance automatique du flux (l'enfant est prévenu tout de suite).
+  Un flux en échec **avant tout texte** donne le message fixe
+  `unavailable`, pas une bulle vide.
+- Une erreur inattendue pendant le flux (écriture en base) émet un
+  événement `unavailable` non stocké : jamais une connexion sans événement
+  terminal. Si l'enfant quitte l'écran pendant la réponse, le flux est lu
+  jusqu'au bout et l'échange enregistré.
+- Le tuteur ne s'ouvre que sur un cours **confirmé et lu** (409 sinon).
+- Le plafond compte les questions des conversations existantes du compte.
+- Sans modèles configurés, l'API ne génère rien : chaque question reçoit le
+  message fixe `unavailable`.
 
 ## Ports
 
@@ -351,7 +381,8 @@ doivent rester consultables par l'adulte titulaire du compte.
 
 | Route | Rôle |
 |---|---|
-| `POST /api/courses/:id/conversations` | Démarre → `{ conversation, showDisclosure }` |
+| `POST /api/courses/:id/conversations` | Reprend la dernière conversation du cours, sinon en démarre une → `{ conversation, showDisclosure }` |
+| `GET /api/courses/:id/conversations` | Les conversations du cours, la plus récente d'abord |
 | `GET /api/conversations/:id` | Historique |
 | `POST /api/conversations/:id/messages` | Pose une question ; répond en flux SSE |
 | `DELETE /api/conversations/:id` | Supprime |
@@ -454,7 +485,9 @@ limite.
 ## Questions ouvertes
 
 - `QuestionClassifier` ajoute un aller-retour modèle avant chaque
-  réponse, donc de la latence perçue par l'enfant. À mesurer : si ce coût
+  réponse, donc de la latence perçue par l'enfant. **Mesuré au jeu d'or
+  (M6) : médiane 1,5 s avec claude-sonnet-5** (1,0 s avec haiku-4-5, moins
+  sûr sur la détresse). À juger à la démo : si ce coût
   est trop visible, envisager de fusionner classification et réponse en un
   seul appel structuré suivi d'un flux conditionnel — au prix d'une
   architecture plus complexe que celle décrite ici.

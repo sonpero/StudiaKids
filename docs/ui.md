@@ -273,8 +273,8 @@ recopiée de `docs/design/mascotte-etats.html`.
 Décidé à l'ouverture de M4 (textes *à valider*, sauf « Dictée flash »,
 déjà décidé) :
 
-- **Barre d'onglets** en bas : **Accueil**, **Lire**, **Jouer** (Tuteur
-  en M6), avec icône et libellé, pour le cours en cours. Une carte
+- **Barre d'onglets** en bas : **Accueil**, **Lire**, **Jouer**, **Tuteur**
+  (depuis M6), avec icône et libellé, pour le cours en cours. Une carte
   « Mes cours » qui a des jeux prêts ouvre **Jouer** ; sinon **Lire**
   (validé à la clôture de M4).
 - **Écran Jouer** : la liste des jeux du cours, chacun avec son nom de
@@ -377,6 +377,12 @@ Décidé à l'ouverture de M6 (textes *à valider*, sauf ceux de
   `tel:3018`).
 - **Saisie** : un champ « Écris ta question… » (vrai `<label>`), bouton
   « Envoyer » ; pas de micro (hors périmètre).
+- **Construit en M6** (textes *à valider*) : chargement « Je prépare ton
+  tuteur… » ; vide « Pose-moi une question sur ton cours. » ; erreur
+  mascotte `glitch` + « Réessaie » ; réponse coupée « Ma réponse a été
+  coupée. Tu peux reposer ta question. » ; bloc détresse avec deux gros
+  liens « Appeler le 119 » et « Appeler le 3018 » ; « Poser une question »
+  sous la carte du dernier cours ouvert, sur l'accueil.
 
 ---
 
