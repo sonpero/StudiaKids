@@ -17,7 +17,12 @@ const TABLE: [Signal, MascotPose][] = [
   [{ type: "game-answer", correct: false, streakBonus: false }, "waiting"],
   [{ type: "session-complete", starsEarned: 3 }, "joy"],
   [{ type: "tutor-thinking" }, "waiting"],
-  [{ type: "tutor-refusal" }, "refusal"],
+  // M6: a refusal carries its reason (two fixed texts); three new signals.
+  [{ type: "tutor-refusal", reason: "off_topic" }, "refusal"],
+  [{ type: "tutor-refusal", reason: "sensitive" }, "refusal"],
+  [{ type: "tutor-unavailable" }, "glitch"],
+  [{ type: "tutor-daily-limit" }, "idle"],
+  [{ type: "tutor-disclosure" }, "idle"],
 ];
 
 describe("present", () => {
@@ -153,5 +158,22 @@ describe("present, generation outcomes", () => {
     expect(pose).toBe("sorry");
     expect(line).toBe("Cette photo est un peu courte pour faire des jeux. On en prend une autre ?");
     expect(ALL_LINES).toContain(line);
+  });
+});
+
+// M6 (docs/securite.md, docs/modules/mascot.md): the tutor's fixed texts.
+describe("present, tutor", () => {
+  it("a sensitive refusal is securite.md's exact text; an off-topic one invites back to the lesson", () => {
+    expect(present({ type: "tutor-refusal", reason: "sensitive" }, 0).line).toBe("Je ne peux pas répondre à ça, je ne connais que ton cours.");
+    expect(present({ type: "tutor-refusal", reason: "off_topic" }, 0).line).toBe("Je ne peux pas répondre à ça, je ne connais que ton cours. Pose-moi une question sur ta leçon !");
+  });
+
+  it("a failed classification asks to ask again; the daily cap says see you tomorrow", () => {
+    expect(present({ type: "tutor-unavailable" }, 0).line).toBe("Oups, je n'ai pas pu lire ta question. Tu peux la reposer ?");
+    expect(present({ type: "tutor-daily-limit" }, 0).line).toBe("Tu as posé beaucoup de questions aujourd'hui ! On continue demain ?");
+  });
+
+  it("the disclosure is securite.md's text, word for word", () => {
+    expect(present({ type: "tutor-disclosure" }, 0).line).toBe("Ce que tu écris ici, un grand de chez toi peut le relire, comme pour tes devoirs. Vas-y, pose ta question !");
   });
 });

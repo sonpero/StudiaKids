@@ -78,3 +78,22 @@ export {
   type PlayableExerciseDto,
   type PlayableListDto,
 } from "./play.js";
+export {
+  askRequestSchema,
+  conversationDetailSchema,
+  conversationListResponseSchema,
+  conversationParamsSchema,
+  conversationSchema,
+  QUESTION_MAX_LENGTH,
+  startConversationResponseSchema,
+  TUTOR_ISSUES,
+  TUTOR_TERMINAL_EVENTS,
+  tutorChunkSchema,
+  tutorErrorSchema,
+  tutorIssueSchema,
+  tutorMessageSchema,
+  tutorTerminalSchema,
+  type ConversationDto,
+  type TutorMessageDto,
+  type TutorTerminalEvent,
+} from "./tutor.js";

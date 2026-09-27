@@ -17,7 +17,10 @@ export type Signal =
   | { type: "game-answer"; correct: boolean; streakBonus: boolean }
   | { type: "session-complete"; starsEarned: number }
   | { type: "tutor-thinking" }
-  | { type: "tutor-refusal" };
+  | { type: "tutor-refusal"; reason: "off_topic" | "sensitive" }
+  | { type: "tutor-unavailable" }
+  | { type: "tutor-daily-limit" }
+  | { type: "tutor-disclosure" };
 
 export type Presentation = { pose: MascotPose; line: string };
 
@@ -48,6 +51,13 @@ const LINES = {
   tutorThinking: ["Je cherche dans ton cours…"],
   // Exact wording from docs/securite.md.
   tutorRefusal: ["Je ne peux pas répondre à ça, je ne connais que ton cours."],
+  // M6, « à valider »: a kind refusal that invites back to the lesson,
+  // never a generated suggestion.
+  tutorOffTopic: ["Je ne peux pas répondre à ça, je ne connais que ton cours. Pose-moi une question sur ta leçon !"],
+  tutorUnavailable: ["Oups, je n'ai pas pu lire ta question. Tu peux la reposer ?"],
+  tutorDailyLimit: ["Tu as posé beaucoup de questions aujourd'hui ! On continue demain ?"],
+  // Exact wording from docs/securite.md.
+  tutorDisclosure: ["Ce que tu écris ici, un grand de chez toi peut le relire, comme pour tes devoirs. Vas-y, pose ta question !"],
 } satisfies Record<string, string[]>;
 
 function sessionCompleteLine(starsEarned: number): string {
@@ -105,7 +115,13 @@ function presentKnown(signal: Signal, variantIndex: number): Presentation | null
     case "tutor-thinking":
       return { pose: "waiting", line: pick(LINES.tutorThinking, variantIndex) };
     case "tutor-refusal":
-      return { pose: "refusal", line: pick(LINES.tutorRefusal, variantIndex) };
+      return { pose: "refusal", line: pick(signal.reason === "off_topic" ? LINES.tutorOffTopic : LINES.tutorRefusal, variantIndex) };
+    case "tutor-unavailable":
+      return { pose: "glitch", line: pick(LINES.tutorUnavailable, variantIndex) };
+    case "tutor-daily-limit":
+      return { pose: "idle", line: pick(LINES.tutorDailyLimit, variantIndex) };
+    case "tutor-disclosure":
+      return { pose: "idle", line: pick(LINES.tutorDisclosure, variantIndex) };
     default:
       return null;
   }

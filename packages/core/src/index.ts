@@ -8,4 +8,5 @@ export * from "./exercise-generator/index.js";
 export * from "./reader/index.js";
 export * from "./game-engine/index.js";
 export * from "./progress/index.js";
+export * from "./tutor/index.js";
 export * from "./mascot/index.js";
