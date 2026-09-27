@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Markdown, { type Components } from "react-markdown";
-import { Mascot } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
+import { button } from "../components/ui/styles.js";
 import { pageFileUrl } from "../lib/courses.js";
 import { locatePassages } from "../lib/passage.js";
 import { getCourseText } from "../lib/reader.js";
@@ -20,10 +21,7 @@ export interface ReaderScreenProps {
   showHomeButton?: boolean;
 }
 
-const text = "font-text text-corps text-ink-soft";
-const secondary =
-  "h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne";
-const quiet = "h-11 px-4 font-text text-corps text-ink-soft underline";
+const { secondary, quiet } = button;
 
 // A fixed, generous size (18 px, docs/ui.md), no setting.
 const lesson: Components = {
@@ -76,8 +74,7 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
   if (reading.isError) {
     content = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button type="button" onClick={() => void reading.refetch()} className={secondary}>
           Réessaie
         </button>
@@ -85,38 +82,42 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
     );
   } else if (!reading.data) {
     content = (
-      <>
-        <Mascot pose="waiting" />
-        <p className={text}>J'ouvre ton cours…</p>
-      </>
+      <MascotSays pose="waiting" line="J'ouvre ton cours…" />
     );
   } else {
     const { markdown, speech: toSpeak, photos } = reading.data;
     content = (
       <>
         {speech.supported && (
-          <button type="button" onClick={() => (speech.speaking ? speech.stop() : speech.start(toSpeak))} className={`${secondary} self-end`}>
+          <button
+            type="button"
+            onClick={() => (speech.speaking ? speech.stop() : speech.start(toSpeak))}
+            className="flex min-h-11 items-center gap-2 self-end rounded-pastille border-3 border-ink bg-turquoise px-4 font-display text-corps font-bold text-ink shadow-petite"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              {speech.speaking ? <rect x="7" y="7" width="10" height="10" rx="1" /> : <path d="M4 10v4h4l5 4V6L8 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />}
+            </svg>
             {speech.speaking ? "Stop" : "Écouter"}
           </button>
         )}
-        <article className="flex w-full flex-col gap-3 text-left">
+        {/* The lesson on a sheet of paper: a white card. */}
+        <article className="flex w-full flex-col gap-3 rounded-grande-carte border-3 border-ink bg-white p-4 text-left shadow-moyenne">
           <Lesson markdown={markdown} highlights={highlights} />
         </article>
         <ul className="flex w-full flex-wrap gap-3">
           {photos.map(({ index }) => (
             <li key={index}>
-              <button type="button" aria-label={`Agrandir la photo ${String(index + 1)}`} onClick={() => setEnlarged(index)} className="min-h-11 min-w-11">
-                <img
-                  src={pageFileUrl(courseId, index)}
-                  alt={`Photo ${String(index + 1)} du cours`}
-                  className="h-24 w-auto rounded-bouton border-3 border-ink object-cover"
-                />
+              <button type="button" aria-label={`Agrandir la photo ${String(index + 1)}`} onClick={() => setEnlarged(index)} className="min-h-11 min-w-11 rounded-carte border-3 border-ink bg-white p-1 shadow-moyenne">
+                <img src={pageFileUrl(courseId, index)} alt={`Photo ${String(index + 1)} du cours`} className="h-24 w-auto rounded-bouton object-cover" />
               </button>
             </li>
           ))}
         </ul>
         {onAsk && (
-          <button type="button" onClick={onAsk} className={secondary}>
+          <button type="button" onClick={onAsk} className="flex min-h-11 items-center gap-2 self-start rounded-pastille border-3 border-ink bg-white px-4 font-display text-corps font-bold text-ink shadow-petite">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M5 5h14v10h-9l-4 4v-4H5z" />
+            </svg>
             Poser une question
           </button>
         )}

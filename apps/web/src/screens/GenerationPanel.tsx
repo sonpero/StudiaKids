@@ -1,7 +1,8 @@
 import { present, type Signal } from "@studiakids/mascot";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Mascot } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
+import { button, text } from "../components/ui/styles.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
 import { generationPollInterval, getGenerationStatus, startGeneration } from "../lib/generation.js";
 
@@ -12,11 +13,7 @@ export interface GenerationPanelProps {
   onReady?: () => void;
 }
 
-const text = "font-text text-corps text-ink-soft";
-const primary =
-  "h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60";
-const secondary =
-  "h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne";
+const { primary, secondary } = button;
 
 // docs/ui.md, "Lire un cours et créer ses jeux (M3)": the games are never
 // made by themselves, never shown as made before the jobs are over, and
@@ -43,20 +40,14 @@ export function GenerationPanel({ courseId, onPhoto, onReady }: GenerationPanelP
 
   const say = (signal: Signal) => {
     const { pose, line } = present(signal, variant);
-    return (
-      <>
-        <Mascot pose={pose} />
-        <p className={text}>{line}</p>
-      </>
-    );
+    return <MascotSays pose={pose} line={line} />;
   };
 
   let content;
   if (progress.isError || start.isError) {
     content = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button
           type="button"
           onClick={() => {
