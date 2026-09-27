@@ -3,10 +3,12 @@ import type { ComparisonResultDto, PlayableExerciseDto } from "@studiakids/contr
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
-import { PROGRESS_QUERY_KEY, StarCounter } from "../components/StarCounter.js";
+import { PROGRESS_QUERY_KEY } from "../components/StarCounter.js";
+import { ScreenHeader } from "../components/ui/ScreenHeader.js";
+import { card } from "../components/ui/styles.js";
 import { answerExercise, gameLabel, type Correction } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
-import { primary, quiet, secondary, text } from "./games/styles.js";
+import { primary, secondary, text } from "./games/styles.js";
 import { MatchingGame, ReorderingGame } from "./games/TapGames.js";
 import { ClozeGame, DelayedCopyGame, MentalMathGame } from "./games/TypedGames.js";
 
@@ -100,12 +102,23 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
     // The joy dance: a streak bonus or a comeback (docs/modules/progress.md).
     const celebrate = correct ? (send.data.progress?.celebrate ?? null) : null;
     const { pose, line } = present({ type: "game-answer", correct, streakBonus: celebrate === "streak-bonus" }, variant);
+    const starsWon = correct ? (send.data.progress?.stars ?? 0) : 0;
     feedback = (
       <>
-        <Mascot pose={pose} motion={celebrate === null ? undefined : "dance"} />
-        <p className={text}>{line}</p>
+        {/* docs/design/bravo.png: a right answer's line as the screen's big title. */}
+        {correct && <p className="font-display text-titre-xl font-bold text-ink">{line}</p>}
+        <div className="relative">
+          <Mascot pose={pose} motion={celebrate === null ? undefined : "dance"} />
+          {starsWon > 0 && (
+            // Decorative: the star counter says the new total.
+            <span data-testid="stars-won" aria-hidden="true" className="absolute -top-2 -right-4 flex h-14 w-14 items-center justify-center rounded-pastille border-3 border-ink bg-soleil font-display text-sous-titre font-bold text-ink shadow-petite">
+              +{starsWon}
+            </span>
+          )}
+        </div>
+        {!correct && <p className={text}>{line}</p>}
         {showCorrection && correction !== undefined && (
-          <div role="status" className="flex flex-col gap-1 rounded-bouton border-3 border-ink bg-white p-3 font-text text-corps-l text-ink">
+          <div role="status" className={`${card} flex w-full flex-col gap-1 p-3 font-text text-corps-l text-ink`}>
             {correctionLines(exercise.type, correction).map((correctionLine) => (
               <p key={correctionLine}>{correctionLine}</p>
             ))}
@@ -118,6 +131,9 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
         )}
         <button type="button" onClick={onNext} className={primary}>
           Jeu suivant
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
         </button>
         {!correct && (
           <button type="button" onClick={again} className={secondary}>
@@ -129,25 +145,23 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   }
 
   const answered = send.data !== undefined || send.isError;
+  const right = send.data !== undefined && send.data.units.every((unit) => unit.correct);
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center">
-      <header className="flex w-full items-center justify-between">
-        <h1 className="font-display text-titre font-bold text-ink">{gameLabel(exercise.type)}</h1>
-        <StarCounter />
-      </header>
+      <ScreenHeader title={gameLabel(exercise.type)} back={{ label: "Tous les jeux", icon: "close", onClick: onBack }} />
       <p className={text}>{exercise.itemTitle}</p>
-      <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
-        <GameBody exercise={exercise} answered={answered} onAnswer={setGiven} onReread={() => setReread(true)} />
-      </fieldset>
+      {/* A right answer gives the screen to the bravo (docs/design/bravo.png). */}
+      {!right && (
+        <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
+          <GameBody exercise={exercise} answered={answered} onAnswer={setGiven} onReread={() => setReread(true)} />
+        </fieldset>
+      )}
       {!answered && (
         <button type="button" disabled={given === null || send.isPending} onClick={() => send.mutate(given)} className={primary}>
           Valider
         </button>
       )}
       {feedback}
-      <button type="button" onClick={onBack} className={quiet}>
-        Tous les jeux
-      </button>
     </main>
   );
 }
