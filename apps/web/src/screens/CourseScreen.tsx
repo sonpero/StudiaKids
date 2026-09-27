@@ -1,7 +1,8 @@
 import { present, type Signal } from "@studiakids/mascot";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Mascot } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
+import { button } from "../components/ui/styles.js";
 import { confirmCourse, getCourse, pageFileUrl, pollInterval, rejectCourse, retryExtraction } from "../lib/courses.js";
 import { subjectLabel } from "../lib/subjects.js";
 
@@ -11,12 +12,7 @@ export interface CourseScreenProps {
   onPhoto: (file: File) => void;
 }
 
-const text = "font-text text-corps text-ink-soft";
-const primary =
-  "h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60";
-const secondary =
-  "h-14 w-full rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne disabled:opacity-60";
-const quiet = "h-11 w-full px-4 font-text text-corps text-ink-soft underline";
+const { primary, secondary, quiet } = button;
 
 // docs/ui.md, "Photographier un cours (M2)": the waiting screen, the
 // unusable photo (sorry), the technical failure (glitch) and the
@@ -75,8 +71,7 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
   if (course.isError) {
     content = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button type="button" onClick={() => void course.refetch()} className={secondary}>
           Réessaie
         </button>
@@ -86,8 +81,7 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
     const { pose, line } = say({ type: "extraction-in-progress" });
     content = (
       <>
-        <Mascot pose={pose} />
-        <p className={text}>{line}</p>
+        <MascotSays pose={pose} line={line} />
         <button type="button" onClick={onHome} className={quiet}>
           Retour à l'accueil
         </button>
@@ -100,8 +94,7 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
     );
     content = (
       <>
-        <Mascot pose={pose} />
-        <p className={text}>{line}</p>
+        <MascotSays pose={pose} line={line} />
         {retakeButton}
       </>
     );
@@ -109,8 +102,7 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
     const { pose, line } = say({ type: "extraction-failed" });
     content = (
       <>
-        <Mascot pose={pose} />
-        <p className={text}>{line}</p>
+        <MascotSays pose={pose} line={line} />
         <button
           type="button"
           disabled={acting}
@@ -131,20 +123,18 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
     const ready = data;
     content = (
       <>
-        <img
-          src={pageFileUrl(courseId, 0)}
-          alt="Ta photo"
-          className="max-h-[40dvh] w-auto rounded-carte border-3 border-ink object-contain"
-        />
+        <div className="rounded-carte border-3 border-ink bg-white p-1 shadow-moyenne">
+          <img src={pageFileUrl(courseId, 0)} alt="Ta photo" className="max-h-[40dvh] w-auto rounded-bouton object-contain" />
+        </div>
         <h1 className="font-display text-titre font-bold text-ink">{ready.title}</h1>
         <p className="flex items-center gap-2">
           <span
             style={{ backgroundColor: `var(--${ready.color})` }}
-            className="rounded-pastille border-2 border-ink px-3 font-display text-corps font-bold text-ink"
+            className="rounded-pastille border-2 border-ink px-3 py-0.5 font-display text-corps font-bold text-ink"
           >
             {ready.subject ? subjectLabel(ready.subject) : ""}
           </span>
-          <span className="rounded-pastille border-2 border-ink px-3 font-display text-corps font-bold text-ink">
+          <span className="rounded-pastille border-2 border-ink bg-white px-3 py-0.5 font-display text-corps font-bold text-ink">
             {ready.grade}
           </span>
         </p>
