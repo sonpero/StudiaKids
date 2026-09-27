@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import Markdown, { type Components } from "react-markdown";
 import { Mascot, type MascotPose } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
 import { ScreenHeader } from "../components/ui/ScreenHeader.js";
 import { bubble, button, card, field, text } from "../components/ui/styles.js";
 import { getCourse } from "../lib/courses.js";
@@ -153,8 +154,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
   if (opened.isError || detail.isError) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-22 text-center">
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button type="button" onClick={() => void (opened.isError ? opened.refetch() : detail.refetch())} className={button.secondary}>
           Réessaie
         </button>
@@ -164,8 +164,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
   if (!opened.data || !detail.data || conversationId === undefined) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-22 text-center">
-        <Mascot pose="waiting" />
-        <p className={text}>Je prépare ton tuteur…</p>
+        <MascotSays pose="waiting" line="Je prépare ton tuteur…" />
       </main>
     );
   }
@@ -209,18 +208,10 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
           {[course.data.title, [course.data.subject ? subjectLabel(course.data.subject) : null, course.data.grade].filter((part) => part !== null).join(" ")].join(" · ")}
         </p>
       )}
-      {disclosure && (
-        <div className="flex flex-col items-center gap-2">
-          <Mascot pose={disclosure.pose} />
-          <p className={text}>{disclosure.line}</p>
-        </div>
-      )}
+      {disclosure && <MascotSays pose={disclosure.pose} line={disclosure.line} size="md" />}
       <section role="log" aria-label="Conversation avec le tuteur" className="flex flex-1 flex-col gap-3">
         {messages.length === 0 && !pending && (
-          <div className="flex flex-col items-center gap-2">
-            {!disclosure && <Mascot pose="idle" />}
-            <p className={text}>Pose-moi une question sur ton cours.</p>
-          </div>
+          disclosure ? <p className={text}>Pose-moi une question sur ton cours.</p> : <MascotSays pose="idle" line="Pose-moi une question sur ton cours." size="md" />
         )}
         {messages.map((message) =>
           message.role === "user" ? (

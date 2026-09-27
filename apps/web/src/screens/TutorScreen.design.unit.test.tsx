@@ -65,4 +65,16 @@ describe("TutorScreen, as drawn in docs/design/tuteur.png", () => {
     await screen.findByText("Le verbe · Français CM1");
     expect(await screen.findByRole("button", { name: "Dans ton cours" })).toHaveStyle({ backgroundColor: "var(--matiere-francais)" });
   });
+
+  it("its loading and error states: the mascot speaks in its bubble", async () => {
+    api.openTutor.mockRejectedValue(new Error("500"));
+    courses.getCourse.mockResolvedValue(null);
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <TutorScreen courseId="c1" onHome={vi.fn()} />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText("Je prépare ton tuteur…").hasAttribute("data-bubble")).toBe(true);
+    expect((await screen.findByText("Oh, quelque chose a coincé. On réessaie ?")).hasAttribute("data-bubble")).toBe(true);
+  });
 });
