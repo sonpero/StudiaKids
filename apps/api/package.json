@@ -12,7 +12,8 @@
     "accounts:reset-password": "tsx src/cli/reset-password.ts",
     "accounts:delete": "tsx src/cli/delete-account.ts",
     "fixtures:record": "tsx --env-file-if-exists=../../.env src/cli/fixtures-record/main.ts",
-    "eval": "tsx --env-file-if-exists=../../.env src/cli/eval/main.ts"
+    "eval": "tsx --env-file-if-exists=../../.env src/cli/eval/main.ts",
+    "eval:tutor": "tsx --env-file-if-exists=../../.env src/cli/eval/tutor.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

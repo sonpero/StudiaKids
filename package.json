@@ -19,7 +19,8 @@
     "accounts:reset-password": "pnpm --filter @studiakids/api run accounts:reset-password",
     "accounts:delete": "pnpm --filter @studiakids/api run accounts:delete",
     "fixtures:record": "pnpm --filter @studiakids/api run fixtures:record",
-    "eval": "pnpm --filter @studiakids/api run eval"
+    "eval": "pnpm --filter @studiakids/api run eval",
+    "eval:tutor": "pnpm --filter @studiakids/api run eval:tutor"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
