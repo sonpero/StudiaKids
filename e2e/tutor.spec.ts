@@ -53,11 +53,13 @@ test("a question on the course: an answer next to the mascot's avatar, with a ci
   const answer = thread(page).getByRole("article").filter({ hasText: "Bonne question ! Un verbe" });
   await expect(answer).toBeVisible();
   await expect(answer.getByTestId("mascot")).toHaveAttribute("data-size", "avatar");
-  // The lesson's passages are hidden behind a discreet button (decided after M6's build).
-  await expect(answer.getByText("Dans ton cours :")).toHaveCount(0);
-  await answer.getByRole("button", { name: "Voir le passage de ton cours" }).click();
-  await expect(answer.getByText("Dans ton cours :")).toBeVisible();
   await expect(thread(page).getByText(ON_TOPIC)).toBeVisible();
+  // docs/design/tuteur.png: a compact pill that opens the passage, highlighted, in the reader.
+  await answer.getByRole("button", { name: "Dans ton cours" }).click();
+  const passage = page.getByTestId("cited-passage").first();
+  await expect(passage).toBeVisible();
+  expect(await passage.textContent()).not.toMatch(/[*#]/);
+  await expect(page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Lire" })).toHaveAttribute("aria-current", "page");
 });
 
 test("an off-topic question: a refusal carried by the mascot, and no answer text ever streamed @mobile", async ({ page, child: _child }) => {

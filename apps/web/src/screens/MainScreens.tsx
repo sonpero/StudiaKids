@@ -18,7 +18,8 @@ export interface MainScreensProps {
 
 // A confirmed course is shown under the tab bar, on its Lire, Jouer or
 // Tuteur tab.
-type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string } | { name: "tabs"; courseId: string; tab: Tab };
+// `highlights`: the passages a tutor answer cited, shown in the reader.
+type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string } | { name: "tabs"; courseId: string; tab: Tab; highlights?: string[] };
 
 // Navigation by screen state, no router (docs/ui.md, M2).
 export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps) {
@@ -55,7 +56,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
   }
 
   if (screen.name === "tabs") {
-    const { courseId, tab } = screen;
+    const { courseId, tab, highlights } = screen;
     return (
       <>
         {tab === "read" ? (
@@ -66,6 +67,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
               courseId={courseId}
               onHome={goHome}
               showHomeButton={false}
+              highlights={highlights}
               onAsk={() => setScreen({ name: "tabs", courseId, tab: "tutor" })}
               footer={<GenerationPanel courseId={courseId} onPhoto={startCapture} />}
             />
@@ -73,7 +75,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
         ) : tab === "play" ? (
           <PlayScreen key={`play-${courseId}`} courseId={courseId} onHome={goHome} onPhoto={startCapture} />
         ) : (
-          <TutorScreen key={`tutor-${courseId}`} courseId={courseId} onHome={goHome} />
+          <TutorScreen key={`tutor-${courseId}`} courseId={courseId} onHome={goHome} onOpenPassage={(passages) => setScreen({ name: "tabs", courseId, tab: "read", highlights: passages })} />
         )}
         <TabBar
           current={tab}

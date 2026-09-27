@@ -30,12 +30,13 @@ const msg = (role: "user" | "assistant", content: string, extra: Record<string, 
 });
 const DISTRESS = "Ce que tu écris est important.\nParles-en à un adulte en qui tu as confiance : quelqu'un de ta famille.\nTu peux aussi appeler, c'est gratuit :\nle 119, à toute heure ;\nle 3018, si on te harcèle.";
 
+const onOpenPassage = vi.fn();
 function renderTutor(opened: { showDisclosure: boolean } = { showDisclosure: false }, messages: unknown[] = []) {
   api.openTutor.mockResolvedValue({ conversation, ...opened });
   api.getConversation.mockResolvedValue({ conversation, messages });
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <TutorScreen courseId="c1" onHome={vi.fn()} />
+      <TutorScreen courseId="c1" onHome={vi.fn()} onOpenPassage={onOpenPassage} />
     </QueryClientProvider>,
   );
 }
@@ -82,23 +83,23 @@ describe("TutorScreen, the four states", () => {
     expect(within(thread()).getByText("c koi un verbe ?")).toBeInTheDocument();
     expect(within(answer).getByText("Un verbe, c'est une action.")).toBeInTheDocument();
     expect(within(answer).getByTestId("mascot")).toHaveAttribute("data-size", "avatar");
-    // Decided after M6's build: the lesson's passages are hidden behind a
-    // discreet button, shown on the child's tap.
-    expect(within(answer).queryByText("« Le verbe indique ce que fait le sujet. »")).not.toBeInTheDocument();
-    const toggle = within(answer).getByRole("button", { name: "Voir le passage de ton cours" });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-
-    fireEvent.click(toggle);
-
-    expect(within(answer).getByText("Dans ton cours :")).toBeInTheDocument();
-    expect(within(answer).getByText("« Le verbe indique ce que fait le sujet. »")).toBeInTheDocument();
-    expect(within(answer).getByRole("button", { name: "Cacher le passage de ton cours" })).toHaveAttribute("aria-expanded", "true");
+    // docs/design/tuteur.png (decided 2026-09-27, replacing the « … »
+    // button): a compact « Dans ton cours » pill, never the cited text.
+    expect(within(answer).queryByText(/Le verbe indique ce que fait le sujet/)).not.toBeInTheDocument();
+    fireEvent.click(within(answer).getByRole("button", { name: "Dans ton cours" }));
+    expect(onOpenPassage).toHaveBeenCalledWith(["Le verbe indique ce que fait le sujet."]);
   });
 
-  it("an answer with no citation has no button for them", async () => {
+  it("an answer with no citation has no pill", async () => {
     renderTutor({ showDisclosure: false }, [msg("user", "q"), msg("assistant", "Une explication.", { citations: [] })]);
     const answer = await within(await screen.findByRole("log")).findByRole("article");
     expect(within(answer).queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("no Markdown syntax ever shows in an answer", async () => {
+    renderTutor({ showDisclosure: false }, [msg("user", "q"), msg("assistant", "Un verbe.", { citations: [{ text: "## Titre\n\n**gras** et\n- liste" }] })]);
+    const answer = await within(await screen.findByRole("log")).findByRole("article");
+    expect(answer.textContent).not.toMatch(/[*#]/);
   });
 });
 

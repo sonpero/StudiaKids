@@ -150,9 +150,10 @@ l'enfant.)
 - **Frontière hors sujet / sensible** : inchangée (décision d'Alexandre,
   27/09/2026), même si des questions sur les goûts du tuteur tombent en
   « sensible » — un refus dans les deux cas.
-- **Citations** (décision d'Alexandre, 27/09/2026) : masquées sous chaque
-  réponse derrière un bouton discret « … » (« Voir le passage de ton
-  cours »), affichées au toucher.
+- **Citations** (décision d'Alexandre, 27/09/2026, alignée sur
+  `docs/design/tuteur.png`) : une pastille « Dans ton cours » sous la
+  réponse ouvre le lecteur sur les passages cités, surlignés ; le texte
+  cité n'est jamais affiché dans le fil.
 - Sans modèles configurés, l'API ne génère rien : chaque question reçoit le
   message fixe `unavailable`.
 

@@ -22,12 +22,12 @@ afterEach(() => {
 
 const verbe = { markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.\n\n- chanter\n- finir", speech: "Le verbe\nLe verbe indique ce que fait le sujet.\nchanter\nfinir", photos: [{ index: 0 }, { index: 1 }] };
 
-function renderReader() {
+function renderReader(highlights?: string[]) {
   const onHome = vi.fn();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
-      <ReaderScreen courseId="c1" onHome={onHome} />
+      <ReaderScreen courseId="c1" onHome={onHome} highlights={highlights} />
     </QueryClientProvider>,
   );
   return { onHome };
@@ -120,5 +120,28 @@ describe("ReaderScreen", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Accueil" }));
     expect(onHome).toHaveBeenCalled();
+  });
+});
+
+// M6, after the build (docs/design/tuteur.png): a tutor citation opens the
+// reader on its passage, highlighted, rendered — never raw Markdown.
+describe("ReaderScreen, a passage the tutor cited", () => {
+  it("is highlighted in the lesson, with no Markdown syntax showing", async () => {
+    api.getCourseText.mockResolvedValue({ ...verbe, markdown: "# Le verbe\n\n**Le verbe** indique ce que fait le sujet.\n\n- chanter\n- finir" });
+    renderReader(["**Le verbe** indique ce que fait le sujet.\n\n- chanter\n- finir"]);
+
+    const passage = await screen.findByTestId("cited-passage");
+    expect(passage).toHaveTextContent("Le verbe indique ce que fait le sujet.");
+    expect(within(passage).getByText("chanter")).toBeInTheDocument();
+    expect(passage.textContent).not.toMatch(/[*#]/);
+    expect(screen.getByRole("heading", { name: "Le verbe", level: 1 })).not.toBeNull();
+    expect(passage).not.toContainElement(screen.getByRole("heading", { name: "Le verbe", level: 1 }));
+  });
+
+  it("without a passage, nothing is highlighted", async () => {
+    api.getCourseText.mockResolvedValue(verbe);
+    renderReader();
+    await screen.findByText("Le verbe indique ce que fait le sujet.");
+    expect(screen.queryByTestId("cited-passage")).not.toBeInTheDocument();
   });
 });

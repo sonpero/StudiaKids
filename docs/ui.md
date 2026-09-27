@@ -386,8 +386,10 @@ Décidé à l'ouverture de M6 (textes *à valider*, sauf ceux de
 - **Saisie** : un champ « Écris ta question… » (vrai `<label>`), bouton
   « Envoyer » ; pas de micro (hors périmètre).
 - **Après la construction de M6** (décisions d'Alexandre, 27/09/2026) :
-  les citations sont masquées derrière un bouton discret « … » (nom
-  accessible « Voir le passage de ton cours »), affichées au toucher ; la
+  sous une réponse qui cite le cours, une pastille compacte « Dans ton
+  cours » (comme `docs/design/tuteur.png`) ouvre le lecteur sur les
+  passages cités, surlignés en pêche et rendus en Markdown (aucune
+  syntaxe visible) — le texte cité n'est plus affiché dans le fil ; la
   zone de saisie est remontée pour se dégager nettement de la barre
   d'onglets (au moins 32 px, zone de sécurité du téléphone comprise).
 - **Construit en M6** (textes *à valider*) : chargement « Je prépare ton

@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Markdown, { type Components } from "react-markdown";
 import { Mascot } from "../components/mascot/Mascot.js";
 import { pageFileUrl } from "../lib/courses.js";
+import { locatePassages } from "../lib/passage.js";
 import { getCourseText } from "../lib/reader.js";
 import { useSpeech } from "../lib/speech.js";
 
@@ -13,6 +14,8 @@ export interface ReaderScreenProps {
   footer?: ReactNode;
   // The tutor on this course (docs/ui.md, "Tuteur (M6)").
   onAsk?: () => void;
+  // Passages a tutor answer cited, highlighted (docs/design/tuteur.png).
+  highlights?: string[];
   // Under the tab bar, its « Accueil » tab replaces this button.
   showHomeButton?: boolean;
 }
@@ -36,7 +39,30 @@ const lesson: Components = {
 
 // docs/modules/reader.md, "Écran": the lesson's text, its photos, the voice
 // on the child's tap. No empty state: a confirmed course always has a text.
-export function ReaderScreen({ courseId, onHome, footer, onAsk, showHomeButton = true }: ReaderScreenProps) {
+// The lesson, with the cited passages highlighted: each part rendered as
+// Markdown, so no syntax ever shows.
+function Lesson({ markdown, highlights }: { markdown: string; highlights: string[] }) {
+  const first = useRef<HTMLDivElement>(null);
+  const ranges = locatePassages(markdown, highlights);
+  useEffect(() => {
+    first.current?.scrollIntoView?.({ block: "center" });
+  }, [markdown]);
+  const parts: ReactNode[] = [];
+  let at = 0;
+  ranges.forEach((range, i) => {
+    if (range.start > at) parts.push(<Markdown key={`t${String(i)}`} components={lesson}>{markdown.slice(at, range.start)}</Markdown>);
+    parts.push(
+      <div key={`p${String(i)}`} ref={i === 0 ? first : undefined} data-testid="cited-passage" className="flex flex-col gap-3 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-peche)] p-3">
+        <Markdown components={lesson}>{markdown.slice(range.start, range.end)}</Markdown>
+      </div>,
+    );
+    at = range.end;
+  });
+  if (at < markdown.length) parts.push(<Markdown key="end" components={lesson}>{markdown.slice(at)}</Markdown>);
+  return <>{parts}</>;
+}
+
+export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [], showHomeButton = true }: ReaderScreenProps) {
   const reading = useQuery({ queryKey: ["reader", courseId], queryFn: () => getCourseText(courseId) });
   const speech = useSpeech();
   const [enlarged, setEnlarged] = useState<number | null>(null);
@@ -74,7 +100,7 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, showHomeButton =
           </button>
         )}
         <article className="flex w-full flex-col gap-3 text-left">
-          <Markdown components={lesson}>{markdown}</Markdown>
+          <Lesson markdown={markdown} highlights={highlights} />
         </article>
         <ul className="flex w-full flex-wrap gap-3">
           {photos.map(({ index }) => (

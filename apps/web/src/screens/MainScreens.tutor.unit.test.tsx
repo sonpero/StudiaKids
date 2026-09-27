@@ -67,4 +67,21 @@ describe("MainScreens: the tutor", () => {
     fireEvent.click(tabs().getByRole("button", { name: "Tuteur" }));
     expect(await field()).toBeInTheDocument();
   });
+
+  it("« Dans ton cours » under an answer opens the reader on its passage, highlighted", async () => {
+    tutor.getConversation.mockResolvedValue({
+      conversation,
+      messages: [
+        { id: "m1", role: "user", content: "q", citations: null, issue: null, outOfBand: false, partial: false, createdAt: "" },
+        { id: "m2", role: "assistant", content: "r", citations: [{ text: "Le verbe indique ce que fait le sujet." }], issue: null, outOfBand: false, partial: false, createdAt: "" },
+      ],
+    });
+    renderMain();
+    fireEvent.click(await screen.findByRole("button", { name: "Poser une question" }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Dans ton cours" }));
+
+    expect(await screen.findByTestId("cited-passage")).toHaveTextContent("Le verbe indique ce que fait le sujet.");
+    expect(tabs().getByRole("button", { name: "Lire" })).toHaveAttribute("aria-current", "page");
+  });
 });

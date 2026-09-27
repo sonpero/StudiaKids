@@ -8,6 +8,8 @@ import { askTutor, getConversation, openTutor } from "../lib/tutor.js";
 export interface TutorScreenProps {
   courseId: string;
   onHome: () => void;
+  // Opens the reader on the passages an answer cited.
+  onOpenPassage?: (passages: string[]) => void;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
@@ -29,7 +31,7 @@ function Question({ content }: { content: string }) {
 
 // An answer or a fixed text, next to the mascot's medallion (docs/ui.md,
 // "L'avatar dans le chat du tuteur").
-function Answer({ pose, content, citations, partial }: { pose: MascotPose; content: string; citations?: { text: string }[] | null; partial?: boolean }) {
+function Answer({ pose, content, citations, partial, onOpenPassage }: { pose: MascotPose; content: string; citations?: { text: string }[] | null; partial?: boolean; onOpenPassage?: (passages: string[]) => void }) {
   return (
     <article className="flex max-w-[95%] items-start gap-2 self-start text-left">
       <span className="shrink-0 rounded-[999px] border-[3px] border-[var(--color-ink)] bg-white p-1">
@@ -40,38 +42,27 @@ function Answer({ pose, content, citations, partial }: { pose: MascotPose; conte
           <p key={i}>{line}</p>
         ))}
         {partial && <p className={text}>Ma réponse a été coupée. Tu peux reposer ta question.</p>}
-        {citations && citations.length > 0 && <Citations citations={citations} />}
+        {citations && citations.length > 0 && onOpenPassage && <PassagePill onOpen={() => onOpenPassage(citations.map((citation) => citation.text))} />}
       </div>
     </article>
   );
 }
 
-// The lesson's passages behind a discreet button, shown on the child's tap
-// (decided after M6's build: always shown, they weighed down the thread).
-function Citations({ citations }: { citations: { text: string }[] }) {
-  const [open, setOpen] = useState(false);
+// docs/design/tuteur.png: a compact pill under the answer that opens the
+// cited passages, highlighted, in the reader — never the cited text here.
+function PassagePill({ onOpen }: { onOpen: () => void }) {
   return (
-    <div className="flex flex-col gap-1">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-label={open ? "Cacher le passage de ton cours" : "Voir le passage de ton cours"}
-        onClick={() => setOpen(!open)}
-        className="h-[44px] min-w-[44px] self-start rounded-[15px] px-2 font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink-soft)]"
-      >
-        …
-      </button>
-      {open && (
-        <div className="flex flex-col gap-1 border-t-[2px] border-[var(--color-ink)] pt-2">
-          <p className="font-[family-name:var(--font-display)] text-[16px] font-bold">Dans ton cours :</p>
-          {citations.map((citation, i) => (
-            <blockquote key={i} className={text}>
-              « {citation.text} »
-            </blockquote>
-          ))}
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex min-h-[44px] items-center gap-2 self-start rounded-[999px] border-[2px] border-[var(--color-ink)] bg-[var(--color-canvas)] px-3 font-[family-name:var(--font-text)] text-[14.5px] font-semibold text-[var(--color-ink)]"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z" />
+        <path d="M5 18a2 2 0 0 1 2-2h12" />
+      </svg>
+      Dans ton cours
+    </button>
   );
 }
 
@@ -102,7 +93,7 @@ type Pending = { question: string; answer: string; failed: boolean };
 
 // docs/ui.md, "Tuteur (M6)": the course's last conversation (or a new
 // one), the first-use disclosure, the thread, the help block, the field.
-export function TutorScreen({ courseId, onHome }: TutorScreenProps) {
+export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProps) {
   const queryClient = useQueryClient();
   const fieldId = useId();
   // Opening resumes or starts the conversation: never re-sent behind the
@@ -182,7 +173,7 @@ export function TutorScreen({ courseId, onHome }: TutorScreenProps) {
           message.role === "user" ? (
             <Question key={message.id} content={message.content} />
           ) : message.outOfBand ? null : (
-            <Answer key={message.id} pose={poseOf(message)} content={message.content} citations={message.citations} partial={message.partial} />
+            <Answer key={message.id} pose={poseOf(message)} content={message.content} citations={message.citations} partial={message.partial} onOpenPassage={onOpenPassage} />
           ),
         )}
         {pending && (
