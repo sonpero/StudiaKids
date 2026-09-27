@@ -80,3 +80,23 @@ describe("StarCounter", () => {
     await waitFor(() => expect(screen.getByTestId("star-counter")).toHaveAttribute("data-bounce"));
   });
 });
+
+// docs/design/accueil.png, tuteur.png, flash.png: a sun pill, ink outline
+// and hard shadow, a line star and the total in Baloo.
+describe("StarCounter, as drawn in the mockups", () => {
+  it("is a sun pill with an ink outline and a hard shadow; its star is drawn in a line", async () => {
+    api.getProgress.mockResolvedValue({ total: 48, currentStreak: 0, bestStreak: 0 });
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <StarCounter />
+      </QueryClientProvider>,
+    );
+    const counter = await screen.findByTestId("star-counter");
+    for (const token of ["bg-soleil", "border-3", "border-ink", "rounded-pastille", "shadow-petite", "font-display"]) expect(counter.className, token).toContain(token);
+    const star = counter.querySelector("path");
+    expect(star?.getAttribute("class")).toContain("stroke-ink");
+    expect(star?.getAttribute("fill")).toBe("none");
+    expect(star?.getAttribute("stroke-width")).toBe("2");
+  });
+});
+

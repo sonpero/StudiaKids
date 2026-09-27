@@ -6,7 +6,8 @@ import { getProgress, starsLabel } from "../lib/progress.js";
 // here (GameScreen), so the counter moves without reading again.
 export const PROGRESS_QUERY_KEY = ["progress"];
 
-// docs/ui.md, M5: a star and the total, never a loss, never a comparison.
+// docs/ui.md, M5: a star and the total, never a loss, never a comparison;
+// drawn as the mockups' sun pill.
 // Nothing while unknown: a counter never guesses.
 export function StarCounter() {
   const progress = useQuery({ queryKey: PROGRESS_QUERY_KEY, queryFn: () => getProgress() });
@@ -28,16 +29,10 @@ export function StarCounter() {
       // read as one image, « 3 étoiles ».
       role="img"
       aria-label={starsLabel(total)}
-      className="flex items-center gap-1 font-display text-sous-titre font-bold text-ink"
+      className="flex items-center gap-1 rounded-pastille border-3 border-ink bg-soleil px-3 py-1 font-display text-corps-l font-bold text-ink shadow-petite"
     >
-      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
-        <path
-          d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"
-          fill="var(--color-soleil)"
-          stroke="var(--color-ink)"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+        <path className="stroke-ink" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="none" strokeWidth="2" strokeLinejoin="round" />
       </svg>
       <span aria-hidden="true">{total}</span>
     </p>
