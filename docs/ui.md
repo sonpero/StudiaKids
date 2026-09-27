@@ -327,7 +327,7 @@ l'écran Jouer inchangés) :
   rebondit quand le total monte. Jamais de perte, jamais de comparaison.
 - **Danse de la joie** : sur un **bonus de série** (« Super série ! ») et
   sur une **réussite marquante** — la première réussite d'un exercice
-  d'abord manqué (*à valider*). Avec `prefers-reduced-motion`, la mascotte
+  d'abord manqué (validé). Avec `prefers-reduced-motion`, la mascotte
   prend la pose `joy` sans bouger.
 - **Session et récapitulatif** : une session va de l'entrée dans l'onglet
   Jouer jusqu'au bouton **« J'ai fini »** de la liste, ou jusqu'au « Jeu
@@ -337,11 +337,12 @@ l'écran Jouer inchangés) :
   « 5 bonnes réponses » (réponses aidées comprises) — **jamais un nombre
   d'erreurs, jamais une comparaison** ; boutons « Encore des jeux » et
   « Accueil ». Sortir de Jouer autrement termine la session sans
-  récapitulatif.
+  récapitulatif. (Définition de la session validée.)
 - **Reprise** : l'accueil propose le dernier cours ouvert (plus grand
   `lastAccessedAt`, qu'ouvrir Lire ou Jouer met à jour), y compris après
   une reconnexion : **sa carte porte « On reprend ? »** (précisé à
-  l'implémentation : un bouton séparé aurait doublé le nom de la carte) ;
+  l'implémentation : un bouton séparé aurait doublé le nom de la carte ;
+  validé) ;
   un tap ouvre Jouer si le cours a des jeux, sinon Lire.
 
 Précisé à l'implémentation (M5, textes *à valider*) : le compteur est une

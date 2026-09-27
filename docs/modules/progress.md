@@ -26,7 +26,9 @@ anglais ci-dessous.
 ## Domaine
 
 **Réécrit à l'ouverture de M5** (décisions d'Alexandre, journal de
-session ; valeurs *à valider*).
+session). **Validé le 27/09/2026** : unité d'étoile, réussite marquante,
+session. **Seuil du bonus : 5 gardé (la spec), à trancher par Alexandre
+après la démo de M5.**
 
 ```ts
 // Une ligne par unité, telle que game-engine l'a écrite.
@@ -41,7 +43,7 @@ type SubmissionStars = { exerciseId: string; at: string; stars: 0 | 1; bonus: 0 
 
 type Progress = { total: number; currentStreak: number; bestStreak: number; submissions: SubmissionStars[] };
 
-const STREAK_BONUS_THRESHOLD = 5;   // fixé par cette spec ; la décision « 3 » ne valait que si la spec se taisait
+const STREAK_BONUS_THRESHOLD = 5;   // fixé par cette spec, gardé le 27/09/2026 ; tranché après la démo de M5
 const PROGRESS_TIME_ZONE = "Europe/Paris";
 
 function deriveProgress(events: AttemptEvent[], timeZone: string): Progress;
@@ -67,10 +69,10 @@ externe**) :
     multiple de `STREAK_BONUS_THRESHOLD` ;
   - **fête** : `streak-bonus` sur un bonus ; sinon `comeback` pour la
     **première réussite d'un exercice qui avait d'abord été manqué**
-    (réussite marquante, *à valider*) ; sinon rien.
+    (réussite marquante, validée) ; sinon rien.
 - Unité d'étoile = la réponse à un exercice, pas l'unité d'un exercice
   composite (un appariement réussi à moitié ne rapporte rien, ne retire
-  rien) — *à valider*.
+  rien) — validé.
 
 Le jour se calcule **côté serveur, en heure de Paris** (décision de M5, qui
 remplace « jamais une notion de jour côté serveur ») : bornes à 23 h 59 /

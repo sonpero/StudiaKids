@@ -336,7 +336,7 @@ appliquée par `progress` (`deriveProgress`), fonction pure des tentatives
 — aucune colonne d'étoiles, aucun compteur stocké ; `game-engine` n'écrit
 que les tentatives. L'unité d'étoile est la réponse à un exercice, et non
 plus chaque unité d'un exercice composite comme le laissait entendre le
-comparateur ci-dessus (*à valider*).
+comparateur ci-dessus (validé le 27/09/2026).
 
 ## Questions ouvertes
 
