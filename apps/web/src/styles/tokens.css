@@ -13,6 +13,9 @@
   --color-violet-nuit: #3a2b5c;
   --color-peche: #ffe3d6;
   --color-vert-clair: #c9f2d6;
+  /* The mascot's cheeks, from docs/design/mascotte-etats.html (the only
+     colour of its reference drawing tokens.md does not name). */
+  --color-joue: #ff5d8f;
 
   /* Pastels réservés au codage des matières (docs/ui.md) — pastilles et
      badges uniquement, jamais une action ou un état. */

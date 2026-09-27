@@ -9,6 +9,7 @@ Couleurs
   violet-nuit  #3A2B5C   fond de l'écran de flash
   peche        #FFE3D6   état actif de la barre d'onglets
   vert-clair   #C9F2D6   lettres correctes
+  joue         #FF5D8F   joues de la mascotte (repris de mascotte-etats.html)
 
 Matières (pastels, usage exclusif : pastilles et badges de matière)
   maths #FFC2D4   francais #C9BBFF   histoire #B8E9D0
