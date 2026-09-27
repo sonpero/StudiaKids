@@ -53,7 +53,7 @@ describe("GameScreen, as drawn in the mockups", () => {
   it("a right answer: the bravo screen — its line as a big title, the joyful mascot, the star won, « Jeu suivant » with an arrow", async () => {
     answer(true);
     const line = await screen.findByText(/Bravo !|Bien joué !|C'est ça !/);
-    has(line, "font-display", "text-titre-xl");
+    has(line, "font-display", "text-titre");
     expect(screen.getByTestId("mascot")).toHaveAttribute("data-size", "lg");
     expect(within(screen.getByTestId("stars-won")).getByText("+1")).toBeInTheDocument();
     expect(screen.queryByRole("group")).not.toBeInTheDocument();

@@ -10,7 +10,8 @@ const ICONS = {
 
 // docs/design/tuteur.png, flash.png, saisie.png: a square button on the
 // left, the title centred, the star pill on the right.
-export function ScreenHeader({ title, back }: { title: string; back?: HeaderBack }) {
+// `dark`: on the night violet of the flash (docs/design/flash.png).
+export function ScreenHeader({ title, back, dark = false }: { title: string; back?: HeaderBack; dark?: boolean }) {
   return (
     <header className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-2">
       {back ? (
@@ -22,7 +23,7 @@ export function ScreenHeader({ title, back }: { title: string; back?: HeaderBack
       ) : (
         <span className="w-11" />
       )}
-      <h1 className="text-center font-display text-sous-titre font-bold text-ink">{title}</h1>
+      <h1 className={`text-center font-display text-sous-titre font-bold ${dark ? "text-canvas" : "text-ink"}`}>{title}</h1>
       <StarCounter />
     </header>
   );

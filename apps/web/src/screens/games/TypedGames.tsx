@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Mascot } from "../../components/mascot/Mascot.js";
 import type { GameBodyProps } from "./ChoiceGames.js";
-import { prompt, secondary, text } from "./styles.js";
+import { prompt, text } from "./styles.js";
 
 const field =
   "h-12 rounded-bouton border-3 border-ink bg-white px-3 font-text text-corps-l text-ink";
@@ -62,43 +62,35 @@ export function MentalMathGame({ question, onAnswer }: { question: string } & Ga
 
 // docs/modules/game-engine.md, "Copie différée": the word alone on the
 // violet flash for its grade's duration — no countdown shown — then the
-// field, where nothing corrects the child's spelling. « Je relis le mot »
-// shows the flash again: the answer then earns no star.
-export function DelayedCopyGame({
-  wordOrPhrase,
-  displayDurationMs,
-  answered,
-  onAnswer,
-  onReread,
-}: { wordOrPhrase: string; displayDurationMs: number; answered: boolean; onReread: () => void } & GameBodyProps<{ text: string }>) {
-  const [flashing, setFlashing] = useState(true);
+// field, where nothing corrects the child's spelling. The screen holds the
+// flash's timing and « Je relis le mot » (GameScreen); what was typed stays
+// here across a reread.
+export function DelayedCopyGame({ wordOrPhrase, flashing, answered, onAnswer }: { wordOrPhrase: string; flashing: boolean; answered: boolean } & GameBodyProps<{ text: string }>) {
   const [value, setValue] = useState("");
-
-  useEffect(() => {
-    if (!flashing) return;
-    const timer = setTimeout(() => setFlashing(false), displayDurationMs);
-    return () => clearTimeout(timer);
-  }, [flashing, displayDurationMs]);
 
   if (flashing) {
     return (
       <>
-        <Mascot pose="watching" />
-        <div
-          data-testid="flash"
-          className="flex min-h-40 w-full items-center justify-center rounded-carte bg-violet-nuit p-6 font-display text-titre-xl font-bold text-canvas"
-        >
-          {wordOrPhrase}
+        {/* docs/design/flash.png: the word on a cream card, on the night violet. */}
+        <div data-testid="flash" className="flex w-full justify-center bg-violet-nuit">
+          <div data-testid="flash-card" className="flex min-h-40 w-full items-center justify-center rounded-grande-carte border-3 border-ink bg-canvas p-6 shadow-grande-carte">
+            <p className="font-display text-titre-xl font-bold text-ink">{wordOrPhrase}</p>
+          </div>
         </div>
+        <Mascot pose="watching" size="md" />
       </>
     );
   }
 
   return (
     <>
-      {!answered && <Mascot pose="waiting" />}
-      <label className="flex w-full flex-col gap-2">
-        <span className={text}>Écris le mot</span>
+      {!answered && (
+        <div className="self-start">
+          <Mascot pose="waiting" size="md" />
+        </div>
+      )}
+      <label className="flex w-full flex-col gap-2 text-left">
+        <span className="font-display text-sous-titre font-bold text-ink">Écris le mot</span>
         <input
           type="text"
           value={value}
@@ -110,21 +102,9 @@ export function DelayedCopyGame({
             setValue(event.target.value);
             onAnswer(event.target.value.trim() === "" ? null : { text: event.target.value });
           }}
-          className={field}
+          className="h-16 w-full rounded-carte border-3 border-mandarine bg-white px-4 text-center font-display text-titre font-bold tracking-widest text-ink shadow-moyenne focus:outline-none"
         />
       </label>
-      {!answered && (
-        <button
-          type="button"
-          onClick={() => {
-            onReread();
-            setFlashing(true);
-          }}
-          className={secondary}
-        >
-          Je relis le mot
-        </button>
-      )}
     </>
   );
 }

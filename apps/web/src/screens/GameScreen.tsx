@@ -8,7 +8,7 @@ import { ScreenHeader } from "../components/ui/ScreenHeader.js";
 import { card } from "../components/ui/styles.js";
 import { answerExercise, gameLabel, type Correction } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
-import { primary, secondary, text } from "./games/styles.js";
+import { dashed, primary, secondary, text } from "./games/styles.js";
 import { MatchingGame, ReorderingGame } from "./games/TapGames.js";
 import { ClozeGame, DelayedCopyGame, MentalMathGame } from "./games/TypedGames.js";
 
@@ -18,9 +18,9 @@ export interface GameScreenProps {
   onBack: () => void;
 }
 
-type GameBodyArgs = { exercise: PlayableExerciseDto; answered: boolean; onAnswer: (given: unknown) => void; onReread: () => void };
+type GameBodyArgs = { exercise: PlayableExerciseDto; answered: boolean; flashing: boolean; onAnswer: (given: unknown) => void };
 
-function GameBody({ exercise, answered, onAnswer, onReread }: GameBodyArgs) {
+function GameBody({ exercise, answered, flashing, onAnswer }: GameBodyArgs) {
   switch (exercise.type) {
     case "mcq":
       return <McqGame question={exercise.question} options={exercise.options} onAnswer={onAnswer} />;
@@ -35,7 +35,7 @@ function GameBody({ exercise, answered, onAnswer, onReread }: GameBodyArgs) {
     case "mental_math":
       return <MentalMathGame question={exercise.question} onAnswer={onAnswer} />;
     case "delayed_copy":
-      return <DelayedCopyGame wordOrPhrase={exercise.wordOrPhrase} displayDurationMs={exercise.displayDurationMs} answered={answered} onAnswer={onAnswer} onReread={onReread} />;
+      return <DelayedCopyGame wordOrPhrase={exercise.wordOrPhrase} flashing={flashing} answered={answered} onAnswer={onAnswer} />;
   }
 }
 
@@ -62,6 +62,14 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const [reread, setReread] = useState(false);
   const [round, setRound] = useState(0);
   const [variant] = useState(() => Math.floor(Math.random() * 3));
+  // The flash dictation's word, shown for its duration, without countdown.
+  const flashDuration = exercise.type === "delayed_copy" ? exercise.displayDurationMs : null;
+  const [flashing, setFlashing] = useState(flashDuration !== null);
+  useEffect(() => {
+    if (!flashing || flashDuration === null) return;
+    const timer = setTimeout(() => setFlashing(false), flashDuration);
+    return () => clearTimeout(timer);
+  }, [flashing, flashDuration]);
   const queryClient = useQueryClient();
   const send = useMutation({
     mutationFn: (answer: unknown) => answerExercise(exercise.id, answer, reread),
@@ -82,6 +90,7 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
     send.reset();
     setGiven(null);
     setReread(false);
+    setFlashing(flashDuration !== null);
     setRound((n) => n + 1);
   }
 
@@ -106,7 +115,7 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
     feedback = (
       <>
         {/* docs/design/bravo.png: a right answer's line as the screen's big title. */}
-        {correct && <p className="font-display text-titre-xl font-bold text-ink">{line}</p>}
+        {correct && <p className="font-display text-titre font-bold text-balance text-ink">{line}</p>}
         <div className="relative">
           <Mascot pose={pose} motion={celebrate === null ? undefined : "dance"} />
           {starsWon > 0 && (
@@ -147,21 +156,40 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   const answered = send.data !== undefined || send.isError;
   const right = send.data !== undefined && send.data.units.every((unit) => unit.correct);
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center">
-      <ScreenHeader title={gameLabel(exercise.type)} back={{ label: "Tous les jeux", icon: "close", onClick: onBack }} />
-      <p className={text}>{exercise.itemTitle}</p>
-      {/* A right answer gives the screen to the bravo (docs/design/bravo.png). */}
-      {!right && (
-        <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
-          <GameBody exercise={exercise} answered={answered} onAnswer={setGiven} onReread={() => setReread(true)} />
-        </fieldset>
-      )}
-      {!answered && (
-        <button type="button" disabled={given === null || send.isPending} onClick={() => send.mutate(given)} className={primary}>
-          Valider
-        </button>
-      )}
-      {feedback}
-    </main>
+    // docs/design/flash.png: the whole screen goes night violet for the flash.
+    <div className={`min-h-dvh w-full ${flashing ? "bg-violet-nuit" : ""}`}>
+      <main className={`mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center ${flashing ? "bg-violet-nuit" : ""}`}>
+        <ScreenHeader title={gameLabel(exercise.type)} back={{ label: "Tous les jeux", icon: "close", onClick: onBack }} dark={flashing} />
+        <p className={flashing ? "font-text text-corps text-canvas" : text}>{exercise.itemTitle}</p>
+        {/* A right answer gives the screen to the bravo (docs/design/bravo.png). */}
+        {!right && (
+          <fieldset key={round} disabled={answered} className="flex w-full flex-col items-center gap-3">
+            <GameBody exercise={exercise} answered={answered} flashing={flashing} onAnswer={setGiven} />
+          </fieldset>
+        )}
+        {!answered && !flashing && (
+          <button type="button" disabled={given === null || send.isPending} onClick={() => send.mutate(given)} className={primary}>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+            Valider
+          </button>
+        )}
+        {/* docs/design/saisie.png: a second, quieter way under « Valider ». */}
+        {flashDuration !== null && !answered && !flashing && (
+          <button
+            type="button"
+            onClick={() => {
+              setReread(true);
+              setFlashing(true);
+            }}
+            className={dashed}
+          >
+            Je relis le mot
+          </button>
+        )}
+        {feedback}
+      </main>
+    </div>
   );
 }
