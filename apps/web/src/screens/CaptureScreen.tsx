@@ -1,5 +1,6 @@
-import { Mascot } from "../components/mascot/Mascot.js";
 import { PhotoPicker } from "../components/PhotoPicker.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
+import { button } from "../components/ui/styles.js";
 import type { CaptureError, CapturedPage } from "../lib/use-capture.js";
 
 // Same value as ingestion's MAX_PAGES_PER_COURSE (the server refuses a
@@ -37,23 +38,12 @@ export function CaptureScreen({ pages, error, busy, onPhoto, onDone }: CaptureSc
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 py-6 text-center">
-      {refusal && (
-        <>
-          <Mascot pose={refusal.pose} />
-          <p role="alert" className="font-text text-corps text-ink">
-            {refusal.line}
-          </p>
-        </>
-      )}
+      {refusal && <MascotSays pose={refusal.pose} line={refusal.line} role="alert" />}
       {pages.length > 0 && (
         <ul className="grid w-full grid-cols-3 gap-3">
           {pages.map((page, i) => (
-            <li key={page.index}>
-              <img
-                src={page.url}
-                alt={`Page ${String(i + 1)}`}
-                className="aspect-[3/4] w-full rounded-bouton border-3 border-ink object-cover"
-              />
+            <li key={page.index} className="rounded-carte border-3 border-ink bg-white p-1 shadow-moyenne">
+              <img src={page.url} alt={`Page ${String(i + 1)}`} className="aspect-[3/4] w-full rounded-bouton object-cover" />
             </li>
           ))}
         </ul>
@@ -66,7 +56,7 @@ export function CaptureScreen({ pages, error, busy, onPhoto, onDone }: CaptureSc
           type="button"
           disabled={pages.length === 0 || busy}
           onClick={onDone}
-          className="h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60"
+          className={button.primary}
         >
           C'est tout !
         </button>
