@@ -31,6 +31,8 @@ export default defineConfig({
       RAILWAY_VOLUME_MOUNT_PATH: E2E_DATA_DIR,
       SESSION_SECRET,
       COOKIE_SECURE: "false",
+      // The tutor answers inside the API (M6): its recorded fixtures.
+      LLM_ADAPTER: "fixture",
     },
   },
   // Every e2e test starts authenticated via the storageState saved in
