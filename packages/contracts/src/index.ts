@@ -93,7 +93,9 @@ export {
   tutorIssueSchema,
   tutorMessageSchema,
   tutorTerminalSchema,
+  type ConversationDetailDto,
   type ConversationDto,
+  type StartConversationResponse,
   type TutorMessageDto,
   type TutorTerminalEvent,
 } from "./tutor.js";

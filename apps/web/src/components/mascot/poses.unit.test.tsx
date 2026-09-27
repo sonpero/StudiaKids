@@ -29,8 +29,14 @@ describe("Mascot poses", () => {
     expect(glitch.innerHTML.replace(/data-pose="\w+"/, "")).not.toBe(sorryMarkup.replace(/data-pose="\w+"/, ""));
   });
 
-  it("a pose with no drawing yet (refusal) still falls back to idle", () => {
-    render(<Mascot pose="refusal" />);
-    expect(screen.getByTestId("mascot")).toHaveAttribute("data-pose", "idle");
+  // M6 (docs/modules/mascot.md): refusal gets its provisional drawing,
+  // derived from idle's traces — it no longer falls back to idle.
+  it("refusal is drawn as itself, different from idle", () => {
+    const { container: refusal } = render(<Mascot pose="refusal" />);
+    expect(screen.getByTestId("mascot")).toHaveAttribute("data-pose", "refusal");
+    const refusalMarkup = refusal.innerHTML;
+    cleanup();
+    const { container: idle } = render(<Mascot pose="idle" />);
+    expect(idle.innerHTML.replace(/data-pose="\w+"/, "")).not.toBe(refusalMarkup.replace(/data-pose="\w+"/, ""));
   });
 });

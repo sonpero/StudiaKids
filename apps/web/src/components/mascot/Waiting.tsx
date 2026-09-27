@@ -1,8 +1,9 @@
+import { sizeProps, type PoseProps } from "./size.js";
 // Traced literally from docs/design/mascotte-etats.html's `waiting` pose
 // (docs/ui.md, "La mascotte": the paths are never redrawn).
-export function Waiting({ motion }: { motion?: "dance" }) {
+export function Waiting({ motion, size }: PoseProps) {
   return (
-    <svg viewBox="0 0 140 140" width="150" height="150" aria-hidden="true" focusable="false" data-testid="mascot" data-pose="waiting" data-motion={motion}>
+    <svg viewBox="0 0 140 140" {...sizeProps(size)} aria-hidden="true" focusable="false" data-testid="mascot" data-pose="waiting" data-motion={motion}>
       <path d="M70 46 V26" stroke="#2B2140" strokeWidth="4" strokeLinecap="round" />
       <ellipse cx="86" cy="22" rx="15" ry="8" fill="#3FC66B" stroke="#2B2140" strokeWidth="4" transform="rotate(-18 86 22)" />
       <ellipse cx="24" cy="92" rx="12" ry="8" fill="#FFC642" stroke="#2B2140" strokeWidth="4" transform="rotate(-22 24 92)" />

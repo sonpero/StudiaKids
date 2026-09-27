@@ -33,13 +33,15 @@ export interface HomeScreenProps {
   onReadCourse?: (courseId: string) => void;
   onPlayCourse?: (courseId: string) => void;
   onResumeCapture?: (course: CourseDto) => void;
+  // The tutor on the last course opened (docs/ui.md, "Tuteur (M6)").
+  onAskCourse?: (courseId: string) => void;
 }
 
 const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
-export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onPlayCourse, onResumeCapture }: HomeScreenProps) {
+export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onPlayCourse, onResumeCapture, onAskCourse }: HomeScreenProps) {
   const courses = useQuery({ queryKey: COURSES_QUERY_KEY, queryFn: listCourses });
   const [openedAt] = useState(() => Date.now());
   const unconfirmed = useQuery({
@@ -132,6 +134,15 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                       )}
                     </span>
                   </button>
+                  {course.id === lastOpened?.id && onAskCourse && (
+                    <button
+                      type="button"
+                      onClick={() => onAskCourse(course.id)}
+                      className="mt-2 min-h-[44px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-4 font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
+                    >
+                      Poser une question
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

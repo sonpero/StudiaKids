@@ -11,6 +11,8 @@ export interface ReaderScreenProps {
   onHome: () => void;
   // « Créer mes jeux » and its progress, under the text (docs/modules/reader.md).
   footer?: ReactNode;
+  // The tutor on this course (docs/ui.md, "Tuteur (M6)").
+  onAsk?: () => void;
   // Under the tab bar, its « Accueil » tab replaces this button.
   showHomeButton?: boolean;
 }
@@ -34,7 +36,7 @@ const lesson: Components = {
 
 // docs/modules/reader.md, "Écran": the lesson's text, its photos, the voice
 // on the child's tap. No empty state: a confirmed course always has a text.
-export function ReaderScreen({ courseId, onHome, footer, showHomeButton = true }: ReaderScreenProps) {
+export function ReaderScreen({ courseId, onHome, footer, onAsk, showHomeButton = true }: ReaderScreenProps) {
   const reading = useQuery({ queryKey: ["reader", courseId], queryFn: () => getCourseText(courseId) });
   const speech = useSpeech();
   const [enlarged, setEnlarged] = useState<number | null>(null);
@@ -87,6 +89,11 @@ export function ReaderScreen({ courseId, onHome, footer, showHomeButton = true }
             </li>
           ))}
         </ul>
+        {onAsk && (
+          <button type="button" onClick={onAsk} className={secondary}>
+            Poser une question
+          </button>
+        )}
         {footer}
         {enlarged !== null && (
           <div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-canvas)] p-4">

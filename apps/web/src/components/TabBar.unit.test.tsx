@@ -6,13 +6,14 @@ import { TabBar } from "./TabBar.js";
 
 afterEach(cleanup);
 
-// docs/ui.md, "Navigation": Accueil, Lire, Jouer (Tuteur in M6).
+// docs/ui.md, "Navigation": Accueil, Lire, Jouer, and Tuteur since M6
+// (decided at M6's opening: this test's list grew by its fourth tab).
 describe("TabBar", () => {
-  it("shows the three destinations with their labels, the current one marked", () => {
-    render(<TabBar current="play" onHome={vi.fn()} onRead={vi.fn()} onPlay={vi.fn()} />);
+  it("shows the four destinations with their labels, the current one marked", () => {
+    render(<TabBar current="play" onHome={vi.fn()} onRead={vi.fn()} onPlay={vi.fn()} onTutor={vi.fn()} />);
     const tabs = within(screen.getByRole("navigation", { name: "Onglets" }));
 
-    expect(tabs.getAllByRole("button").map((button) => button.textContent)).toEqual(["Accueil", "Lire", "Jouer"]);
+    expect(tabs.getAllByRole("button").map((button) => button.textContent)).toEqual(["Accueil", "Lire", "Jouer", "Tuteur"]);
     expect(tabs.getByRole("button", { name: "Jouer" })).toHaveAttribute("aria-current", "page");
     expect(tabs.getByRole("button", { name: "Lire" })).not.toHaveAttribute("aria-current");
   });
@@ -21,12 +22,14 @@ describe("TabBar", () => {
     const onHome = vi.fn();
     const onRead = vi.fn();
     const onPlay = vi.fn();
-    render(<TabBar current="read" onHome={onHome} onRead={onRead} onPlay={onPlay} />);
+    const onTutor = vi.fn();
+    render(<TabBar current="read" onHome={onHome} onRead={onRead} onPlay={onPlay} onTutor={onTutor} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
     fireEvent.click(screen.getByRole("button", { name: "Lire" }));
     fireEvent.click(screen.getByRole("button", { name: "Jouer" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tuteur" }));
 
-    expect([onHome, onRead, onPlay].map((fn) => fn.mock.calls.length)).toEqual([1, 1, 1]);
+    expect([onHome, onRead, onPlay, onTutor].map((fn) => fn.mock.calls.length)).toEqual([1, 1, 1, 1]);
   });
 });

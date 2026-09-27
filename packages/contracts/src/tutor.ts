@@ -20,7 +20,9 @@ export const tutorMessageSchema = z.object({
 export type TutorMessageDto = z.infer<typeof tutorMessageSchema>;
 
 export const startConversationResponseSchema = z.object({ conversation: conversationSchema, showDisclosure: z.boolean() });
+export type StartConversationResponse = z.infer<typeof startConversationResponseSchema>;
 export const conversationDetailSchema = z.object({ conversation: conversationSchema, messages: z.array(tutorMessageSchema) });
+export type ConversationDetailDto = z.infer<typeof conversationDetailSchema>;
 export const conversationListResponseSchema = z.object({ conversations: z.array(conversationSchema) });
 export const conversationParamsSchema = z.object({ id: z.string() });
 

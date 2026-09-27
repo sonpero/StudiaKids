@@ -8,6 +8,7 @@ import { COURSES_QUERY_KEY, HomeScreen } from "./HomeScreen.js";
 import { GenerationPanel } from "./GenerationPanel.js";
 import { PlayScreen } from "./PlayScreen.js";
 import { ReaderScreen } from "./ReaderScreen.js";
+import { TutorScreen } from "./TutorScreen.js";
 
 export interface MainScreensProps {
   firstName: string;
@@ -15,7 +16,8 @@ export interface MainScreensProps {
   reencode: (file: Blob) => Promise<Blob>;
 }
 
-// A confirmed course is shown under the tab bar, on its Lire or Jouer tab.
+// A confirmed course is shown under the tab bar, on its Lire, Jouer or
+// Tuteur tab.
 type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string } | { name: "tabs"; courseId: string; tab: Tab };
 
 // Navigation by screen state, no router (docs/ui.md, M2).
@@ -64,17 +66,21 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
               courseId={courseId}
               onHome={goHome}
               showHomeButton={false}
+              onAsk={() => setScreen({ name: "tabs", courseId, tab: "tutor" })}
               footer={<GenerationPanel courseId={courseId} onPhoto={startCapture} />}
             />
           </div>
-        ) : (
+        ) : tab === "play" ? (
           <PlayScreen key={`play-${courseId}`} courseId={courseId} onHome={goHome} onPhoto={startCapture} />
+        ) : (
+          <TutorScreen key={`tutor-${courseId}`} courseId={courseId} onHome={goHome} />
         )}
         <TabBar
           current={tab}
           onHome={goHome}
           onRead={() => setScreen({ name: "tabs", courseId, tab: "read" })}
           onPlay={() => setScreen({ name: "tabs", courseId, tab: "play" })}
+          onTutor={() => setScreen({ name: "tabs", courseId, tab: "tutor" })}
         />
       </>
     );
@@ -100,6 +106,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
       onOpenCourse={(courseId) => setScreen({ name: "course", courseId })}
       onReadCourse={(courseId) => setScreen({ name: "tabs", courseId, tab: "read" })}
       onPlayCourse={(courseId) => setScreen({ name: "tabs", courseId, tab: "play" })}
+      onAskCourse={(courseId) => setScreen({ name: "tabs", courseId, tab: "tutor" })}
       onResumeCapture={(course) => {
         capture.reset();
         capture.resume(course.id, course.pageCount);
