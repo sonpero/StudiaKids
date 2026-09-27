@@ -1,12 +1,13 @@
 import type { PlayableExerciseDto } from "@studiakids/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Mascot } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
+import { card } from "../components/ui/styles.js";
 import { gameLabel, listPlayableExercises } from "../lib/play.js";
 import { GameScreen } from "./GameScreen.js";
 import { GenerationPanel } from "./GenerationPanel.js";
 import { SessionSummary } from "./SessionSummary.js";
-import { secondary, text } from "./games/styles.js";
+import { secondary } from "./games/styles.js";
 
 export interface PlayScreenProps {
   courseId: string;
@@ -66,8 +67,7 @@ export function PlayScreen({ courseId, onHome, onPhoto }: PlayScreenProps) {
   if (games.isError) {
     content = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button type="button" onClick={() => void games.refetch()} className={secondary}>
           Réessaie
         </button>
@@ -75,15 +75,12 @@ export function PlayScreen({ courseId, onHome, onPhoto }: PlayScreenProps) {
     );
   } else if (!games.data) {
     content = (
-      <>
-        <Mascot pose="waiting" />
-        <p className={text}>Je cherche tes jeux…</p>
-      </>
+      <MascotSays pose="waiting" line="Je cherche tes jeux…" />
     );
   } else if (games.data.exercises.length === 0) {
     content = (
       <>
-        <p className={text}>Pas encore de jeux pour ce cours.</p>
+        <MascotSays pose="idle" line="Pas encore de jeux pour ce cours." />
         <GenerationPanel courseId={courseId} onPhoto={onPhoto} onReady={() => void games.refetch()} />
       </>
     );
@@ -98,11 +95,11 @@ export function PlayScreen({ courseId, onHome, onPhoto }: PlayScreenProps) {
               <button
                 type="button"
                 onClick={() => setPlaying(exercise)}
-                className="flex min-h-14 w-full flex-col rounded-carte border-3 border-ink bg-white p-3 text-left shadow-moyenne"
+                className={`${card} flex min-h-14 w-full flex-col items-start gap-0.5 p-3 text-left`}
               >
                 <span className="font-display text-corps-l font-bold text-ink">{gameLabel(exercise.type)}</span>
                 <span className="text-petit text-ink-soft">{exercise.itemTitle}</span>
-                {exercise.id === nextExerciseId && <span className="text-petit font-bold text-ink">À toi de jouer !</span>}
+                {exercise.id === nextExerciseId && <span className="mt-1 rounded-pastille border-2 border-ink bg-turquoise px-2 font-display text-mini font-bold text-ink">À toi de jouer !</span>}
               </button>
             </li>
           ))}

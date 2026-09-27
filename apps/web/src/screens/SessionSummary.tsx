@@ -2,6 +2,7 @@ import { present } from "@studiakids/mascot";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Mascot } from "../components/mascot/Mascot.js";
+import { MascotSays } from "../components/ui/MascotSays.js";
 import { getProgress } from "../lib/progress.js";
 import { primary, secondary, text } from "./games/styles.js";
 
@@ -21,8 +22,7 @@ export function SessionSummary({ since, onMore, onHome }: SessionSummaryProps) {
   if (summary.isError) {
     content = (
       <>
-        <Mascot pose="glitch" />
-        <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
+        <MascotSays pose="glitch" line="Oh, quelque chose a coincé. On réessaie ?" />
         <button type="button" onClick={() => void summary.refetch()} className={secondary}>
           Réessaie
         </button>
@@ -30,10 +30,7 @@ export function SessionSummary({ since, onMore, onHome }: SessionSummaryProps) {
     );
   } else if (!summary.data) {
     content = (
-      <>
-        <Mascot pose="waiting" />
-        <p className={text}>Je compte tes étoiles…</p>
-      </>
+      <MascotSays pose="waiting" line="Je compte tes étoiles…" />
     );
   } else {
     const stars = summary.data.starsSince ?? 0;
@@ -41,9 +38,11 @@ export function SessionSummary({ since, onMore, onHome }: SessionSummaryProps) {
     const { pose, line } = present({ type: "session-complete", starsEarned: stars }, variant);
     content = (
       <>
-        <Mascot pose={pose} />
-        <p className="font-display text-sous-titre font-bold text-ink">{line}</p>
-        {successes > 0 && <p className={text}>{successes === 1 ? "1 bonne réponse" : `${String(successes)} bonnes réponses`}</p>}
+        <section data-summary className="flex w-full flex-col items-center gap-2 rounded-grande-carte border-3 border-ink bg-white p-5 shadow-grande-carte">
+          <Mascot pose={pose} />
+          <p className="font-display text-titre font-bold text-balance text-ink">{line}</p>
+          {successes > 0 && <p className={text}>{successes === 1 ? "1 bonne réponse" : `${String(successes)} bonnes réponses`}</p>}
+        </section>
         <button type="button" onClick={onMore} className={primary}>
           Encore des jeux
         </button>

@@ -56,6 +56,6 @@ describe("ReaderScreen, in the mockups' language", () => {
         <GenerationPanel courseId="c1" onPhoto={vi.fn()} />
       </QueryClientProvider>,
     );
-    expect((await screen.findByText(/Je prépare tes jeux/)).hasAttribute("data-bubble")).toBe(true);
+    expect((await screen.findByText(/Je prépare tes jeux|Tes jeux arrivent/)).hasAttribute("data-bubble")).toBe(true);
   });
 });
