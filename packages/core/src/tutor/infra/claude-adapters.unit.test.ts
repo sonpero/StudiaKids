@@ -106,3 +106,45 @@ describe("ClaudeCitationExtractor", () => {
     expect(api.requests).toHaveLength(2);
   });
 });
+
+// ai 4.x hands a stream's errors to onError and just ends textStream: an
+// interrupted answer would pass for a complete one. The adapter must throw.
+describe("ClaudeChatModel, an interrupted answer", () => {
+  const event = (type: string, data: unknown) => `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+  const start = event("message_start", { type: "message_start", message: { id: "m", type: "message", role: "assistant", model: "m", content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } } });
+  const block = event("content_block_start", { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } });
+  const delta = (text: string) => event("content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "text_delta", text } });
+  const end = (stop: string) =>
+    event("content_block_stop", { type: "content_block_stop", index: 0 }) +
+    event("message_delta", { type: "message_delta", delta: { stop_reason: stop, stop_sequence: null }, usage: { output_tokens: 2 } }) +
+    event("message_stop", { type: "message_stop" });
+  const sse = (body: string, status = 200) => () => new Response(body, { status, headers: { "content-type": "text/event-stream" } });
+
+  async function read(reply: () => Response): Promise<{ text: string; failed: boolean }> {
+    const chat = new ClaudeChatModel(createLanguageModel({ apiKey: "k", fetch: stubApi([reply, reply, reply]).fetch }));
+    let text = "";
+    try {
+      for await (const chunk of chat.stream({ question: "?", sections: [], history: [], grade: "CE2" })) text += chunk;
+      return { text, failed: false };
+    } catch {
+      return { text, failed: true };
+    }
+  }
+
+  it("a complete answer ends normally", async () => {
+    expect(await read(sse(start + block + delta("Un ") + delta("verbe.") + end("end_turn")))).toEqual({ text: "Un verbe.", failed: false });
+  });
+
+  it("an error event mid-answer throws, after the text already given", async () => {
+    const result = await read(sse(start + block + delta("Un ") + event("error", { type: "error", error: { type: "overloaded_error", message: "Overloaded" } })));
+    expect(result).toEqual({ text: "Un ", failed: true });
+  });
+
+  it("an answer cut by the token ceiling throws: never passed off as complete", async () => {
+    expect((await read(sse(start + block + delta("Un ") + end("max_tokens")))).failed).toBe(true);
+  });
+
+  it("an HTTP error throws", async () => {
+    expect((await read(sse(JSON.stringify({ type: "error", error: { type: "overloaded_error", message: "x" } }), 529))).failed).toBe(true);
+  });
+});

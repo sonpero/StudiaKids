@@ -11,6 +11,7 @@ import {
   SqliteCourseRepository,
   SqliteItemRepository,
   SqliteAttemptRepository,
+  SqliteConversationRepository,
   SqliteJobQueue,
   startExtraction,
   uuidV7Generator,
@@ -117,5 +118,31 @@ describe("deleteAccountWithPhotos", () => {
     expect(await deleteAccountWithPhotos({ db, volumeRoot: volume }, "lea")).toBe("deleted");
 
     expect([count("attempts", lea), count("attempts", tom)]).toEqual([0, 1]);
+  });
+
+  // Decided at M6's opening: accounts:delete also removes the account's
+  // conversations, messages (distress included) and disclosure flag.
+  it("removes the account's tutor conversations, messages and disclosure, and leaves another account's alone", async () => {
+    const seed = async (username: string) => {
+      const account = await accountWithCourse(username);
+      const courseId = db.get<{ id: string }>(sql`SELECT id FROM courses WHERE user_id = ${account.userId}`).id;
+      const repo = new SqliteConversationRepository(db);
+      const conversationId = `k-${username}`;
+      await repo.create(account.userId, { id: conversationId, userId: account.userId, courseId, title: null, createdAt: now.toISOString() });
+      const message = (id: string, role: "user" | "assistant") => ({ id, conversationId, role, content: "x", citations: null, issue: role === "assistant" ? ("distress" as const) : null, outOfBand: role === "assistant", partial: false, createdAt: now.toISOString() });
+      await repo.appendExchange(account.userId, conversationId, [message(`${username}-q`, "user"), message(`${username}-r`, "assistant")], "t");
+      await repo.markDisclosed(account.userId, now);
+      return account.userId;
+    };
+    const lea = await seed("lea");
+    const tom = await seed("tom");
+    const messages = (userId: string) => db.get<{ n: number }>(sql`SELECT count(*) AS n FROM messages m JOIN conversations c ON c.id = m.conversation_id WHERE c.user_id = ${userId}`).n;
+    expect([count("conversations", lea), messages(lea), count("tutor_disclosures", lea)]).toEqual([1, 2, 1]);
+
+    expect(await deleteAccountWithPhotos({ db, volumeRoot: volume }, "lea")).toBe("deleted");
+
+    expect([count("conversations", lea), count("tutor_disclosures", lea)]).toEqual([0, 0]);
+    expect(db.get<{ n: number }>(sql`SELECT count(*) AS n FROM messages WHERE id LIKE 'lea-%'`).n).toBe(0);
+    expect([count("conversations", tom), messages(tom), count("tutor_disclosures", tom)]).toEqual([1, 2, 1]);
   });
 });

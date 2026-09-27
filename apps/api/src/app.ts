@@ -4,10 +4,12 @@ import staticPlugin from "@fastify/static";
 import {
   GeneratedExercises,
   IngestionCourseTexts,
+  IngestionTutorCourses,
   listAttemptsForProgress,
   LocalFileStore,
   MAX_PAGE_BYTES,
   SqliteAttemptRepository,
+  SqliteConversationRepository,
   SqliteCourseRepository,
   SqliteItemRepository,
   SqliteJobQueue,
@@ -29,6 +31,8 @@ import { meRoutes } from "./routes/me.js";
 import { playRoutes } from "./routes/play.js";
 import { progressRoutes } from "./routes/progress.js";
 import { readerRoutes } from "./routes/reader.js";
+import { tutorRoutes } from "./routes/tutor.js";
+import { OFFLINE_TUTOR, type TutorModels } from "./tutor-models.js";
 
 export interface BuildAppOptions {
   databasePath: string;
@@ -38,6 +42,9 @@ export interface BuildAppOptions {
   sessionSecret: string;
   cookieSecure: boolean;
   sessionDurationDays?: number;
+  // server.ts passes selectTutorModels(process.env); without it the tutor
+  // never calls a model (every question gets the « ask again » message).
+  tutorModels?: TutorModels;
 }
 
 const DEFAULT_SESSION_DURATION_DAYS = 365;
@@ -107,6 +114,13 @@ export function buildApp(opts: BuildAppOptions) {
     clock: systemClock,
   });
   void app.register(progressRoutes, { attempts: progressAttempts });
+  void app.register(tutorRoutes, {
+    repo: new SqliteConversationRepository(db),
+    courses: new IngestionTutorCourses(courseRepository),
+    models: opts.tutorModels ?? OFFLINE_TUTOR,
+    idGenerator: uuidV7Generator,
+    clock: systemClock,
+  });
   void app.register(healthRoutes);
 
   if (opts.webDistPath) {

@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { buildApp } from "./app.js";
 import { resolveDataDirs } from "./data-dirs.js";
+import { selectTutorModels } from "./tutor-models.js";
 
 const { root, dbDir } = resolveDataDirs();
 
@@ -15,6 +16,7 @@ const app = buildApp({
   sessionSecret: process.env.SESSION_SECRET ?? "",
   cookieSecure: process.env.COOKIE_SECURE === "true",
   sessionDurationDays: process.env.SESSION_DURATION_DAYS ? Number(process.env.SESSION_DURATION_DAYS) : undefined,
+  tutorModels: selectTutorModels(process.env),
 });
 
 const port = Number(process.env.PORT ?? 3000);
