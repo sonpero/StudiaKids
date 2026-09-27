@@ -531,7 +531,7 @@ tuteur.
 
 ---
 
-## M5 — Progression et mascotte festive (ouvert)
+## M5 — Progression et mascotte festive (accepté)
 
 Ouvert le 2026-09-26, en session autonome (plan au journal de session,
 décisions d'Alexandre) : étoiles au rejeu — une au premier succès, puis au
@@ -562,15 +562,57 @@ mascotte danser ; il se trompe une fois et ne perd rien ; il revient plus
 tard, l'accueil lui propose de reprendre son dernier cours.
 
 **Acceptation**
-- [ ] Unitaire : le calcul des étoiles et du bonus de série est une
+- [x] Unitaire : le calcul des étoiles et du bonus de série est une
       fonction pure des événements de tentative (mêmes événements en
-      entrée, même total en sortie, testé explicitement)
-- [ ] Unitaire : un échec ne fait jamais diminuer le total affiché
-- [ ] Intégration : le compteur exposé par l'API correspond exactement à la
+      entrée, même total en sortie, testé explicitement) —
+      `progress/domain/progress.unit.test.ts` (« the same attempts give
+      the same total and streak, in any order » ; jour de Paris aux bornes
+      23 h 59 / 0 h 00, en hiver, en été et sur les deux nuits de
+      changement d'heure ; rejeu quotidien ; série ; bonus ; fêtes) —
+      mutation testé (36 mutants tués)
+- [x] Unitaire : un échec ne fait jamais diminuer le total affiché —
+      `progress.unit.test.ts` (« a failure never lowers the total,
+      whatever the history and wherever it lands », « the running total
+      never goes down, answer after answer ») ; à l'écran,
+      `e2e/progress.spec.ts` (« a wrong answer takes nothing away… »)
+- [x] Intégration : le compteur exposé par l'API correspond exactement à la
       somme dérivée des événements stockés — jamais un compteur mutable qui
-      pourrait se désynchroniser
-- [ ] Playwright : une série de bonnes réponses déclenche la danse de la
-      joie ; après reconnexion, l'accueil propose la reprise du bon cours
+      pourrait se désynchroniser — `apps/api/src/routes/progress.int.test.ts`
+      (« the total the API exposes is exactly what the stored attempts
+      derive to, never a counter of its own » : après chacune de six
+      réponses ; aucune colonne d'étoiles ni de série ; deux comptes
+      jamais mêlés)
+- [x] Playwright : une série de bonnes réponses déclenche la danse de la
+      joie ; après reconnexion, l'accueil propose la reprise du bon cours —
+      `e2e/progress.spec.ts` (« five right answers in a row… the joy
+      dance », animation `mascot-dance` calculée ; « after logging in
+      again, the home offers to resume the last course opened » ; plus
+      `prefers-reduced-motion`, erreur sans perte, récapitulatif), desktop
+      et mobile, en CI
+
+**Démo** — clôture demandée par Alexandre le 27/09/2026 ; le résultat de
+la démo n'a pas été transmis dans la demande.
+
+**Décidé et validé** : étoile par réponse entière ; réussite marquante =
+première réussite d'un exercice d'abord manqué ; session de jeu (entrée
+dans Jouer → « J'ai fini » ou fin de la liste) ; badge « On reprend ? »
+sur la carte du dernier cours ouvert ; bonne réponse après une erreur
+affichée jusqu'à « Continuer ».
+
+**Dettes reportées, avec leur jalon cible**
+- **Seuil du bonus de série** : 5 (la spec) gardé ; Alexandre devait
+  trancher après la démo — décision non transmise, **à trancher**
+- **Rotation de `nextExercise`** et **séances de dictée flash** — après
+  les premiers essais réels
+- **Deux réponses au même exercice dans la même milliseconde** lues comme
+  une seule — sans effet au tap ; à revoir si les réponses arrivent un
+  jour en lot
+- **Textes et noms de jeux « à valider »** de `docs/ui.md` (écran Jouer,
+  récapitulatif, compteur) ; poses `sorry` / `glitch` et pastels de
+  matière provisoires — validation à l'œil
+- Dettes de M3/M4 inchangées (section Exercices au découpage, consigne
+  « 8 à 40 », juge v1, vraies photos, worker sans clé API, fixture de
+  calcul mental)
 
 **Hors périmètre** — tuteur, tout classement ou comparaison entre enfants
 (explicitement absent du produit), notifications ou rappels.
