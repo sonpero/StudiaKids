@@ -11,12 +11,12 @@ export interface CourseScreenProps {
   onPhoto: (file: File) => void;
 }
 
-const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
+const text = "font-text text-corps text-ink-soft";
 const primary =
-  "h-[56px] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_5px_0_var(--color-ink)] disabled:opacity-60";
+  "h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60";
 const secondary =
-  "h-[56px] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)] disabled:opacity-60";
-const quiet = "h-[44px] w-full px-4 font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)] underline";
+  "h-14 w-full rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne disabled:opacity-60";
+const quiet = "h-11 w-full px-4 font-text text-corps text-ink-soft underline";
 
 // docs/ui.md, "Photographier un cours (M2)": the waiting screen, the
 // unusable photo (sorry), the technical failure (glitch) and the
@@ -134,17 +134,17 @@ export function CourseScreen({ courseId, onHome, onPhoto }: CourseScreenProps) {
         <img
           src={pageFileUrl(courseId, 0)}
           alt="Ta photo"
-          className="max-h-[40dvh] w-auto rounded-[20px] border-[3px] border-[var(--color-ink)] object-contain"
+          className="max-h-[40dvh] w-auto rounded-carte border-3 border-ink object-contain"
         />
-        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{ready.title}</h1>
+        <h1 className="font-display text-titre font-bold text-ink">{ready.title}</h1>
         <p className="flex items-center gap-2">
           <span
             style={{ backgroundColor: `var(--${ready.color})` }}
-            className="rounded-[999px] border-[2px] border-[var(--color-ink)] px-3 font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--color-ink)]"
+            className="rounded-pastille border-2 border-ink px-3 font-display text-corps font-bold text-ink"
           >
             {ready.subject ? subjectLabel(ready.subject) : ""}
           </span>
-          <span className="rounded-[999px] border-[2px] border-[var(--color-ink)] px-3 font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--color-ink)]">
+          <span className="rounded-pastille border-2 border-ink px-3 font-display text-corps font-bold text-ink">
             {ready.grade}
           </span>
         </p>

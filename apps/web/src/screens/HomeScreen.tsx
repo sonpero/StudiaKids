@@ -37,7 +37,7 @@ export interface HomeScreenProps {
   onAskCourse?: (courseId: string) => void;
 }
 
-const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
+const text = "font-text text-corps text-ink-soft";
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
@@ -75,7 +75,7 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
         <button
           type="button"
           onClick={() => void courses.refetch()}
-          className="h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
+          className="h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne"
         >
           Réessaie
         </button>
@@ -96,39 +96,39 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
           <button
             type="button"
             onClick={() => (pending.extractionStarted === false ? onResumeCapture?.(pending) : onOpenCourse?.(pending.id))}
-            className="min-h-[56px] w-full rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-soleil)] px-4 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
+            className="min-h-14 w-full rounded-carte border-3 border-ink bg-soleil px-4 font-display text-corps-l font-bold text-ink shadow-moyenne"
           >
             {pending.extractionStarted === false ? NOT_LAUNCHED : BANNER[pending.extractionStatus]}
           </button>
         )}
         {list.length > 0 && (
           <section className="flex w-full flex-col gap-3 text-left">
-            <h2 className="font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]">Mes cours</h2>
+            <h2 className="font-display text-sous-titre font-bold text-ink">Mes cours</h2>
             <ul className="flex flex-col gap-3">
               {list.map((course) => (
                 <li key={course.id}>
                   <button
                     type="button"
                     onClick={() => openConfirmed(course)}
-                    className="flex min-h-[56px] w-full items-center gap-3 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white p-3 text-left shadow-[0_4px_0_var(--color-ink)]"
+                    className="flex min-h-14 w-full items-center gap-3 rounded-carte border-3 border-ink bg-white p-3 text-left shadow-moyenne"
                   >
                     <span
                       data-subject-chip
                       style={{ backgroundColor: `var(--${course.color})` }}
-                      className="h-[44px] w-[44px] shrink-0 rounded-[15px] border-[2px] border-[var(--color-ink)]"
+                      className="h-11 w-11 shrink-0 rounded-bouton border-2 border-ink"
                     />
                     <span className="flex flex-col">
-                      <span className="font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)]">{course.title}</span>
-                      <span className="text-[14.5px] text-[var(--color-ink-soft)]">
+                      <span className="font-display text-corps-l font-bold text-ink">{course.title}</span>
+                      <span className="text-petit text-ink-soft">
                         {course.subject ? subjectLabel(course.subject) : ""} · {course.grade}
                       </span>
                       {course.id === lastOpened?.id && (
-                        <span className="self-start rounded-[999px] border-[2px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-2 text-[14.5px] font-bold text-[var(--color-ink)]">
+                        <span className="self-start rounded-pastille border-2 border-ink bg-turquoise px-2 text-petit font-bold text-ink">
                           On reprend ?
                         </span>
                       )}
                       {course.exerciseCount > 0 && (
-                        <span className="text-[14.5px] font-bold text-[var(--color-ink)]">
+                        <span className="text-petit font-bold text-ink">
                           {course.exerciseCount === 1 ? "1 jeu prêt" : `${String(course.exerciseCount)} jeux prêts`}
                         </span>
                       )}
@@ -138,7 +138,7 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
                     <button
                       type="button"
                       onClick={() => onAskCourse(course.id)}
-                      className="mt-2 min-h-[44px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-4 font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]"
+                      className="mt-2 min-h-11 rounded-bouton border-3 border-ink bg-turquoise px-4 font-display text-corps font-bold text-ink shadow-moyenne"
                     >
                       Poser une question
                     </button>
@@ -155,14 +155,14 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 py-6 text-center">
       <header className="flex w-full items-center justify-between">
-        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">Salut {firstName} !</h1>
+        <h1 className="font-display text-titre font-bold text-ink">Salut {firstName} !</h1>
         <StarCounter />
       </header>
       {body}
       <button
         type="button"
         onClick={onLogout}
-        className="mt-auto h-[44px] px-4 font-[family-name:var(--font-text)] text-[14.5px] text-[var(--color-ink-soft)] underline"
+        className="mt-auto h-11 px-4 font-text text-petit text-ink-soft underline"
       >
         Se déconnecter
       </button>

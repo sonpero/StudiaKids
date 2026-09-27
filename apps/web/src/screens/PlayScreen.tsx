@@ -91,18 +91,18 @@ export function PlayScreen({ courseId, onHome, onPhoto }: PlayScreenProps) {
     const { exercises, nextExerciseId } = games.data;
     content = (
       <>
-        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">Tes jeux</h1>
+        <h1 className="font-display text-titre font-bold text-ink">Tes jeux</h1>
         <ul className="flex w-full flex-col gap-3 text-left">
           {exercises.map((exercise) => (
             <li key={exercise.id}>
               <button
                 type="button"
                 onClick={() => setPlaying(exercise)}
-                className="flex min-h-[56px] w-full flex-col rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white p-3 text-left shadow-[0_4px_0_var(--color-ink)]"
+                className="flex min-h-14 w-full flex-col rounded-carte border-3 border-ink bg-white p-3 text-left shadow-moyenne"
               >
-                <span className="font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)]">{gameLabel(exercise.type)}</span>
-                <span className="text-[14.5px] text-[var(--color-ink-soft)]">{exercise.itemTitle}</span>
-                {exercise.id === nextExerciseId && <span className="text-[14.5px] font-bold text-[var(--color-ink)]">À toi de jouer !</span>}
+                <span className="font-display text-corps-l font-bold text-ink">{gameLabel(exercise.type)}</span>
+                <span className="text-petit text-ink-soft">{exercise.itemTitle}</span>
+                {exercise.id === nextExerciseId && <span className="text-petit font-bold text-ink">À toi de jouer !</span>}
               </button>
             </li>
           ))}
@@ -114,5 +114,5 @@ export function PlayScreen({ courseId, onHome, onPhoto }: PlayScreenProps) {
     );
   }
 
-  return <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-[96px] text-center">{content}</main>;
+  return <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center">{content}</main>;
 }

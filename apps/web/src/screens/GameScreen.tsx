@@ -105,7 +105,7 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
         <Mascot pose={pose} motion={celebrate === null ? undefined : "dance"} />
         <p className={text}>{line}</p>
         {showCorrection && correction !== undefined && (
-          <div role="status" className="flex flex-col gap-1 rounded-[15px] border-[3px] border-[var(--color-ink)] bg-white p-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">
+          <div role="status" className="flex flex-col gap-1 rounded-bouton border-3 border-ink bg-white p-3 font-text text-corps-l text-ink">
             {correctionLines(exercise.type, correction).map((correctionLine) => (
               <p key={correctionLine}>{correctionLine}</p>
             ))}
@@ -130,9 +130,9 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
 
   const answered = send.data !== undefined || send.isError;
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-[96px] text-center">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center">
       <header className="flex w-full items-center justify-between">
-        <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{gameLabel(exercise.type)}</h1>
+        <h1 className="font-display text-titre font-bold text-ink">{gameLabel(exercise.type)}</h1>
         <StarCounter />
       </header>
       <p className={text}>{exercise.itemTitle}</p>

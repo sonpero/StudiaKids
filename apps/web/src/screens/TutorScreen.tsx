@@ -12,10 +12,10 @@ export interface TutorScreenProps {
   onOpenPassage?: (passages: string[]) => void;
 }
 
-const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
+const text = "font-text text-corps text-ink-soft";
 const secondary =
-  "h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]";
-const bubble = "rounded-[20px] border-[3px] border-[var(--color-ink)] px-4 py-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]";
+  "h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne";
+const bubble = "rounded-carte border-3 border-ink px-4 py-3 font-text text-corps-l text-ink";
 
 // The pose next to a stored answer (docs/modules/mascot.md): a refusal is
 // the refusal pose, a failure the glitch; an answer or the cap, idle.
@@ -26,7 +26,7 @@ function poseOf(message: TutorMessageDto): MascotPose {
 }
 
 function Question({ content }: { content: string }) {
-  return <p className={`${bubble} max-w-[85%] self-end bg-[var(--color-soleil)] text-left`}>{content}</p>;
+  return <p className={`${bubble} max-w-[85%] self-end bg-soleil text-left`}>{content}</p>;
 }
 
 // An answer or a fixed text, next to the mascot's medallion (docs/ui.md,
@@ -34,7 +34,7 @@ function Question({ content }: { content: string }) {
 function Answer({ pose, content, citations, partial, onOpenPassage }: { pose: MascotPose; content: string; citations?: { text: string }[] | null; partial?: boolean; onOpenPassage?: (passages: string[]) => void }) {
   return (
     <article className="flex max-w-[95%] items-start gap-2 self-start text-left">
-      <span className="shrink-0 rounded-[999px] border-[3px] border-[var(--color-ink)] bg-white p-1">
+      <span className="shrink-0 rounded-pastille border-3 border-ink bg-white p-1">
         <Mascot pose={pose} size="avatar" />
       </span>
       <div className={`${bubble} flex flex-col gap-2 bg-white`}>
@@ -55,7 +55,7 @@ function PassagePill({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex min-h-[44px] items-center gap-2 self-start rounded-[999px] border-[2px] border-[var(--color-ink)] bg-[var(--color-canvas)] px-3 font-[family-name:var(--font-text)] text-[14.5px] font-semibold text-[var(--color-ink)]"
+      className="flex min-h-11 items-center gap-2 self-start rounded-pastille border-2 border-ink bg-canvas px-3 font-text text-petit font-semibold text-ink"
     >
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
         <path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z" />
@@ -71,9 +71,9 @@ function PassagePill({ onOpen }: { onOpen: () => void }) {
 // is the fixed one the server stored (docs/securite.md, validated).
 function HelpBlock({ content }: { content: string }) {
   return (
-    <section aria-label="Besoin d'aide" className="flex flex-col gap-2 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-peche)] p-4 text-left">
+    <section aria-label="Besoin d'aide" className="flex flex-col gap-2 rounded-carte border-3 border-ink bg-peche p-4 text-left">
       {content.split("\n").map((line, i) => (
-        <p key={i} className="font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink)]">
+        <p key={i} className="font-text text-corps text-ink">
           {line}
         </p>
       ))}
@@ -112,7 +112,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
 
   if (opened.isError || detail.isError) {
     return (
-      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-[88px] text-center">
+      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-22 text-center">
         <Mascot pose="glitch" />
         <p className={text}>Oh, quelque chose a coincé. On réessaie ?</p>
         <button type="button" onClick={() => void (opened.isError ? opened.refetch() : detail.refetch())} className={secondary}>
@@ -123,7 +123,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
   }
   if (!opened.data || !detail.data || conversationId === undefined) {
     return (
-      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-[88px] text-center">
+      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 px-4 py-6 pb-22 text-center">
         <Mascot pose="waiting" />
         <p className={text}>Je prépare ton tuteur…</p>
       </main>
@@ -155,7 +155,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pt-6 text-center">
-      <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">Tuteur</h1>
+      <h1 className="font-display text-titre font-bold text-ink">Tuteur</h1>
       {disclosure && (
         <div className="flex flex-col items-center gap-2">
           <Mascot pose={disclosure.pose} />
@@ -190,7 +190,7 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
         )}
       </section>
       {/* Clear of the fixed tab bar and the phone's safe area (decided after M6's build). */}
-      <div className="sticky bottom-0 flex flex-col gap-3 bg-[var(--color-canvas)] pt-2 pb-[calc(100px+env(safe-area-inset-bottom))]">
+      <div className="sticky bottom-0 flex flex-col gap-3 bg-canvas pt-2 pb-[calc(--spacing(25)+env(safe-area-inset-bottom))]">
         {distress && <HelpBlock content={distress.content} />}
         <form onSubmit={(event) => void send(event)} className="flex w-full min-w-0 items-center gap-2">
           {/* docs/design/tuteur.png shows only the placeholder; the real label stays for screen readers. */}
@@ -203,13 +203,13 @@ export function TutorScreen({ courseId, onHome, onOpenPassage }: TutorScreenProp
             maxLength={QUESTION_MAX_LENGTH}
             placeholder="Écris ta question…"
             onChange={(event) => setQuestion(event.target.value)}
-            className="h-[56px] min-w-0 flex-1 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-white px-3 font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink)] placeholder:text-[var(--color-ink-soft)]"
+            className="h-14 min-w-0 flex-1 rounded-carte border-3 border-ink bg-white px-3 font-text text-corps text-ink placeholder:text-ink-soft"
           />
           <button
             type="submit"
             aria-label="Envoyer"
             disabled={!canSend}
-            className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)] disabled:opacity-50"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-bouton border-3 border-ink bg-mandarine text-ink shadow-moyenne disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
               <path d="M21 3 3 10l7 3 3 7z" />

@@ -28,7 +28,7 @@ export function StarCounter() {
       // read as one image, « 3 étoiles ».
       role="img"
       aria-label={starsLabel(total)}
-      className="flex items-center gap-1 font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]"
+      className="flex items-center gap-1 font-display text-sous-titre font-bold text-ink"
     >
       <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
         <path

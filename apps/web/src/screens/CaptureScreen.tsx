@@ -40,7 +40,7 @@ export function CaptureScreen({ pages, error, busy, onPhoto, onDone }: CaptureSc
       {refusal && (
         <>
           <Mascot pose={refusal.pose} />
-          <p role="alert" className="font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink)]">
+          <p role="alert" className="font-text text-corps text-ink">
             {refusal.line}
           </p>
         </>
@@ -52,13 +52,13 @@ export function CaptureScreen({ pages, error, busy, onPhoto, onDone }: CaptureSc
               <img
                 src={page.url}
                 alt={`Page ${String(i + 1)}`}
-                className="aspect-[3/4] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] object-cover"
+                className="aspect-[3/4] w-full rounded-bouton border-3 border-ink object-cover"
               />
             </li>
           ))}
         </ul>
       )}
-      {busy && <p className="font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]">J'envoie ta photo…</p>}
+      {busy && <p className="font-text text-corps text-ink-soft">J'envoie ta photo…</p>}
       <div className="mt-auto flex w-full flex-col gap-3">
         {pages.length === 0 && <PhotoPicker label="Photographier un cours" variant="primary" disabled={busy} onPhoto={onPhoto} />}
         {pages.length > 0 && pages.length < MAX_PAGES && <PhotoPicker label="Une autre page" variant="secondary" disabled={busy} onPhoto={onPhoto} />}
@@ -66,7 +66,7 @@ export function CaptureScreen({ pages, error, busy, onPhoto, onDone }: CaptureSc
           type="button"
           disabled={pages.length === 0 || busy}
           onClick={onDone}
-          className="h-[56px] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_5px_0_var(--color-ink)] disabled:opacity-60"
+          className="h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60"
         >
           C'est tout !
         </button>

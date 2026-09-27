@@ -61,7 +61,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
       <>
         {tab === "read" ? (
           // Room under the text for the fixed tab bar.
-          <div className="pb-[72px]">
+          <div className="pb-18">
             <ReaderScreen
               key={`read-${courseId}`}
               courseId={courseId}

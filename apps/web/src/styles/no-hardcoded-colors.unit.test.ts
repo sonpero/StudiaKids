@@ -28,3 +28,14 @@ describe("colours", () => {
     expect(found).toEqual([]);
   });
 });
+
+// Sizes, radii, shadows and type from the tokens too: no pixel value
+// written in a class, never a bracketed var() where a token utility exists.
+describe("sizes", () => {
+  const ARBITRARY = /\b[\w:-]+-\[[^\]]*\d(px|rem|em)[^\]]*\]|\[var\(--(color|font)-[\w-]+\)\]/g;
+
+  it("no pixel size nor bracketed token in a class outside tokens.css", () => {
+    const found = checked.flatMap((file) => [...readFileSync(file, "utf8").matchAll(ARBITRARY)].map((match) => `${path.relative(src, file)}: ${match[0]}`));
+    expect(found).toEqual([]);
+  });
+});

@@ -42,7 +42,7 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
       <Mascot pose="idle" />
-      <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--color-ink)]">StudiaKids</h1>
+      <h1 className="font-display text-3xl font-bold text-ink">StudiaKids</h1>
       <form
         onSubmit={(event) => {
           void handleSubmit(event);
@@ -50,10 +50,10 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
         className="flex w-full max-w-xs flex-col gap-3"
       >
         <label htmlFor={usernameId} className="flex flex-col gap-1 text-left">
-          <span className="text-[14.5px] text-[var(--color-ink-soft)]">Identifiant</span>
+          <span className="text-petit text-ink-soft">Identifiant</span>
           <input
             id={usernameId}
-            className="h-[44px] rounded-[15px] border-[3px] border-[var(--color-ink)] px-3 font-[family-name:var(--font-text)]"
+            className="h-11 rounded-bouton border-3 border-ink px-3 font-text"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
@@ -61,11 +61,11 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
           />
         </label>
         <label htmlFor={passwordId} className="flex flex-col gap-1 text-left">
-          <span className="text-[14.5px] text-[var(--color-ink-soft)]">Mot de passe</span>
+          <span className="text-petit text-ink-soft">Mot de passe</span>
           <input
             id={passwordId}
             type="password"
-            className="h-[44px] rounded-[15px] border-[3px] border-[var(--color-ink)] px-3 font-[family-name:var(--font-text)]"
+            className="h-11 rounded-bouton border-3 border-ink px-3 font-text"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
@@ -73,14 +73,14 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
           />
         </label>
         {error && (
-          <p role="alert" className="text-[var(--color-ink)]">
+          <p role="alert" className="text-ink">
             {error}
           </p>
         )}
         <button
           type="submit"
           disabled={pending}
-          className="h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] font-[family-name:var(--font-display)] font-bold text-[var(--color-ink)] shadow-[0_5px_0_var(--color-ink)] disabled:opacity-60"
+          className="h-14 rounded-bouton border-3 border-ink bg-mandarine font-display font-bold text-ink shadow-primaire disabled:opacity-60"
         >
           Se connecter
         </button>

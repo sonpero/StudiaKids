@@ -204,9 +204,9 @@ describe("TutorScreen, asking", () => {
     const input = await screen.findByRole("textbox", { name: "Écris ta question…" });
     expect(input).toHaveAttribute("placeholder", "Écris ta question…");
     const send = screen.getByRole("button", { name: "Envoyer" });
-    expect(send.className).toContain("bg-[var(--color-mandarine)]");
-    expect(send.className).toContain("h-[56px]");
-    expect(send.className).toContain("w-[56px]");
+    expect(send.className).toContain("bg-mandarine");
+    expect(send.className).toContain("h-14");
+    expect(send.className).toContain("w-14");
     expect(send.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     expect(send.textContent).toBe("");
   });

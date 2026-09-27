@@ -20,19 +20,19 @@ export interface ReaderScreenProps {
   showHomeButton?: boolean;
 }
 
-const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
+const text = "font-text text-corps text-ink-soft";
 const secondary =
-  "h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]";
-const quiet = "h-[44px] px-4 font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)] underline";
+  "h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne";
+const quiet = "h-11 px-4 font-text text-corps text-ink-soft underline";
 
 // A fixed, generous size (18 px, docs/ui.md), no setting.
 const lesson: Components = {
-  h1: ({ children }) => <h1 className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{children}</h1>,
-  h2: ({ children }) => <h2 className="font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]">{children}</h2>,
-  h3: ({ children }) => <h3 className="font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)]">{children}</h3>,
-  p: ({ children }) => <p className="font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">{children}</p>,
-  ul: ({ children }) => <ul className="list-disc pl-6 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal pl-6 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]">{children}</ol>,
+  h1: ({ children }) => <h1 className="font-display text-titre font-bold text-ink">{children}</h1>,
+  h2: ({ children }) => <h2 className="font-display text-sous-titre font-bold text-ink">{children}</h2>,
+  h3: ({ children }) => <h3 className="font-display text-corps-l font-bold text-ink">{children}</h3>,
+  p: ({ children }) => <p className="font-text text-corps-l text-ink">{children}</p>,
+  ul: ({ children }) => <ul className="list-disc pl-6 font-text text-corps-l text-ink">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal pl-6 font-text text-corps-l text-ink">{children}</ol>,
   // A lesson's links are never followed from here: a child stays in the app.
   a: ({ children }) => <span>{children}</span>,
 };
@@ -52,7 +52,7 @@ function Lesson({ markdown, highlights }: { markdown: string; highlights: string
   ranges.forEach((range, i) => {
     if (range.start > at) parts.push(<Markdown key={`t${String(i)}`} components={lesson}>{markdown.slice(at, range.start)}</Markdown>);
     parts.push(
-      <div key={`p${String(i)}`} ref={i === 0 ? first : undefined} data-testid="cited-passage" className="flex flex-col gap-3 rounded-[20px] border-[3px] border-[var(--color-ink)] bg-[var(--color-peche)] p-3">
+      <div key={`p${String(i)}`} ref={i === 0 ? first : undefined} data-testid="cited-passage" className="flex flex-col gap-3 rounded-carte border-3 border-ink bg-peche p-3">
         <Markdown components={lesson}>{markdown.slice(range.start, range.end)}</Markdown>
       </div>,
     );
@@ -105,11 +105,11 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
         <ul className="flex w-full flex-wrap gap-3">
           {photos.map(({ index }) => (
             <li key={index}>
-              <button type="button" aria-label={`Agrandir la photo ${String(index + 1)}`} onClick={() => setEnlarged(index)} className="min-h-[44px] min-w-[44px]">
+              <button type="button" aria-label={`Agrandir la photo ${String(index + 1)}`} onClick={() => setEnlarged(index)} className="min-h-11 min-w-11">
                 <img
                   src={pageFileUrl(courseId, index)}
                   alt={`Photo ${String(index + 1)} du cours`}
-                  className="h-[96px] w-auto rounded-[15px] border-[3px] border-[var(--color-ink)] object-cover"
+                  className="h-24 w-auto rounded-bouton border-3 border-ink object-cover"
                 />
               </button>
             </li>
@@ -122,11 +122,11 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
         )}
         {footer}
         {enlarged !== null && (
-          <div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-canvas)] p-4">
+          <div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-canvas p-4">
             <img
               src={pageFileUrl(courseId, enlarged)}
               alt={`Photo ${String(enlarged + 1)} du cours, en grand`}
-              className="max-h-[80dvh] w-auto rounded-[20px] border-[3px] border-[var(--color-ink)] object-contain"
+              className="max-h-[80dvh] w-auto rounded-carte border-3 border-ink object-contain"
             />
             <button type="button" onClick={() => setEnlarged(null)} className={secondary}>
               Fermer

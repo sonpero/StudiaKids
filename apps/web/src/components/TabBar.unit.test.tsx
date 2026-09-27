@@ -42,8 +42,8 @@ describe("TabBar, as drawn in the mockup", () => {
   it("sits on cream, safe area included, under a 3px ink border", () => {
     renderBar();
     const nav = screen.getByRole("navigation", { name: "Onglets" });
-    expect(nav.className).toContain("bg-[var(--color-canvas)]");
-    expect(nav.className).toContain("border-t-[3px]");
+    expect(nav.className).toContain("bg-canvas");
+    expect(nav.className).toContain("border-t-3");
     expect(nav.className).toContain("pb-[env(safe-area-inset-bottom)]");
     expect(nav.className).not.toContain("bg-white");
   });
@@ -56,8 +56,8 @@ describe("TabBar, as drawn in the mockup", () => {
       expect(icon).toHaveAttribute("aria-hidden", "true");
       expect(icon).toHaveAttribute("stroke-width", "2");
       expect(button.className).toContain("flex-1");
-      expect(button.className).toContain("min-h-[44px]");
-      expect(button.className).toContain("font-[family-name:var(--font-display)]");
+      expect(button.className).toContain("min-h-11");
+      expect(button.className).toContain("font-display");
     }
   });
 
@@ -66,9 +66,9 @@ describe("TabBar, as drawn in the mockup", () => {
     const tabs = within(screen.getByRole("navigation", { name: "Onglets" }));
     const pill = tabs.getByRole("button", { name: "Tuteur" }).querySelector("[data-pill]");
     expect(tabs.getByRole("button", { name: "Tuteur" })).toHaveAttribute("aria-current", "page");
-    expect(pill?.className).toContain("bg-[var(--color-peche)]");
-    expect(pill?.className).toContain("border-[3px]");
-    expect(pill?.className).toContain("rounded-[20px]");
+    expect(pill?.className).toContain("bg-peche");
+    expect(pill?.className).toContain("border-3");
+    expect(pill?.className).toContain("rounded-carte");
     expect(tabs.getByRole("button", { name: "Lire" }).querySelector("[data-pill]")?.className ?? "").not.toContain("peche");
     expect(screen.getByRole("navigation", { name: "Onglets" }).innerHTML).not.toContain("soleil");
   });

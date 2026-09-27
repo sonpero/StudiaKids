@@ -56,10 +56,10 @@ export function TabBar({ current, onHome, onRead, onPlay, onTutor }: TabBarProps
   const tab = (key: Tab | "home", label: string, onClick: () => void) => {
     const active = key === current;
     return (
-      <button type="button" onClick={onClick} aria-current={active ? "page" : undefined} className="flex min-h-[44px] flex-1 p-[4px] font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--color-ink)]">
+      <button type="button" onClick={onClick} aria-current={active ? "page" : undefined} className="flex min-h-11 flex-1 p-1 font-display text-mini font-bold text-ink">
         <span
           data-pill
-          className={`flex w-full flex-col items-center justify-center gap-[2px] rounded-[20px] border-[3px] py-[2px] ${active ? "border-[var(--color-ink)] bg-[var(--color-peche)]" : "border-transparent"}`}
+          className={`flex w-full flex-col items-center justify-center gap-0.5 rounded-carte border-3 py-0.5 ${active ? "border-ink bg-peche" : "border-transparent"}`}
         >
           {ICONS[key]}
           {label}
@@ -68,7 +68,7 @@ export function TabBar({ current, onHome, onRead, onPlay, onTutor }: TabBarProps
     );
   };
   return (
-    <nav aria-label="Onglets" className="fixed inset-x-0 bottom-0 flex border-t-[3px] border-[var(--color-ink)] bg-[var(--color-canvas)] pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="Onglets" className="fixed inset-x-0 bottom-0 flex border-t-3 border-ink bg-canvas pb-[env(safe-area-inset-bottom)]">
       {tab("home", "Accueil", onHome)}
       {tab("read", "Lire", onRead)}
       {tab("play", "Jouer", onPlay)}

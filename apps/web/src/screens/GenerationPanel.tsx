@@ -12,11 +12,11 @@ export interface GenerationPanelProps {
   onReady?: () => void;
 }
 
-const text = "font-[family-name:var(--font-text)] text-[16px] text-[var(--color-ink-soft)]";
+const text = "font-text text-corps text-ink-soft";
 const primary =
-  "h-[56px] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-mandarine)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_5px_0_var(--color-ink)] disabled:opacity-60";
+  "h-14 w-full rounded-bouton border-3 border-ink bg-mandarine px-6 font-display text-corps-l font-bold text-ink shadow-primaire disabled:opacity-60";
 const secondary =
-  "h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] shadow-[0_4px_0_var(--color-ink)]";
+  "h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display text-corps-l font-bold text-ink shadow-moyenne";
 
 // docs/ui.md, "Lire un cours et créer ses jeux (M3)": the games are never
 // made by themselves, never shown as made before the jobs are over, and

@@ -28,11 +28,31 @@
   --matiere-anglais: #f2c4f0;
   --matiere-autre: #d5dce8;
 
-  /* Referenced as font-[family-name:var(--font-display)], never the bare
-     font-[var(--font-display)]: Tailwind's font- prefix is ambiguous
-     between font-family and font-weight without the family-name: hint. */
+  /* Used as the font-display and font-text utilities. */
   --font-display: "Baloo 2", system-ui, sans-serif;
   --font-text: "Lexend", system-ui, sans-serif;
+
+  /* docs/design/tokens.md, "Typo": the scale, as text-* utilities. */
+  --text-titre-xl: 40px;
+  --text-titre: 27px;
+  --text-sous-titre: 20px;
+  --text-corps-l: 18px;
+  --text-corps: 16px;
+  --text-petit: 14.5px;
+  --text-mini: 13px;
+  --text-micro: 12px;
+
+  /* docs/design/tokens.md, "Formes": radii and hard ink shadows. */
+  --radius-pastille: 999px;
+  --radius-grande-carte: 30px;
+  --radius-carte: 20px;
+  --radius-bouton: 15px;
+  --shadow-petite: 0 3px 0 var(--color-ink);
+  --shadow-moyenne: 0 4px 0 var(--color-ink);
+  --shadow-primaire: 0 5px 0 var(--color-ink);
+  --shadow-grande-carte: 0 6px 0 var(--color-ink);
+  /* The blanks of a cloze sit on tall lines, so a field fits in them. */
+  --leading-trous: 2.4;
 }
 
 body {

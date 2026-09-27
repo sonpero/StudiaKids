@@ -18,7 +18,7 @@ export function App() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
         <Mascot pose="waiting" />
-        <p className="font-[family-name:var(--font-text)] text-[var(--color-ink-soft)]">On vérifie ta connexion…</p>
+        <p className="font-text text-ink-soft">On vérifie ta connexion…</p>
       </main>
     );
   }
@@ -27,13 +27,13 @@ export function App() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
         <Mascot pose="glitch" />
-        <p className="font-[family-name:var(--font-text)] text-[var(--color-ink-soft)]">
+        <p className="font-text text-ink-soft">
           Un souci technique nous empêche de vérifier ta connexion.
         </p>
         <button
           type="button"
           onClick={() => void meQuery.refetch()}
-          className="h-[56px] rounded-[15px] border-[3px] border-[var(--color-ink)] bg-[var(--color-turquoise)] px-6 font-[family-name:var(--font-display)] font-bold text-[var(--color-ink)] shadow-[0_5px_0_var(--color-ink)]"
+          className="h-14 rounded-bouton border-3 border-ink bg-turquoise px-6 font-display font-bold text-ink shadow-primaire"
         >
           Réessaie
         </button>

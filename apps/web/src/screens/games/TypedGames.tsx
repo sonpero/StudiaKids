@@ -4,7 +4,7 @@ import type { GameBodyProps } from "./ChoiceGames.js";
 import { prompt, secondary, text } from "./styles.js";
 
 const field =
-  "h-[48px] rounded-[12px] border-[3px] border-[var(--color-ink)] bg-white px-3 font-[family-name:var(--font-text)] text-[18px] text-[var(--color-ink)]";
+  "h-12 rounded-bouton border-3 border-ink bg-white px-3 font-text text-corps-l text-ink";
 
 // The text with a field in place of each {{n}}; complete once every blank
 // holds something other than spaces.
@@ -19,7 +19,7 @@ export function ClozeGame({ text: lesson, blankCount, onAnswer }: { text: string
   }
 
   return (
-    <p className={`${prompt} leading-[2.4]`}>
+    <p className={`${prompt} leading-trous`}>
       {parts.map((part, i) => {
         if (i % 2 === 0) return <span key={i}>{part}</span>;
         const index = Number(part);
@@ -30,7 +30,7 @@ export function ClozeGame({ text: lesson, blankCount, onAnswer }: { text: string
             aria-label={`Trou ${String(index + 1)}`}
             value={values[index] ?? ""}
             onChange={(event) => change(index, event.target.value)}
-            className={`${field} mx-1 w-[9em]`}
+            className={`${field} mx-1 w-36`}
           />
         );
       })}
@@ -42,7 +42,7 @@ export function MentalMathGame({ question, onAnswer }: { question: string } & Ga
   const [value, setValue] = useState("");
   return (
     <>
-      <p className="font-[family-name:var(--font-display)] text-[27px] font-bold text-[var(--color-ink)]">{question}</p>
+      <p className="font-display text-titre font-bold text-ink">{question}</p>
       <label className="flex w-full flex-col gap-2">
         <span className={text}>Ta réponse</span>
         <input
@@ -86,7 +86,7 @@ export function DelayedCopyGame({
         <Mascot pose="watching" />
         <div
           data-testid="flash"
-          className="flex min-h-[160px] w-full items-center justify-center rounded-[20px] bg-[var(--color-violet-nuit)] p-6 font-[family-name:var(--font-display)] text-[33px] font-bold text-[var(--color-canvas)]"
+          className="flex min-h-40 w-full items-center justify-center rounded-carte bg-violet-nuit p-6 font-display text-titre-xl font-bold text-canvas"
         >
           {wordOrPhrase}
         </div>

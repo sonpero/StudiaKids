@@ -42,7 +42,7 @@ export function SessionSummary({ since, onMore, onHome }: SessionSummaryProps) {
     content = (
       <>
         <Mascot pose={pose} />
-        <p className="font-[family-name:var(--font-display)] text-[20px] font-bold text-[var(--color-ink)]">{line}</p>
+        <p className="font-display text-sous-titre font-bold text-ink">{line}</p>
         {successes > 0 && <p className={text}>{successes === 1 ? "1 bonne réponse" : `${String(successes)} bonnes réponses`}</p>}
         <button type="button" onClick={onMore} className={primary}>
           Encore des jeux
@@ -54,5 +54,5 @@ export function SessionSummary({ since, onMore, onHome }: SessionSummaryProps) {
     );
   }
 
-  return <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-[96px] text-center">{content}</main>;
+  return <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center gap-4 px-4 pt-6 pb-24 text-center">{content}</main>;
 }

@@ -8,8 +8,8 @@ export interface PhotoPickerProps {
 }
 
 const VARIANTS = {
-  primary: "bg-[var(--color-mandarine)] shadow-[0_5px_0_var(--color-ink)]",
-  secondary: "bg-[var(--color-turquoise)] shadow-[0_4px_0_var(--color-ink)]",
+  primary: "bg-mandarine shadow-primaire",
+  secondary: "bg-turquoise shadow-moyenne",
 };
 
 // The camera input the jalon names (docs/jalons.md, M2): on a phone or a
@@ -30,7 +30,7 @@ export function PhotoPicker({ label, variant, disabled = false, onPhoto }: Photo
         type="button"
         disabled={disabled}
         onClick={() => input.current?.click()}
-        className={`h-[56px] w-full rounded-[15px] border-[3px] border-[var(--color-ink)] px-6 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--color-ink)] disabled:opacity-60 ${VARIANTS[variant]}`}
+        className={`h-14 w-full rounded-bouton border-3 border-ink px-6 font-display text-corps-l font-bold text-ink disabled:opacity-60 ${VARIANTS[variant]}`}
       >
         {label}
       </button>
