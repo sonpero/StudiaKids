@@ -18,6 +18,8 @@ export interface ReaderScreenProps {
   highlights?: string[];
   // Under the tab bar, its « Accueil » tab replaces this button.
   showHomeButton?: boolean;
+  // Opens the question before deleting the course (2026-10-04).
+  onDelete?: () => void;
 }
 
 const { secondary, quiet } = button;
@@ -60,7 +62,7 @@ function Lesson({ markdown, highlights }: { markdown: string; highlights: string
   return <>{parts}</>;
 }
 
-export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [], showHomeButton = true }: ReaderScreenProps) {
+export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [], showHomeButton = true, onDelete }: ReaderScreenProps) {
   const reading = useQuery({ queryKey: ["reader", courseId], queryFn: () => getCourseText(courseId) });
   const speech = useSpeech();
 
@@ -112,6 +114,11 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
           </button>
         )}
         {footer}
+        {onDelete && (
+          <button type="button" onClick={onDelete} className={`${quiet} mt-4`}>
+            Supprimer ce cours
+          </button>
+        )}
       </>
     );
   }

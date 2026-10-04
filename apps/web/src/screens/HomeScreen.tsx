@@ -37,13 +37,15 @@ export interface HomeScreenProps {
   onResumeCapture?: (course: CourseDto) => void;
   // The tutor on the last course opened (docs/ui.md, "Tuteur (M6)").
   onAskCourse?: (courseId: string) => void;
+  // Said by the mascot once back home, e.g. after deleting a course.
+  notice?: { type: "course-deleted" };
 }
 
 const gamesReady = (count: number) => (count === 1 ? "1 jeu prêt" : `${String(count)} jeux prêts`);
 
 // docs/ui.md, "Photographier un cours (M2)" and "États requis": loading,
 // error, empty and ready, each with the mascot and a sentence.
-export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onPlayCourse, onResumeCapture, onAskCourse }: HomeScreenProps) {
+export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadCourse, onPlayCourse, onResumeCapture, onAskCourse, notice }: HomeScreenProps) {
   const courses = useQuery({ queryKey: COURSES_QUERY_KEY, queryFn: listCourses });
   const [openedAt] = useState(() => Date.now());
   const unconfirmed = useQuery({
@@ -90,7 +92,8 @@ export function HomeScreen({ firstName, onPhoto, onLogout, onOpenCourse, onReadC
     // docs/ui.md, M5: the last course opened (read or played), kept by
     // the server, so it is still offered after logging in again.
     const lastOpened = list.reduce<(typeof list)[number] | null>((last, course) => (last === null || course.lastAccessedAt > last.lastAccessedAt ? course : last), null);
-    const { pose, line } = present({ type: "home", hasExistingCourses: list.length > 0 }, variant);
+    // A word about what just happened (a course deleted) replaces the usual line.
+    const { pose, line } = present(notice ?? { type: "home", hasExistingCourses: list.length > 0 }, variant);
     body = (
       <>
         {hero(pose, line)}

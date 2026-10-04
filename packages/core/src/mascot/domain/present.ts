@@ -20,7 +20,9 @@ export type Signal =
   | { type: "tutor-refusal"; reason: "off_topic" | "sensitive" }
   | { type: "tutor-unavailable" }
   | { type: "tutor-daily-limit" }
-  | { type: "tutor-disclosure" };
+  | { type: "tutor-disclosure" }
+  | { type: "course-delete-confirm"; title?: string }
+  | { type: "course-deleted" };
 
 export type Presentation = { pose: MascotPose; line: string };
 
@@ -122,6 +124,12 @@ function presentKnown(signal: Signal, variantIndex: number): Presentation | null
       return { pose: "idle", line: pick(LINES.tutorDailyLimit, variantIndex) };
     case "tutor-disclosure":
       return { pose: "idle", line: pick(LINES.tutorDisclosure, variantIndex) };
+    // Deleting a confirmed course (2026-10-04, « à valider »): calm, never
+    // sorry nor glitch — nothing went wrong; the stars always stay.
+    case "course-delete-confirm":
+      return { pose: "idle", line: `${signal.title ? `Le cours « ${signal.title} »` : "Ce cours"} et ses jeux vont disparaître. Tes étoiles, elles, restent !` };
+    case "course-deleted":
+      return { pose: "idle", line: "C'est fait, le cours est supprimé. Tes étoiles sont toujours là !" };
     default:
       return null;
   }

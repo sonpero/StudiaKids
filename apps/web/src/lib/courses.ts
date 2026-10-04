@@ -67,6 +67,13 @@ async function post(courseId: string, action: "confirm" | "reject" | "retry"): P
   expectOk(await fetch(`/api/courses/${courseId}/${action}`, { method: "POST" }), `POST /api/courses/:id/${action}`);
 }
 
+// Deleting a confirmed course (2026-10-04): a course already gone (404,
+// deleted from another device) is deleted all the same.
+export async function deleteCourse(courseId: string): Promise<void> {
+  const res = await fetch(`/api/courses/${courseId}`, { method: "DELETE" });
+  if (res.status !== 404) expectOk(res, "DELETE /api/courses/:id");
+}
+
 export const confirmCourse = (courseId: string) => post(courseId, "confirm");
 export const rejectCourse = (courseId: string) => post(courseId, "reject");
 export const retryExtraction = (courseId: string) => post(courseId, "retry");

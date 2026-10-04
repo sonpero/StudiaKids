@@ -4,6 +4,7 @@ import { TabBar, type Tab } from "../components/TabBar.js";
 import { useCapture } from "../lib/use-capture.js";
 import { CaptureScreen } from "./CaptureScreen.js";
 import { CourseScreen } from "./CourseScreen.js";
+import { DeleteCourseScreen } from "./DeleteCourseScreen.js";
 import { COURSES_QUERY_KEY, HomeScreen } from "./HomeScreen.js";
 import { GenerationPanel } from "./GenerationPanel.js";
 import { PlayScreen } from "./PlayScreen.js";
@@ -19,7 +20,12 @@ export interface MainScreensProps {
 // A confirmed course is shown under the tab bar, on its Lire, Jouer or
 // Tuteur tab.
 // `highlights`: the passages a tutor answer cited, shown in the reader.
-type Screen = { name: "home" } | { name: "capture" } | { name: "course"; courseId: string } | { name: "tabs"; courseId: string; tab: Tab; highlights?: string[] };
+type Screen =
+  | { name: "home"; notice?: { type: "course-deleted" } }
+  | { name: "capture" }
+  | { name: "course"; courseId: string }
+  | { name: "tabs"; courseId: string; tab: Tab; highlights?: string[] }
+  | { name: "delete"; courseId: string };
 
 // Navigation by screen state, no router (docs/ui.md, M2).
 export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps) {
@@ -27,9 +33,10 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
   const [screen, setScreen] = useState<Screen>({ name: "home" });
   const capture = useCapture(reencode);
 
-  function goHome(): void {
+  // Wrapped wherever it is a callback: a click event must never reach `notice`.
+  function goHome(notice?: { type: "course-deleted" }): void {
     capture.reset();
-    setScreen({ name: "home" });
+    setScreen(notice ? { name: "home", notice } : { name: "home" });
     // The list and the banner (whose key starts with the same prefix).
     void queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY });
   }
@@ -51,8 +58,25 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
     else goHome();
   }
 
+  if (screen.name === "delete") {
+    const { courseId } = screen;
+    const title = queryClient.getQueryData<{ id: string; title: string }[]>(COURSES_QUERY_KEY)?.find((course) => course.id === courseId)?.title;
+    return (
+      <DeleteCourseScreen
+        courseId={courseId}
+        title={title}
+        onKeep={() => setScreen({ name: "tabs", courseId, tab: "read" })}
+        onDeleted={() => {
+          // Nothing of the course is kept on screen: its reader, games and tutor.
+          queryClient.removeQueries({ predicate: (query) => query.queryKey.includes(courseId) });
+          goHome({ type: "course-deleted" });
+        }}
+      />
+    );
+  }
+
   if (screen.name === "course") {
-    return <CourseScreen key={screen.courseId} courseId={screen.courseId} onHome={goHome} onPhoto={startCapture} />;
+    return <CourseScreen key={screen.courseId} courseId={screen.courseId} onHome={() => goHome()} onPhoto={startCapture} />;
   }
 
   if (screen.name === "tabs") {
@@ -65,21 +89,22 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
             <ReaderScreen
               key={`read-${courseId}`}
               courseId={courseId}
-              onHome={goHome}
+              onHome={() => goHome()}
               showHomeButton={false}
               highlights={highlights}
               onAsk={() => setScreen({ name: "tabs", courseId, tab: "tutor" })}
+              onDelete={() => setScreen({ name: "delete", courseId })}
               footer={<GenerationPanel courseId={courseId} onPhoto={startCapture} />}
             />
           </div>
         ) : tab === "play" ? (
-          <PlayScreen key={`play-${courseId}`} courseId={courseId} onHome={goHome} onPhoto={startCapture} />
+          <PlayScreen key={`play-${courseId}`} courseId={courseId} onHome={() => goHome()} onPhoto={startCapture} />
         ) : (
-          <TutorScreen key={`tutor-${courseId}`} courseId={courseId} onHome={goHome} onOpenPassage={(passages) => setScreen({ name: "tabs", courseId, tab: "read", highlights: passages })} />
+          <TutorScreen key={`tutor-${courseId}`} courseId={courseId} onHome={() => goHome()} onOpenPassage={(passages) => setScreen({ name: "tabs", courseId, tab: "read", highlights: passages })} />
         )}
         <TabBar
           current={tab}
-          onHome={goHome}
+          onHome={() => goHome()}
           onRead={() => setScreen({ name: "tabs", courseId, tab: "read" })}
           onPlay={() => setScreen({ name: "tabs", courseId, tab: "play" })}
           onTutor={() => setScreen({ name: "tabs", courseId, tab: "tutor" })}
@@ -104,6 +129,7 @@ export function MainScreens({ firstName, onLogout, reencode }: MainScreensProps)
     <HomeScreen
       firstName={firstName}
       onLogout={onLogout}
+      notice={screen.name === "home" ? screen.notice : undefined}
       onPhoto={startCapture}
       onOpenCourse={(courseId) => setScreen({ name: "course", courseId })}
       onReadCourse={(courseId) => setScreen({ name: "tabs", courseId, tab: "read" })}
