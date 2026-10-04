@@ -15,7 +15,8 @@
     "eval": "tsx --env-file-if-exists=../../.env src/cli/eval/main.ts",
     "eval:tutor": "tsx --env-file-if-exists=../../.env src/cli/eval/tutor.ts",
     "tutor:history": "tsx src/cli/tutor-history.ts",
-    "exercises:regenerate-maths": "tsx --env-file-if-exists=../../.env src/cli/regenerate-maths.ts"
+    "exercises:regenerate-maths": "tsx --env-file-if-exists=../../.env src/cli/regenerate-maths.ts",
+    "photos:purge": "tsx src/cli/photos-purge.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

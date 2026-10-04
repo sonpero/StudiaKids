@@ -22,7 +22,8 @@
     "eval": "pnpm --filter @studiakids/api run eval",
     "eval:tutor": "pnpm --filter @studiakids/api run eval:tutor",
     "tutor:history": "pnpm --filter @studiakids/api run tutor:history",
-    "exercises:regenerate-maths": "pnpm --filter @studiakids/api run exercises:regenerate-maths"
+    "exercises:regenerate-maths": "pnpm --filter @studiakids/api run exercises:regenerate-maths",
+    "photos:purge": "pnpm --filter @studiakids/api run photos:purge"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
