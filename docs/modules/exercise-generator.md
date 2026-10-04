@@ -21,7 +21,7 @@ environ 0,05 à 0,07 $ par cours, au lieu de jusqu'à 281 appels).
 là-dessus", `docs/modules/tutor.md`, M6) avec un simple extrait de cours
 — voir "Découpage à partir d'un extrait" plus bas. `exercise-generator` ne
 dépend jamais de `tutor` ; il dépend d'`ingestion` (texte extrait, niveau
-du cours, et `generateWithRetry`) via son `index.ts`, jamais l'inverse.
+et matière du cours, et `generateWithRetry`) via son `index.ts`, jamais l'inverse.
 
 Vocabulaire : voir `docs/glossaire.md`.
 
@@ -45,7 +45,7 @@ leçon (mesuré par l'évaluation, consignes v3) — et **vérifiée mécaniquem
 |---|---|
 | `cloze` | chaque réponse attendue figure dans le texte du cours |
 | `delayed_copy` | le mot ou la phrase figure tel quel dans le texte du cours |
-| `reordering` | chaque élément figure dans le texte, **dans cet ordre** (chaque élément cherché après le précédent : un nombre déjà vu plus haut dans la leçon ne fait pas rejeter une suite écrite dans l'ordre) |
+| `reordering` | chaque élément figure dans le texte, **dans cet ordre** (chaque élément cherché après le précédent) ; une suite de nombres ou de calculs est de toute façon interdite, voir « Règles par matière » |
 | `matching` | chaque élément de gauche et de droite figure dans le texte |
 | `mcq` | la bonne réponse figure dans le texte |
 | `mental_math` | le calcul est juste, ses nombres figurent dans le texte, et **le cours écrit ce calcul avec son résultat** dans une même chaîne d'égalités (« 5 + 8 = 8 + 5 = 13 », « 8 352 = 8 000 + … », « 2 × 3 = 6 cm ») ; un calcul seulement demandé (« 7 + 7 = … », section Exercices de la page) est écarté — ajouté le 2026-09-26 après le tri des rejets de l'évaluation |
@@ -56,6 +56,45 @@ QCM, d'une paire) est jugé par l'outil d'évaluation (`pnpm eval`, consigne
 de jugement versionnée dans `tests/eval/`), jamais en production. **Un
 type pour lequel la règle d'ancrage s'avère impossible à tenir est retiré
 de la liste proposée au découpage** (noté dans `docs/jalons.md`).
+
+## Règles par matière
+
+Décidées le 2026-10-04 (« jeux de maths centrés sur le calcul ») ; elles
+s'ajoutent à la règle d'ancrage, qui reste inchangée et prioritaire.
+
+1. **Jamais de remise en ordre (`reordering`) pour une table de
+   multiplication, une suite de calculs ou une suite de nombres**, quelle
+   que soit la matière : un élément qui n'est qu'un nombre (en chiffres ou
+   en lettres) ou un calcul (`isNumberOrCalculation`) suffit à écarter
+   l'exercice. Une suite d'étapes (« J'aligne les unités… ») ou une
+   chronologie datée (« 1789 : la Révolution ») reste permise.
+2. **En maths, on travaille le calcul, pas l'orthographe** : jamais de
+   copie différée (`delayed_copy`) ; un texte à trous (`cloze`) n'a que
+   des trous qui sont des nombres écrits en chiffres (« 56 », « 8 000 »,
+   « 3,5 », « 3/4 » ; jamais « somme », ni « douze »). À privilégier :
+   calcul mental, QCM et vrai/faux sur des calculs, appariement calcul et
+   résultat. « À privilégier » reste une consigne : un QCM de vocabulaire
+   ancré n'est pas écarté.
+
+La matière est celle du cours (`Subject`, `docs/modules/ingestion.md`),
+lue par `CourseTextSource.readSubject` ; `null` (matière inconnue) n'applique
+que la règle 1. Appliquées à deux niveaux :
+
+- **dans les consignes** (version 5) : la consigne de découpage interdit
+  la remise en ordre de nombres pour toutes les matières et, en maths,
+  exclut `delayed_copy` et restreint `cloze` ; la consigne de génération
+  ajoute, en maths, sa règle propre à `cloze`, `mcq`, `true_false` et
+  `matching` ;
+- **après génération, de façon déterministe** (`subjectProblem`, en
+  `domain/`, mutation testing) : un exercice interdit pour la matière est
+  écarté comme un exercice invalide, quoi que le modèle ait renvoyé. Au
+  découpage, un type interdit (`isGameTypeAllowed`) est retiré des types
+  d'un item comme un type inconnu (un item qui n'en garde aucun est
+  invalide), et la génération d'un type interdit ne fait **aucun appel**.
+
+Un exercice déjà en base que ces règles interdisent est enlevé à la
+génération suivante de son type, même si rien ne le remplace — retiré
+s'il a déjà été joué (voir « Exercice retiré »).
 
 ## Domaine
 
@@ -126,7 +165,7 @@ génération peut ne produire aucun exercice valide pour un item et un type.
 
 ```ts
 interface ItemSplitter {
-  split(input: { markdown: string; grade: Grade }): Promise<Result<ItemProposal[], GenerationError>>;
+  split(input: { markdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<ItemProposal[], GenerationError>>;
 }
 type ItemProposal = { title: string; body: string; applicableGameTypes: string[] }; // filtré en domain/
 
@@ -138,9 +177,16 @@ interface ExerciseGenerator {
     items: { title: string; body: string }[];
     courseMarkdown: string;   // le texte de référence de la règle d'ancrage
     grade: Grade;
+    subject?: CourseSubject;  // les règles par matière ; absent = null
   }): Promise<Result<ExerciseProposal[], GenerationError>>;
 }
 type ExerciseProposal = { item: number; content: unknown }; // validé exercice par exercice en domain/
+
+// Le texte d'un cours confirmé et prêt, et sa matière, lus via ingestion.
+interface CourseTextSource {
+  read(userId: string, courseId: string): Promise<Result<{ markdown: string; grade: Grade }, "not-found" | "not-ready">>;
+  readSubject(userId: string, courseId: string): Promise<CourseSubject>; // Subject | null
+}
 ```
 
 Conventions Zod (`CLAUDE.md`, règle 4, avec son exception) :
@@ -184,11 +230,17 @@ Conventions Zod (`CLAUDE.md`, règle 4, avec son exception) :
   - **comparaison avant écriture** (recopié de StudIA) : un exercice dont
     le contenu n'a pas changé garde son id (et donc, à partir de M4, ses
     tentatives et ses étoiles) ; un contenu changé remplace l'ancien sous
-    un nouvel id ; jamais de doublon.
+    un nouvel id — **sauf si l'ancien a déjà été joué : il reste alors tel
+    quel** (voir « Exercice retiré ») ; jamais de doublon.
+  - règles par matière : un type interdit pour la matière ne fait aucun
+    appel et ses exercices existants sont enlevés ; un exercice existant
+    interdit est enlevé même sans remplaçant.
   - Une erreur technique (modèle, réseau) renvoie une erreur : le noyau
     `jobs` retente. Un manque d'exercices valides n'est pas une erreur.
 - `regenerateItem(userId, itemId, now)` — enfile un job
   `generate-exercises` par type de l'item, limité à cet item.
+- `regenerateCourse(userId, courseId, now)` → `Result<{ types, failed }>` —
+  voir « Régénérer un cours déjà généré ».
 - `listItems(userId, courseId, { createdAfter? })`, `listExercises(userId, itemId)`,
   `countExercises(userId, courseId)` (le nombre de jeux prêts de l'accueil)
 - `getGenerationStatus(userId, courseId)` → `{ status, done, total, failed, itemCount }`,
@@ -246,6 +298,51 @@ Mécanisme :
   `jobs.listJobs(userId, 'game-from-excerpt')`, et sur `status: 'done'`,
   retrouve les items créés via `listItems(userId, courseId, { createdAfter: job.createdAt })`
 
+### Régénérer un cours déjà généré
+
+Ajouté le 2026-10-04 pour les cours de maths générés avant les règles par
+matière. `regenerateCourse` lance, **sans job et sans nouveau découpage**,
+la génération de chaque type porté par les items du cours, une fois, pour
+tout le cours, sous les consignes et règles du jour (même code que
+`handleGenerationJob`) ; un type dont l'appel échoue est signalé, les
+autres continuent. Les items, leurs types et leurs positions ne changent
+pas (pas de redécoupage : il remplacerait les items, donc les exercices
+joués).
+
+`pnpm exercises:regenerate-maths <username> [--dry-run]` (CLI seulement,
+`apps/api`) l'applique aux cours de maths confirmés et prêts d'un compte,
+puis affiche le total d'étoiles avant et après et échoue bruyamment s'il a
+baissé. `--dry-run` liste les cours et les types sans appel ni écriture.
+Coût : environ un appel par type et par cours, deux si le seuil de
+régénération est franchi (≈ 0,05 $ par cours d'après le dry-run de M3).
+À lancer dans le conteneur de production, compte par compte, `--dry-run`
+d'abord.
+
+**Aucune étoile perdue** : les étoiles sont dérivées des tentatives
+(`docs/modules/progress.md`), qui partent en cascade avec leur exercice ;
+la régénération s'appuie donc sur « Exercice retiré » ci-dessous.
+
+### Exercice retiré
+
+**Un exercice qui a déjà au moins une tentative n'est jamais supprimé**
+(décidé le 2026-10-04) : supprimé, il emporterait ses tentatives, donc les
+étoiles de l'enfant, alors que « le total ne décroît jamais ». Garanti dans
+la transaction d'écriture (`applyExercises`, qui lit `attempts` par une
+requête liée, comme `courses` pour la propriété) :
+
+- **remplacé** (même item, même type) : il reste tel quel, le nouveau
+  contenu n'est pas écrit ;
+- **enlevé sans remplaçant** (règles par matière) : il est **retiré**
+  (`exercises.retired = 1`) — absent de toutes les listes, de
+  `findExercise` et du nombre de jeux prêts, gardé avec ses tentatives,
+  supprimé avec son cours ou son compte ;
+- l'emplacement (item, type) d'un exercice retiré ne prend pas de nouvel
+  exercice ;
+- un exercice jamais joué est supprimé comme avant.
+
+Conséquence assumée : `regenerateItem` ne change plus un exercice déjà
+joué.
+
 ## Persistance
 
 ```sql
@@ -269,6 +366,7 @@ CREATE TABLE exercises (
   type TEXT NOT NULL CHECK (type IN ('delayed_copy','mcq','matching','reordering','cloze','true_false','mental_math')),
   content_json TEXT NOT NULL,
   created_at TEXT NOT NULL,
+  retired INTEGER NOT NULL DEFAULT 0,  -- "Exercice retiré", migration 0007
   UNIQUE (item_id, type)
 );
 CREATE INDEX idx_exercises_item ON exercises(item_id);
@@ -289,7 +387,8 @@ prouvé par un test. `course_generations` remplace la colonne
 `courses.generation_status` d'abord envisagée : l'issue du découpage
 appartient à ce module, pas à la table d'`ingestion`. **Supprimer un
 exercice supprime ses tentatives en cascade** (M4) : c'est pourquoi la
-comparaison avant écriture garde l'id d'un exercice inchangé.
+comparaison avant écriture garde l'id d'un exercice inchangé, et pourquoi
+un exercice déjà joué est retiré plutôt que supprimé.
 
 ## API
 
@@ -324,7 +423,8 @@ exposés ici : la route publique vit dans `docs/modules/tutor.md` (M6).
 
 Jouer un exercice, le comparateur de réponse, le calcul des étoiles
 (`game-engine`, `progress`). Une régénération complète d'un cours déjà
-généré (seule la régénération d'un item existe en M3). Toute notion
+généré **depuis l'interface** (seule la CLI `pnpm exercises:regenerate-maths`
+existe, sans redécoupage). Toute notion
 d'échéance. Recherche plein texte dans les items.
 
 ## Tests clés
@@ -336,6 +436,19 @@ d'échéance. Recherche plein texte dans les items.
   l'ordre de la remise en ordre) ; seuil de régénération — mutation
   testing
 - Unitaire : `generationStatus` dans chacun de ses cas
+- Unitaire : règles par matière (`subjectProblem`, `isGameTypeAllowed`,
+  `isNumberOrCalculation`) — mutation testing ; la matière transmise au
+  découpeur et au générateur ; en maths, une copie différée jamais
+  demandée et un trou-mot écarté ; partout, une remise en ordre de table
+  de multiplication écartée même écrite dans cet ordre par la leçon ;
+  consignes v5 (`prompts.subject.unit.test.ts`)
+- Intégration : **un exercice déjà joué n'est jamais supprimé** — gardé
+  s'il est remplacé, retiré s'il est enlevé, caché des listes, ses
+  tentatives intactes, emplacement d'un retiré jamais repris, cascade du
+  cours inchangée (`exercise-retirement.int.test.ts`) — mutation testing
+- Intégration : `pnpm exercises:regenerate-maths` régénère les cours de
+  maths du compte seulement, **sans perdre une étoile**, `--dry-run` sans
+  appel ni écriture (`maths-regeneration.int.test.ts`)
 - Contrat : une fixture de découpage produit au moins 6 items ; une
   fixture de leçon courte en produit moins de 6 et le job se termine en
   `insufficient_coverage` avec un message clair ; une fixture de
@@ -357,7 +470,9 @@ d'échéance. Recherche plein texte dans les items.
   variété des types, validité — sur un corpus de pages générées
   (`tests/eval/`). Scores par version des consignes dans
   `tests/eval/results/` ; consignes retenues en M3 : v4 (ancrage 95 %,
-  validité 95 %, sur une seule course par version)
+  validité 95 %, sur une seule course par version). **Consignes v5 (règles
+  par matière) pas encore évaluées** : `pnpm eval` passe désormais la
+  matière du corpus et compte un exercice interdit comme rejet mécanique
 
 ## Enregistrement des fixtures
 
@@ -378,6 +493,9 @@ Enregistrées le 2026-09-26 avec les consignes v4 (13 items pour « Le
 verbe », 5 pour « Le son [a] », six types générés). Toutes les réponses de
 génération et celle de `split-short` arrivent sérialisées en chaîne JSON :
 les tests de contrat couvrent la réparation sur des réponses réelles.
+Elles n'ont pas été réenregistrées avec les consignes v5 : leçon de
+français, seule la règle 1 la concerne, et aucun de ses exercices ne la
+viole ; aucune fixture de leçon de maths n'est enregistrée.
 
 ## Questions ouvertes
 

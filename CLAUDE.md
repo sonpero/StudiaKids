@@ -440,6 +440,7 @@ pnpm accounts:create <username> <firstName> <grade>  # CLI, crée un compte (mot
 pnpm accounts:reset-password <username>  # CLI, change le mot de passe d'un compte existant, invalide ses sessions
 pnpm accounts:delete <username>          # CLI, supprime un compte et tout ce qui en dépend en cascade
 pnpm tutor:history <username> [--json]   # CLI, exporte l'historique du tuteur d'un compte pour l'adulte titulaire (docs/securite.md)
+pnpm exercises:regenerate-maths <username> [--dry-run]   # CLI, régénère les cours de maths d'un compte sous les règles par matière, sans perdre d'étoile (coûte de l'argent sans --dry-run, voir docs/modules/exercise-generator.md)
 ```
 
 Vite ne type-check pas. `pnpm typecheck` est ce qui détecte les erreurs de

@@ -176,6 +176,12 @@ assumées" plus haut.
 | jeux prêts | `exerciseCount` | Nombre d'exercices d'un cours, sur les cartes "Mes cours". |
 | corps (d'un item) | `body` | |
 | jeu depuis un extrait | `game-from-excerpt` | Nom de job ; côté domaine, `startGameFromExcerpt`. |
+| règles par matière | `subjectProblem` (`domain/subject-rules.ts`) | Ce qu'une matière interdit, vérifié après génération ; en maths : ni copie différée, ni trou qui n'est pas un nombre ; partout : jamais une remise en ordre de nombres ou de calculs. |
+| type permis (pour une matière) | `isGameTypeAllowed` | En maths, tout sauf `delayed_copy`. |
+| nombre ou calcul (un élément) | `isNumberOrCalculation` | « 7 × 8 = 56 », « 1 000 », « trois » ; jamais « 1789 : la Révolution ». |
+| matière d'un cours (pour la génération) | `CourseSubject` (`CourseTextSource.readSubject`) | Un `Subject` d'`ingestion`, ou `null` si inconnue. |
+| exercice retiré | `retired` (colonne `exercises.retired`) | Un exercice déjà joué n'est jamais supprimé : retiré, il disparaît des listes et garde ses tentatives, donc les étoiles. |
+| régénérer (un cours déjà généré) | `regenerateCourse`, CLI `pnpm exercises:regenerate-maths <username>` | Chaque type des items, une fois, sous les consignes et règles du jour ; ni job ni nouveau découpage. |
 
 ## Lecteur (`reader`)
 

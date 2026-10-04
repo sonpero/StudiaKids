@@ -135,6 +135,10 @@ CREATE TABLE exercises (
     ('delayed_copy','mcq','matching','reordering','cloze','true_false','mental_math')),
   content_json TEXT NOT NULL,
   created_at TEXT NOT NULL,
+  -- 1 : retiré plutôt que supprimé, parce qu'il a déjà été joué (ses
+  -- tentatives, donc les étoiles, partiraient avec lui) ; caché de toutes
+  -- les listes, supprimé avec son cours. Migration 0007.
+  retired INTEGER NOT NULL DEFAULT 0,
   UNIQUE (item_id, type)
 );
 CREATE INDEX idx_exercises_item ON exercises(item_id);
