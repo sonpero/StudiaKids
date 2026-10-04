@@ -6,6 +6,7 @@ import { Mascot } from "../components/mascot/Mascot.js";
 import { PROGRESS_QUERY_KEY } from "../components/StarCounter.js";
 import { ScreenHeader } from "../components/ui/ScreenHeader.js";
 import { card } from "../components/ui/styles.js";
+import { HttpError } from "../lib/http-error.js";
 import { answerExercise, gameLabel, type Correction } from "../lib/play.js";
 import { McqGame, TrueFalseGame } from "./games/ChoiceGames.js";
 import { dashed, primary, secondary, text } from "./games/styles.js";
@@ -80,6 +81,12 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   });
   // Shown after a wrong answer until the child taps « Continuer » (M5):
   // never taken away by a timer.
+  // Its course deleted meanwhile, from another device (2026-10-04): the
+  // game closes quietly, as any screen whose course is gone (docs/ui.md).
+  const gone = send.error instanceof HttpError && send.error.status === 404;
+  useEffect(() => {
+    if (gone) onBack();
+  }, [gone, onBack]);
   const correction = send.data?.correction;
   const [showCorrection, setShowCorrection] = useState(false);
   useEffect(() => {
@@ -95,7 +102,7 @@ export function GameScreen({ exercise, onNext, onBack }: GameScreenProps) {
   }
 
   let feedback;
-  if (send.isError) {
+  if (send.isError && !gone) {
     feedback = (
       <>
         <Mascot pose="glitch" />
