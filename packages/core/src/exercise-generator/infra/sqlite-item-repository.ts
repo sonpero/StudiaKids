@@ -93,20 +93,22 @@ export class SqliteItemRepository implements ItemRepository {
     const row = this.db
       .select()
       .from(exercisesTable)
-      .where(and(eq(exercisesTable.userId, userId), eq(exercisesTable.id, exerciseId)))
+      .where(and(eq(exercisesTable.userId, userId), eq(exercisesTable.id, exerciseId), eq(exercisesTable.retired, false)))
       .get();
     return Promise.resolve(row ? toExercise(row) : null);
   }
 
   listExercises(userId: string, itemIds: string[], type?: GameType): Promise<Exercise[]> {
     if (itemIds.length === 0) return Promise.resolve([]);
-    const filters = [eq(exercisesTable.userId, userId), inArray(exercisesTable.itemId, itemIds)];
+    const filters = [eq(exercisesTable.userId, userId), inArray(exercisesTable.itemId, itemIds), eq(exercisesTable.retired, false)];
     if (type !== undefined) filters.push(eq(exercisesTable.type, type));
     return Promise.resolve(this.db.select().from(exercisesTable).where(and(...filters)).all().map(toExercise));
   }
 
   // One transaction: removed first, then inserted; a failure rolls back
   // the whole change (UNIQUE (item_id, type) never allows a duplicate).
+  // An exercise that was played is never deleted: its stars are derived
+  // from its attempts, which would go with it.
   applyExercises(userId: string, change: { remove: string[]; insert: Exercise[] }): Promise<void> {
     try {
       this.write(userId, change);
@@ -118,8 +120,32 @@ export class SqliteItemRepository implements ItemRepository {
 
   private write(userId: string, change: { remove: string[]; insert: Exercise[] }): void {
     this.db.transaction((tx) => {
-      if (change.remove.length > 0) tx.delete(exercisesTable).where(and(eq(exercisesTable.userId, userId), inArray(exercisesTable.id, change.remove))).run();
+      const slot = (itemId: string, type: string) => `${itemId}\u0000${type}`;
+      // game-engine's table, read through a bound query: its schema is internal.
+      const played = new Set(
+        change.remove.length === 0
+          ? []
+          : tx
+              .all<{ exercise_id: string }>(sql`SELECT DISTINCT exercise_id FROM attempts WHERE user_id = ${userId} AND exercise_id IN (${sql.join(change.remove.map((id) => sql`${id}`), sql`, `)})`)
+              .map((row) => row.exercise_id),
+      );
+      const replaced = new Set(change.insert.map((exercise) => slot(exercise.itemId, exercise.type)));
+      const removed = change.remove.length === 0 ? [] : tx.select().from(exercisesTable).where(and(eq(exercisesTable.userId, userId), inArray(exercisesTable.id, change.remove))).all();
+      // Played and replaced: it stays as it is, and its slot takes nothing new.
+      const kept = new Set(removed.filter((row) => played.has(row.id) && replaced.has(slot(row.itemId, row.type))).map((row) => slot(row.itemId, row.type)));
+      const retire = removed.filter((row) => played.has(row.id) && !kept.has(slot(row.itemId, row.type))).map((row) => row.id);
+      const remove = removed.filter((row) => !played.has(row.id)).map((row) => row.id);
+      if (remove.length > 0) tx.delete(exercisesTable).where(inArray(exercisesTable.id, remove)).run();
+      if (retire.length > 0) tx.update(exercisesTable).set({ retired: true }).where(inArray(exercisesTable.id, retire)).run();
       for (const exercise of change.insert) {
+        if (kept.has(slot(exercise.itemId, exercise.type))) continue;
+        // A retired exercise keeps its slot: nothing new takes it.
+        const held = tx
+          .select({ id: exercisesTable.id })
+          .from(exercisesTable)
+          .where(and(eq(exercisesTable.itemId, exercise.itemId), eq(exercisesTable.type, exercise.type), eq(exercisesTable.retired, true)))
+          .get();
+        if (held) continue;
         const owned = tx.select({ id: itemsTable.id }).from(itemsTable).where(and(eq(itemsTable.id, exercise.itemId), eq(itemsTable.userId, userId))).get();
         if (!owned) throw new Error(`item ${exercise.itemId} not owned`);
         tx.insert(exercisesTable)
@@ -134,7 +160,7 @@ export class SqliteItemRepository implements ItemRepository {
       .select({ courseId: itemsTable.courseId, n: count(exercisesTable.id) })
       .from(exercisesTable)
       .innerJoin(itemsTable, eq(itemsTable.id, exercisesTable.itemId))
-      .where(eq(exercisesTable.userId, userId))
+      .where(and(eq(exercisesTable.userId, userId), eq(exercisesTable.retired, false)))
       .groupBy(itemsTable.courseId)
       .all();
     return Promise.resolve(Object.fromEntries(rows.map((row) => [row.courseId, row.n])));

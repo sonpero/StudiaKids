@@ -33,6 +33,10 @@ export const exercisesTable = sqliteTable(
     type: text("type").notNull(),
     contentJson: text("content_json").notNull(),
     createdAt: text("created_at").notNull(),
+    // Set instead of deleting an exercise that was played: its attempts,
+    // hence its stars, would go with it (docs/modules/exercise-generator.md,
+    // "Exercice retiré"). Hidden from every list; deleted with its course.
+    retired: integer("retired", { mode: "boolean" }).notNull().default(false),
   },
   (table) => [
     check("exercises_type_check", sql`${table.type} IN ('delayed_copy','mcq','matching','reordering','cloze','true_false','mental_math')`),
