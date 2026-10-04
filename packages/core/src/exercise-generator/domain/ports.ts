@@ -54,4 +54,7 @@ export interface ItemRepository {
   // One transaction: removed first, then inserted.
   applyExercises(userId: string, change: { remove: string[]; insert: Exercise[] }): Promise<void>;
   countExercisesByCourse(userId: string): Promise<Record<string, number>>;
+  // Every exercise of the course, retired ones included: their attempts are
+  // detached before the course is deleted (docs/modules/game-engine.md).
+  listCourseExerciseIds(userId: string, courseId: string): Promise<string[]>;
 }

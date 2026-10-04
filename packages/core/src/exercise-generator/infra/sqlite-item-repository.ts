@@ -155,6 +155,18 @@ export class SqliteItemRepository implements ItemRepository {
     });
   }
 
+  listCourseExerciseIds(userId: string, courseId: string): Promise<string[]> {
+    return Promise.resolve(
+      this.db
+        .select({ id: exercisesTable.id })
+        .from(exercisesTable)
+        .innerJoin(itemsTable, eq(itemsTable.id, exercisesTable.itemId))
+        .where(and(eq(exercisesTable.userId, userId), eq(itemsTable.userId, userId), eq(itemsTable.courseId, courseId)))
+        .all()
+        .map((row) => row.id),
+    );
+  }
+
   countExercisesByCourse(userId: string): Promise<Record<string, number>> {
     const rows = this.db
       .select({ courseId: itemsTable.courseId, n: count(exercisesTable.id) })

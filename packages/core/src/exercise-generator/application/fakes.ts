@@ -38,6 +38,10 @@ export function fakeItemRepository(): ItemRepository & { items: Item[]; exercise
       }
       return Promise.resolve();
     },
+    listCourseExerciseIds: (userId, courseId) => {
+      const itemIds = new Set(items.filter((i) => i.userId === userId && i.courseId === courseId).map((i) => i.id));
+      return Promise.resolve(exercises.filter((e) => e.userId === userId && itemIds.has(e.itemId)).map((e) => e.id));
+    },
     countExercisesByCourse: (userId) => {
       const counts: Record<string, number> = {};
       for (const exercise of exercises.filter((e) => e.userId === userId)) {

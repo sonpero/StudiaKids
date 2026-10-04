@@ -107,4 +107,16 @@ describe("an exercise that was played is never deleted", () => {
     expect(rows(db)).toEqual([]);
     expect(attempts(db)).toEqual(["e-played"]);
   });
+
+  // Deleting a confirmed course (2026-10-04): its attempts are detached
+  // first, retired exercises' included.
+  it("lists every exercise id of a course, retired ones included, only for its owner", async () => {
+    const { db, repo } = await setup();
+    await repo.applyExercises("u1", { remove: [], insert: [copy("e-played", "i0"), cloze("e-live", "i1", "14")] });
+    played(db, "e-played", "delayed_copy");
+    await repo.applyExercises("u1", { remove: ["e-played"], insert: [] });
+
+    expect((await repo.listCourseExerciseIds("u1", "c1")).sort()).toEqual(["e-live", "e-played"]);
+    expect(await repo.listCourseExerciseIds("u2", "c1")).toEqual([]);
+  });
 });
