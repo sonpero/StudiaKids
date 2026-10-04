@@ -24,12 +24,13 @@ async function readyCourse(confirm: boolean) {
 }
 
 // For the reader and the generator (M3): the text of a course the child
-// confirmed, with its grade and its pages, through ingestion's index.
+// confirmed, with its grade, through ingestion's index — no photo since
+// 2026-10-04, they are gone once the course is confirmed.
 describe("getCourseText", () => {
-  it("gives the extracted Markdown, the course's grade and its page indexes, in order", async () => {
+  it("gives the extracted Markdown and the course's grade, never its photos", async () => {
     const deps = await readyCourse(true);
 
-    expect(await getCourseText(deps, "u1", "course-0")).toEqual(ok({ markdown: "# Les nombres\n\n## Comparer", grade: "CE2", pages: [0, 1] }));
+    expect(await getCourseText(deps, "u1", "course-0")).toEqual(ok({ markdown: "# Les nombres\n\n## Comparer", grade: "CE2" }));
   });
 
   it("refuses a course not confirmed yet", async () => {

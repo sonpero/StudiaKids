@@ -45,6 +45,5 @@ export const itemParamsSchema = z.object({ id: z.string() });
 export const readerTextSchema = z.object({
   markdown: z.string(),
   speech: z.string().describe("Le texte lu à voix haute : le Markdown sans ses symboles"),
-  photos: z.array(z.object({ index: z.number().int() })),
 });
 export type ReaderTextDto = z.infer<typeof readerTextSchema>;

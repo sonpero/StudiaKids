@@ -42,16 +42,17 @@ async function recordSpeech(page: Page): Promise<void> {
 const spoken = (page: Page) => page.evaluate(() => (globalThis as unknown as { __speech: SpeechLog }).__speech.spoken);
 const cancelled = (page: Page) => page.evaluate(() => (globalThis as unknown as { __speech: SpeechLog }).__speech.cancelled());
 
-test("a course card opens the reader: the course's text and its photos @mobile", async ({ page, child: _child }) => {
+// No photo since 2026-10-04 (docs/securite.md): the text alone.
+test("a course card opens the reader: the course's text, and no photo @mobile", async ({ page, child: _child }) => {
   await confirmedCourse(page.request, "legible");
 
   await openCourse(page, /Le verbe/);
 
   await expect(page.getByRole("heading", { name: "Le verbe", level: 1 })).toBeVisible();
   await expect(page.getByText("Le verbe indique ce que fait le sujet ou ce qu'il est.")).toBeVisible();
-  await expect(page.getByRole("img", { name: "Photo 1 du cours" })).toBeVisible();
-  await page.getByRole("button", { name: "Agrandir la photo 1" }).click();
-  await expect(page.getByRole("img", { name: "Photo 1 du cours, en grand" })).toBeVisible();
+  await expect(page.getByRole("img", { name: /photo/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Agrandir/ })).toHaveCount(0);
+  await expect(page.locator('img[src*="/pages/"]')).toHaveCount(0);
 });
 
 test("reading aloud never starts by itself, starts on « Écouter » and stops on « Stop », by keyboard too", async ({ page, child: _child }) => {

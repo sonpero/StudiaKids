@@ -32,11 +32,13 @@ describe("openCourseForReading", () => {
     return { db: fresh.db, deps: { repo: new SqliteCourseRepository(fresh.db) } };
   }
 
-  it("gives the Markdown, the text to speak and the course's photos in page order, and records the access", async () => {
+  // No photo since 2026-10-04 (docs/securite.md), even for a course
+  // confirmed before, whose page rows are still there.
+  it("gives the Markdown and the text to speak, never photos, and records the access", async () => {
     const { db, deps } = setup();
     seedCourse(db, "u1", "c1", { status: "ready", confirmed: true, pages: [1, 0, 2], markdown: "# Le verbe\n\n- chanter" });
 
-    expect(await openCourseForReading(deps, "u1", "c1", now)).toEqual(ok({ markdown: "# Le verbe\n\n- chanter", speech: "Le verbe\nchanter", photos: [{ index: 0 }, { index: 1 }, { index: 2 }] }));
+    expect(await openCourseForReading(deps, "u1", "c1", now)).toEqual(ok({ markdown: "# Le verbe\n\n- chanter", speech: "Le verbe\nchanter" }));
     expect(lastAccess(db, "c1")).toBe(now.toISOString());
   });
 

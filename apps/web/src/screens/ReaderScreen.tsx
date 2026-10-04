@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Markdown, { type Components } from "react-markdown";
 import { MascotSays } from "../components/ui/MascotSays.js";
 import { button } from "../components/ui/styles.js";
-import { pageFileUrl } from "../lib/courses.js";
 import { locatePassages } from "../lib/passage.js";
 import { getCourseText } from "../lib/reader.js";
 import { useSpeech } from "../lib/speech.js";
@@ -35,8 +34,9 @@ const lesson: Components = {
   a: ({ children }) => <span>{children}</span>,
 };
 
-// docs/modules/reader.md, "Écran": the lesson's text, its photos, the voice
-// on the child's tap. No empty state: a confirmed course always has a text.
+// docs/modules/reader.md, "Écran": the lesson's text and the voice on the
+// child's tap; no photo, they are gone once the course is confirmed. No
+// empty state: a confirmed course always has a text.
 // The lesson, with the cited passages highlighted: each part rendered as
 // Markdown, so no syntax ever shows.
 function Lesson({ markdown, highlights }: { markdown: string; highlights: string[] }) {
@@ -63,7 +63,6 @@ function Lesson({ markdown, highlights }: { markdown: string; highlights: string
 export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [], showHomeButton = true }: ReaderScreenProps) {
   const reading = useQuery({ queryKey: ["reader", courseId], queryFn: () => getCourseText(courseId) });
   const speech = useSpeech();
-  const [enlarged, setEnlarged] = useState<number | null>(null);
 
   const gone = reading.data === null;
   useEffect(() => {
@@ -85,7 +84,7 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
       <MascotSays pose="waiting" line="J'ouvre ton cours…" />
     );
   } else {
-    const { markdown, speech: toSpeak, photos } = reading.data;
+    const { markdown, speech: toSpeak } = reading.data;
     content = (
       <>
         {speech.supported && (
@@ -104,15 +103,6 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
         <article className="flex w-full flex-col gap-3 rounded-grande-carte border-3 border-ink bg-white p-4 text-left shadow-moyenne">
           <Lesson markdown={markdown} highlights={highlights} />
         </article>
-        <ul className="flex w-full flex-wrap gap-3">
-          {photos.map(({ index }) => (
-            <li key={index}>
-              <button type="button" aria-label={`Agrandir la photo ${String(index + 1)}`} onClick={() => setEnlarged(index)} className="min-h-11 min-w-11 rounded-carte border-3 border-ink bg-white p-1 shadow-moyenne">
-                <img src={pageFileUrl(courseId, index)} alt={`Photo ${String(index + 1)} du cours`} className="h-24 w-auto rounded-bouton object-cover" />
-              </button>
-            </li>
-          ))}
-        </ul>
         {onAsk && (
           <button type="button" onClick={onAsk} className="flex min-h-11 items-center gap-2 self-start rounded-pastille border-3 border-ink bg-white px-4 font-display text-corps font-bold text-ink shadow-petite">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -122,18 +112,6 @@ export function ReaderScreen({ courseId, onHome, footer, onAsk, highlights = [],
           </button>
         )}
         {footer}
-        {enlarged !== null && (
-          <div role="dialog" aria-modal="true" className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-canvas p-4">
-            <img
-              src={pageFileUrl(courseId, enlarged)}
-              alt={`Photo ${String(enlarged + 1)} du cours, en grand`}
-              className="max-h-[80dvh] w-auto rounded-carte border-3 border-ink object-contain"
-            />
-            <button type="button" onClick={() => setEnlarged(null)} className={secondary}>
-              Fermer
-            </button>
-          </div>
-        )}
       </>
     );
   }

@@ -6,7 +6,8 @@ export interface OpenCourseForReadingDeps {
   repo: CourseRepository;
 }
 
-export type ReadingView = { markdown: string; speech: string; photos: { index: number }[] };
+// No photo: they are gone once the course is confirmed (docs/securite.md).
+export type ReadingView = { markdown: string; speech: string };
 
 // Composes ingestion only (docs/modules/reader.md): never a reading state
 // for a course the child has not confirmed, nor one still being read.
@@ -15,6 +16,5 @@ export async function openCourseForReading(deps: OpenCourseForReadingDeps, userI
   if (!text.ok) return err(text.error);
   const access = await recordAccess(deps, userId, courseId, now);
   if (!access.ok) return err(access.error);
-  const photos = [...text.value.pages].sort((a, b) => a - b).map((index) => ({ index }));
-  return ok({ markdown: text.value.markdown, speech: speakableText(text.value.markdown), photos });
+  return ok({ markdown: text.value.markdown, speech: speakableText(text.value.markdown) });
 }

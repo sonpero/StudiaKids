@@ -10,8 +10,8 @@ function stubFetch(status: number, body?: unknown) {
 }
 
 describe("reader API client", () => {
-  it("getCourseText reads the text, the text to speak and the photos", async () => {
-    const text = { markdown: "# Le verbe", speech: "Le verbe", photos: [{ index: 0 }] };
+  it("getCourseText reads the text and the text to speak", async () => {
+    const text = { markdown: "# Le verbe", speech: "Le verbe" };
     const fetchMock = stubFetch(200, text);
 
     expect(await getCourseText("c1")).toEqual(text);

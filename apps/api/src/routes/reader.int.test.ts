@@ -60,13 +60,15 @@ describe("GET /api/courses/:id/text", () => {
     rmSync(volume, { recursive: true, force: true });
   });
 
-  it("gives the Markdown, the text to speak and the photos, and records the access", async () => {
+  // No photo since 2026-10-04 (docs/securite.md), even for a course
+  // confirmed before, whose page rows are still there.
+  it("gives the Markdown and the text to speak, never photos, and records the access", async () => {
     const id = seedCourse("lea", { confirmed: true, status: "ready" });
 
     const res = await app.inject({ method: "GET", url: `/api/courses/${id}/text`, headers: { cookie: lea } });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ markdown: "# Le verbe\n\n- **chanter**", speech: "Le verbe\nchanter", photos: [{ index: 0 }, { index: 1 }] });
+    expect(res.json()).toEqual({ markdown: "# Le verbe\n\n- **chanter**", speech: "Le verbe\nchanter" });
     expect(lastAccess(id) > LONG_AGO).toBe(true);
   });
 

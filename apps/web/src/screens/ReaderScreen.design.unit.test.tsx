@@ -22,10 +22,10 @@ const client = () => new QueryClient({ defaultOptions: { queries: { retry: false
 
 // No mockup: the mockups' language (docs/design/*.png, tokens.md).
 describe("ReaderScreen, in the mockups' language", () => {
-  it("the lesson on a white card; « Écouter » a turquoise pill with a speaker; photos in cards; « Poser une question » a pill", async () => {
+  it("the lesson on a white card; « Écouter » a turquoise pill with a speaker; « Poser une question » a pill", async () => {
     vi.stubGlobal("speechSynthesis", { speak: vi.fn(), cancel: vi.fn() });
     vi.stubGlobal("SpeechSynthesisUtterance", class {});
-    reader.getCourseText.mockResolvedValue({ markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.", speech: "", photos: [{ index: 0 }] });
+    reader.getCourseText.mockResolvedValue({ markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.", speech: "" });
     render(
       <QueryClientProvider client={client()}>
         <ReaderScreen courseId="c1" onHome={vi.fn()} onAsk={vi.fn()} />
@@ -35,7 +35,6 @@ describe("ReaderScreen, in the mockups' language", () => {
     const listen = screen.getByRole("button", { name: "Écouter" });
     has(listen, "rounded-pastille", "bg-turquoise");
     expect(listen.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
-    has(screen.getByRole("img", { name: "Photo 1 du cours" }).parentElement, "rounded-carte", "border-3", "bg-white");
     has(screen.getByRole("button", { name: "Poser une question" }), "rounded-pastille", "border-3");
   });
 

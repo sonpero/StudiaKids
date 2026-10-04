@@ -47,7 +47,10 @@ describe("DTOs", () => {
     expect(generationStatusSchema.safeParse({ status: "items_ready", done: 0, total: 0, failed: 0, itemCount: 0 }).success).toBe(false);
   });
 
-  it("the reader gets the Markdown, the text to speak and the photos", () => {
-    expect(readerTextSchema.safeParse({ markdown: "# A", speech: "A", photos: [{ index: 0 }] }).success).toBe(true);
+  // No photo since 2026-10-04 (docs/securite.md): a photos field never
+  // reaches the client, even if a server sent one.
+  it("the reader gets the Markdown and the text to speak, never photos", () => {
+    expect(readerTextSchema.parse({ markdown: "# A", speech: "A", photos: [{ index: 0 }] })).toEqual({ markdown: "# A", speech: "A" });
+    expect(Object.keys(readerTextSchema.shape)).toEqual(["markdown", "speech"]);
   });
 });

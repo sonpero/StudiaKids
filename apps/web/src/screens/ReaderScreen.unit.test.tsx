@@ -20,7 +20,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const verbe = { markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.\n\n- chanter\n- finir", speech: "Le verbe\nLe verbe indique ce que fait le sujet.\nchanter\nfinir", photos: [{ index: 0 }, { index: 1 }] };
+const verbe = { markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.\n\n- chanter\n- finir", speech: "Le verbe\nLe verbe indique ce que fait le sujet.\nchanter\nfinir" };
 
 function renderReader(highlights?: string[]) {
   const onHome = vi.fn();
@@ -67,7 +67,8 @@ describe("ReaderScreen", () => {
     await waitFor(() => expect(onHome).toHaveBeenCalled());
   });
 
-  it("ready: the lesson rendered from its Markdown, never its raw symbols, and the course's photos", async () => {
+  // No photo since 2026-10-04 (docs/securite.md): the text alone.
+  it("ready: the lesson rendered from its Markdown, never its raw symbols, and no photo", async () => {
     api.getCourseText.mockResolvedValue(verbe);
     renderReader();
 
@@ -75,18 +76,9 @@ describe("ReaderScreen", () => {
     expect(screen.getByText("Le verbe indique ce que fait le sujet.")).toBeInTheDocument();
     expect(within(screen.getByRole("article")).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["chanter", "finir"]);
     expect(screen.queryByText(/^#/)).not.toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Photo 1 du cours" })).toHaveAttribute("src", "/api/courses/c1/pages/0/file");
-    expect(screen.getByRole("img", { name: "Photo 2 du cours" })).toHaveAttribute("src", "/api/courses/c1/pages/1/file");
-  });
-
-  it("a tap enlarges a photo, and « Fermer » puts it back", async () => {
-    api.getCourseText.mockResolvedValue(verbe);
-    renderReader();
-
-    fireEvent.click(await screen.findByRole("button", { name: "Agrandir la photo 2" }));
-    expect(screen.getByRole("img", { name: "Photo 2 du cours, en grand" })).toHaveAttribute("src", "/api/courses/c1/pages/1/file");
-    fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
-    expect(screen.queryByRole("img", { name: /en grand/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /photo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Agrandir/ })).not.toBeInTheDocument();
+    expect(document.querySelector('img[src*="/pages/"]')).toBeNull();
   });
 
   it("the voice never starts by itself: « Écouter » reads the text to speak, « Stop » stops it", async () => {

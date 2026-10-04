@@ -21,7 +21,7 @@ const verbe = { id: "c1", title: "Le verbe", subject: "french", grade: "CM1", co
 beforeEach(() => {
   api.listCourses.mockResolvedValue([verbe]);
   api.getUnconfirmedCourse.mockResolvedValue(null);
-  reader.getCourseText.mockResolvedValue({ markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.", speech: "", photos: [{ index: 0 }] });
+  reader.getCourseText.mockResolvedValue({ markdown: "# Le verbe\n\nLe verbe indique ce que fait le sujet.", speech: "" });
 });
 
 afterEach(() => cleanup());
