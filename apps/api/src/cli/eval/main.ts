@@ -12,7 +12,10 @@ import {
   parseExercise,
   PROMPTS_VERSION,
   stripJpegMetadata,
+  subjectProblem,
+  SUBJECTS,
   validItems,
+  type CourseSubject,
   type GameType,
   type Grade,
 } from "@studiakids/core";
@@ -89,9 +92,11 @@ async function extract(lesson: Lesson): Promise<string> {
 async function runCase(lesson: Lesson, details: unknown[]): Promise<CaseRun> {
   const before = spentUsd;
   const markdown = await extract(lesson);
-  const split = await new ClaudeItemSplitter(model).split({ markdown, grade: lesson.grade });
+  // The corpus names subjects with the same identifiers as the courses.
+  const subject: CourseSubject = SUBJECTS.find((known) => known === lesson.subject) ?? null;
+  const split = await new ClaudeItemSplitter(model).split({ markdown, grade: lesson.grade, subject });
   if (!split.ok) throw new Error(`${lesson.id}: découpage en échec : ${split.error.message}`);
-  const items = validItems(split.value);
+  const items = validItems(split.value, subject);
   const outcome = coverageOutcome(items.length);
   const records: ExerciseRecord[] = [];
   const judged: { record: ExerciseRecord; type: string; content: unknown }[] = [];
@@ -101,12 +106,12 @@ async function runCase(lesson: Lesson, details: unknown[]): Promise<CaseRun> {
     for (const item of items) for (const type of item.applicableGameTypes) if (!types.includes(type)) types.push(type);
     for (const type of types) {
       const withType = items.filter((item) => item.applicableGameTypes.includes(type));
-      const generated = await new ClaudeExerciseGenerator(model).generate({ type, items: withType, courseMarkdown: markdown, grade: lesson.grade });
+      const generated = await new ClaudeExerciseGenerator(model).generate({ type, items: withType, courseMarkdown: markdown, grade: lesson.grade, subject });
       raw[type] = generated.ok ? generated.value : [`échec : ${generated.ok ? "" : generated.error.message}`];
       if (!generated.ok) continue;
       for (const candidate of generated.value) {
         const parsed = parseExercise(type, candidate, withType.length);
-        const record: ExerciseRecord = { type, shapeOk: parsed.ok, mechanical: parsed.ok ? anchoringProblem(parsed.value.content, markdown) : null, judge: null };
+        const record: ExerciseRecord = { type, shapeOk: parsed.ok, mechanical: parsed.ok ? (anchoringProblem(parsed.value.content, markdown) ?? subjectProblem(subject, parsed.value.content)) : null, judge: null };
         records.push(record);
         if (parsed.ok && record.mechanical === null) judged.push({ record, type, content: parsed.value.content });
       }

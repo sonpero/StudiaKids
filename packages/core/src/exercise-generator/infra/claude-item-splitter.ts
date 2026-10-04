@@ -6,6 +6,7 @@ import type { Result } from "../../shared/index.js";
 import { GAME_TYPES } from "../domain/game-types.js";
 import type { ItemProposal } from "../domain/items.js";
 import type { GenerationError, ItemSplitter } from "../domain/ports.js";
+import type { CourseSubject } from "../domain/subject-rules.js";
 import { splitPrompt } from "./prompts.js";
 
 // Game types as plain strings: an unknown one is dropped in domain/, item
@@ -25,9 +26,9 @@ const splitSchema = z.object({
 export class ClaudeItemSplitter implements ItemSplitter {
   constructor(private readonly model: LanguageModel) {}
 
-  async split(input: { markdown: string; grade: Grade }): Promise<Result<ItemProposal[], GenerationError>> {
+  async split(input: { markdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<ItemProposal[], GenerationError>> {
     const result = await generateWithRetry(this.model, splitSchema, (feedback) => [
-      { role: "user", content: `${splitPrompt(input.grade, input.markdown)}${feedback ? `\n\n${feedback}` : ""}` },
+      { role: "user", content: `${splitPrompt(input.grade, input.markdown, input.subject ?? null)}${feedback ? `\n\n${feedback}` : ""}` },
     ]);
     if (!result.ok) return { ok: false, error: { kind: "model-error", message: result.error.message } };
     return { ok: true, value: result.value.items.map((item) => ({ title: item.title, body: item.body, applicableGameTypes: item.gameTypes })) };

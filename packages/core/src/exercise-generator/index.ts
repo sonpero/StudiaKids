@@ -11,6 +11,7 @@ export {
 } from "./domain/items.js";
 export { parseExercise, type ExerciseContent, type ParsedExercise } from "./domain/exercises.js";
 export { anchoringProblem, normalize } from "./domain/anchoring.js";
+export { subjectProblem, isGameTypeAllowed, isNumberOrCalculation, type CourseSubject } from "./domain/subject-rules.js";
 export { needsRegeneration } from "./domain/regeneration.js";
 export { generationStatus, type GenerationStatus, type GenerationProgress } from "./domain/generation-status.js";
 export type { Item, Exercise, ItemSplitter, ExerciseGenerator, CourseTextSource, ItemRepository, GenerationError } from "./domain/ports.js";

@@ -6,6 +6,7 @@ import { createLanguageModel, err, type Result } from "../../shared/index.js";
 import type { GameType } from "../domain/game-types.js";
 import type { ItemProposal } from "../domain/items.js";
 import type { ExerciseGenerator, GenerationError, ItemSplitter } from "../domain/ports.js";
+import type { CourseSubject } from "../domain/subject-rules.js";
 import { ClaudeExerciseGenerator } from "./claude-exercise-generator.js";
 import { ClaudeItemSplitter } from "./claude-item-splitter.js";
 
@@ -61,7 +62,7 @@ export class FixtureItemSplitter implements ItemSplitter {
     this.splits.sort((a, b) => b.markdown.length - a.markdown.length);
   }
 
-  split(input: { markdown: string; grade: Grade }): Promise<Result<ItemProposal[], GenerationError>> {
+  split(input: { markdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<ItemProposal[], GenerationError>> {
     const match = this.splits.find((split) => input.markdown.includes(split.markdown));
     if (!match) return Promise.resolve(missing("no split fixture for this text"));
     return new ClaudeItemSplitter(replayModel(readFixture(match.file))).split(input);
@@ -74,7 +75,7 @@ export class FixtureItemSplitter implements ItemSplitter {
 export class FixtureExerciseGenerator implements ExerciseGenerator {
   constructor(private readonly fixturesRoot: string) {}
 
-  generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade }): Promise<Result<unknown[], GenerationError>> {
+  generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<unknown[], GenerationError>> {
     const file = path.join(this.fixturesRoot, "exercise-generator", `generate-${input.type}.json`);
     if (!existsSync(file)) return Promise.resolve(missing(`no generation fixture for ${input.type}`));
     return new ClaudeExerciseGenerator(replayModel(readFixture(file))).generate(input);

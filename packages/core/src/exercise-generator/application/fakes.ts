@@ -3,6 +3,7 @@ import type { Job, JobQueue } from "../../jobs/index.js";
 import { err, ok, type Result } from "../../shared/index.js";
 import type { GameType } from "../domain/game-types.js";
 import type { ItemProposal, SplitOutcome } from "../domain/items.js";
+import type { CourseSubject } from "../domain/subject-rules.js";
 import type { CourseTextSource, Exercise, ExerciseGenerator, GenerationError, Item, ItemRepository, ItemSplitter } from "../domain/ports.js";
 
 export function fakeItemRepository(): ItemRepository & { items: Item[]; exercises: Exercise[]; outcomes: Map<string, { outcome: SplitOutcome; itemCount: number }> } {
@@ -48,8 +49,9 @@ export function fakeItemRepository(): ItemRepository & { items: Item[]; exercise
   };
 }
 
-export function courseTexts(texts: Record<string, string>, userId = "u1", grade = "CM1" as const): CourseTextSource {
+export function courseTexts(texts: Record<string, string>, userId = "u1", grade: "CM1" | "CE2" = "CM1", subjects: Record<string, CourseSubject> = {}): CourseTextSource {
   return {
+    readSubject: (asker, courseId) => Promise.resolve(asker === userId ? (subjects[courseId] ?? null) : null),
     read: (asker, courseId) => {
       if (asker !== userId || !(courseId in texts)) return Promise.resolve(err("not-found"));
       const markdown = texts[courseId];
@@ -58,20 +60,27 @@ export function courseTexts(texts: Record<string, string>, userId = "u1", grade 
   };
 }
 
-export function scriptedSplitter(answers: Result<ItemProposal[], GenerationError>[]): ItemSplitter & { calls: number } {
+export function scriptedSplitter(answers: Result<ItemProposal[], GenerationError>[]): ItemSplitter & { calls: number; inputs: Parameters<ItemSplitter["split"]>[0][] } {
   const splitter = {
     calls: 0,
-    split: () => Promise.resolve(answers[splitter.calls++] ?? err({ kind: "model-error" as const, message: "no scripted answer left" })),
+    inputs: [] as Parameters<ItemSplitter["split"]>[0][],
+    split: (input: Parameters<ItemSplitter["split"]>[0]) => (splitter.inputs.push(input), Promise.resolve(answers[splitter.calls++] ?? err({ kind: "model-error" as const, message: "no scripted answer left" }))),
   };
   return splitter;
 }
 
 // Answers per type, in call order; records what it was asked.
-export function scriptedGenerator(answers: Partial<Record<GameType, Result<unknown[], GenerationError>[]>>): ExerciseGenerator & { asked: { type: GameType; items: string[] }[] } {
+export function scriptedGenerator(
+  answers: Partial<Record<GameType, Result<unknown[], GenerationError>[]>>,
+): ExerciseGenerator & { asked: { type: GameType; items: string[] }[]; inputs: Parameters<ExerciseGenerator["generate"]>[0][] } {
   const asked: { type: GameType; items: string[] }[] = [];
+  const inputs: Parameters<ExerciseGenerator["generate"]>[0][] = [];
   return {
     asked,
-    generate: ({ type, items }) => {
+    inputs,
+    generate: (input) => {
+      const { type, items } = input;
+      inputs.push(input);
       const nth = asked.filter((a) => a.type === type).length;
       asked.push({ type, items: items.map((i) => i.title) });
       return Promise.resolve(answers[type]?.[nth] ?? err({ kind: "model-error", message: `no scripted answer left for ${type}` }));

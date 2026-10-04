@@ -42,9 +42,10 @@ export async function handleSplittingJob(deps: HandleSplittingJobDeps, payload: 
     return ok(undefined);
   }
 
-  const proposals = await deps.splitter.split(text.value);
+  const subject = await deps.courses.readSubject(ctx.userId, payload.courseId);
+  const proposals = await deps.splitter.split({ ...text.value, subject });
   if (!proposals.ok) return err(proposals.error.message);
-  const valid = validItems(proposals.value);
+  const valid = validItems(proposals.value, subject);
   const outcome = coverageOutcome(valid.length);
   const createdAt = ctx.now.toISOString();
   const items: Item[] =

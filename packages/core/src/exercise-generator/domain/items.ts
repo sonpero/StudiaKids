@@ -1,4 +1,5 @@
 import { isGameType, type GameType } from "./game-types.js";
+import { isGameTypeAllowed, type CourseSubject } from "./subject-rules.js";
 
 export const COVERAGE_MIN_ITEMS = 6; // the brief said 8; lowered by decision, 2026-09-26
 export const COVERAGE_MAX_ITEMS = 40; // decided, revisable: beyond, the first 40 are kept
@@ -16,9 +17,9 @@ export function coverageOutcome(validItemCount: number): SplitOutcome {
   return validItemCount < COVERAGE_MIN_ITEMS ? "insufficient_coverage" : "items_ready";
 }
 
-function knownTypes(types: string[]): GameType[] {
+function knownTypes(types: string[], subject: CourseSubject): GameType[] {
   const kept: GameType[] = [];
-  for (const type of types) if (isGameType(type) && !kept.includes(type)) kept.push(type);
+  for (const type of types) if (isGameType(type) && isGameTypeAllowed(subject, type) && !kept.includes(type)) kept.push(type);
   return kept.slice(0, ITEM_MAX_GAME_TYPES);
 }
 
@@ -26,13 +27,14 @@ function knownTypes(types: string[]): GameType[] {
 // most 3 kept, in order), an item with no known type, a title outside
 // 3–60 characters, an empty body or a title already used (case and
 // spaces aside) dropped; positions contiguous from 0; at most 40 items.
-export function validItems(proposals: ItemProposal[]): ValidItem[] {
+// A type forbidden for the subject is dropped like an unknown one.
+export function validItems(proposals: ItemProposal[], subject: CourseSubject = null): ValidItem[] {
   const seen = new Set<string>();
   const kept: ValidItem[] = [];
   for (const proposal of proposals) {
     const title = proposal.title.trim();
     const body = proposal.body.trim();
-    const applicableGameTypes = knownTypes(proposal.applicableGameTypes);
+    const applicableGameTypes = knownTypes(proposal.applicableGameTypes, subject);
     const key = title.toLowerCase().replace(/\s+/g, " ");
     if (title.length < TITLE_MIN_CHARS || title.length > TITLE_MAX_CHARS || body === "" || applicableGameTypes.length === 0 || seen.has(key)) continue;
     seen.add(key);

@@ -4,6 +4,7 @@ import { anchoringProblem } from "../domain/anchoring.js";
 import { parseExercise, type ExerciseContent } from "../domain/exercises.js";
 import type { CourseTextSource, Exercise, ExerciseGenerator, Item, ItemRepository } from "../domain/ports.js";
 import { needsRegeneration } from "../domain/regeneration.js";
+import { isGameTypeAllowed, subjectProblem, type CourseSubject } from "../domain/subject-rules.js";
 import type { GenerateExercisesPayload } from "./jobs.js";
 
 export { GENERATE_EXERCISES_JOB } from "./jobs.js";
@@ -27,14 +28,15 @@ function canonical(value: unknown): string {
   return JSON.stringify(value);
 }
 
-// Checked one by one: shape, item in the list, anchoring rule. An invalid
-// exercise is dropped alone; the first valid one per item is kept.
-function validExercises(raw: unknown[], items: Item[], type: GenerateExercisesPayload["type"], courseMarkdown: string): Map<number, ExerciseContent> {
+// Checked one by one: shape, item in the list, anchoring rule, the
+// subject's rules. An invalid exercise is dropped alone; the first valid
+// one per item is kept.
+function validExercises(raw: unknown[], items: Item[], type: GenerateExercisesPayload["type"], courseMarkdown: string, subject: CourseSubject): Map<number, ExerciseContent> {
   const valid = new Map<number, ExerciseContent>();
   for (const candidate of raw) {
     const parsed = parseExercise(type, candidate, items.length);
     if (!parsed.ok || valid.has(parsed.value.item)) continue;
-    if (anchoringProblem(parsed.value.content, courseMarkdown) !== null) continue;
+    if (anchoringProblem(parsed.value.content, courseMarkdown) !== null || subjectProblem(subject, parsed.value.content) !== null) continue;
     valid.set(parsed.value.item, parsed.value.content);
   }
   return valid;
@@ -50,15 +52,25 @@ export async function handleGenerationJob(deps: HandleGenerationJobDeps, payload
     (item) => item.applicableGameTypes.includes(payload.type) && (payload.itemIds === undefined || payload.itemIds.includes(item.id)),
   );
   if (items.length === 0) return ok(undefined);
+  const subject = await deps.courses.readSubject(ctx.userId, payload.courseId);
 
-  const ask = () => deps.generator.generate({ type: payload.type, items: items.map(({ title, body }) => ({ title, body })), courseMarkdown: text.value.markdown, grade: text.value.grade });
+  // A type forbidden for the subject is never asked of the model; what an
+  // earlier generation made of it goes.
+  if (!isGameTypeAllowed(subject, payload.type)) {
+    const forbidden = await deps.repo.listExercises(ctx.userId, items.map((item) => item.id), payload.type);
+    if (forbidden.length > 0) await deps.repo.applyExercises(ctx.userId, { remove: forbidden.map((exercise) => exercise.id), insert: [] });
+    return ok(undefined);
+  }
+
+  const ask = () =>
+    deps.generator.generate({ type: payload.type, items: items.map(({ title, body }) => ({ title, body })), courseMarkdown: text.value.markdown, grade: text.value.grade, subject });
   const first = await ask();
   if (!first.ok) return err(first.error.message);
-  let valid = validExercises(first.value, items, payload.type, text.value.markdown);
+  let valid = validExercises(first.value, items, payload.type, text.value.markdown, subject);
   if (needsRegeneration(items.length, valid.size)) {
     const second = await ask();
     if (second.ok) {
-      const retried = validExercises(second.value, items, payload.type, text.value.markdown);
+      const retried = validExercises(second.value, items, payload.type, text.value.markdown, subject);
       if (retried.size > valid.size) valid = retried;
     }
   }
@@ -73,6 +85,9 @@ export async function handleGenerationJob(deps: HandleGenerationJobDeps, payload
     if (current) remove.push(current.id);
     insert.push({ id: deps.idGenerator.next(), itemId: item.id, userId: ctx.userId, type: payload.type, content, createdAt: ctx.now.toISOString() });
   }
+  // Made before the subject's rules and forbidden by them: it goes, even
+  // with nothing new in its place.
+  for (const current of existing) if (!remove.includes(current.id) && subjectProblem(subject, current.content) !== null) remove.push(current.id);
   if (remove.length > 0 || insert.length > 0) await deps.repo.applyExercises(ctx.userId, { remove, insert });
   return ok(undefined);
 }

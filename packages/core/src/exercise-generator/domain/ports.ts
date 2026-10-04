@@ -3,6 +3,7 @@ import type { Result } from "../../shared/index.js";
 import type { ExerciseContent } from "./exercises.js";
 import type { GameType } from "./game-types.js";
 import type { ItemProposal, SplitOutcome } from "./items.js";
+import type { CourseSubject } from "./subject-rules.js";
 
 export type GenerationError = { kind: "model-error"; message: string };
 
@@ -20,19 +21,23 @@ export type Item = {
 export type Exercise = { id: string; itemId: string; userId: string; type: GameType; content: ExerciseContent; createdAt: string };
 
 export interface ItemSplitter {
-  split(input: { markdown: string; grade: Grade }): Promise<Result<ItemProposal[], GenerationError>>;
+  // subject: the per-subject rules (docs/modules/exercise-generator.md);
+  // absent reads as a course without a subject.
+  split(input: { markdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<ItemProposal[], GenerationError>>;
 }
 
 // One call for a type and every item carrying it; each exercise names its
 // item by its number in the list. Checked exercise by exercise in domain/.
 export interface ExerciseGenerator {
-  generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade }): Promise<Result<unknown[], GenerationError>>;
+  generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<unknown[], GenerationError>>;
 }
 
 // The text of a confirmed, ready course, read from ingestion (wired in
 // apps/): exercise-generator never reads ingestion's tables.
 export interface CourseTextSource {
   read(userId: string, courseId: string): Promise<Result<{ markdown: string; grade: Grade }, "not-found" | "not-ready">>;
+  // The course's subject, for the per-subject rules; null when unknown.
+  readSubject(userId: string, courseId: string): Promise<CourseSubject>;
 }
 
 // Every method takes userId and filters on it (CLAUDE.md rule 1).

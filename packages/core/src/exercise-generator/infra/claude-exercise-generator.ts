@@ -5,6 +5,7 @@ import { generateWithRetry } from "../../ingestion/index.js";
 import type { Result } from "../../shared/index.js";
 import type { GameType } from "../domain/game-types.js";
 import type { ExerciseGenerator, GenerationError } from "../domain/ports.js";
+import type { CourseSubject } from "../domain/subject-rules.js";
 import { generationPrompt } from "./prompts.js";
 
 const item = z.number().describe("Le numéro de l'item dans la liste donnée.");
@@ -25,14 +26,14 @@ const EXERCISE_SCHEMAS: Record<GameType, z.ZodTypeAny> = {
 export class ClaudeExerciseGenerator implements ExerciseGenerator {
   constructor(private readonly model: LanguageModel) {}
 
-  async generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade }): Promise<Result<unknown[], GenerationError>> {
+  async generate(input: { type: GameType; items: { title: string; body: string }[]; courseMarkdown: string; grade: Grade; subject?: CourseSubject }): Promise<Result<unknown[], GenerationError>> {
     // The model sees the type's flat schema; an element that breaks it
     // becomes null instead of refusing the whole list, and is dropped in
     // domain/ with the other invalid ones. Only an unreadable answer as a
     // whole (no list at all) goes through the single retry.
     const schema = z.object({ exercises: z.array(EXERCISE_SCHEMAS[input.type].catch(null)).describe("Un exercice par item, au plus.") });
     const result = await generateWithRetry(this.model, schema, (feedback) => [
-      { role: "user", content: `${generationPrompt(input.type, input.grade, input.courseMarkdown, input.items)}${feedback ? `\n\n${feedback}` : ""}` },
+      { role: "user", content: `${generationPrompt(input.type, input.grade, input.courseMarkdown, input.items, input.subject ?? null)}${feedback ? `\n\n${feedback}` : ""}` },
     ]);
     if (!result.ok) return { ok: false, error: { kind: "model-error", message: result.error.message } };
     return { ok: true, value: result.value.exercises };
