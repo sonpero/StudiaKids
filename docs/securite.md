@@ -27,8 +27,8 @@ elle-même.
   fonctionner l'extraction, la génération et le tuteur. La minimisation
   porte sur **ce qui est collecté** (rien au-delà de prénom, niveau, cours,
   tentatives, conversations), pas sur la durée de conservation de ce qui
-  est légitimement collecté — voir "Données conservées" plus bas pour ce
-  que ça change concrètement sur les photos.
+  est légitimement collecté — voir "Données conservées" plus bas ; les
+  photos, elles, ne sont gardées que le temps de l'extraction.
 - **Pas de compte tiers créé pour l'enfant.** Aucune fonctionnalité de ce
   produit ne doit conduire à créer, même indirectement, une identité de
   l'enfant sur un service externe.
@@ -244,7 +244,7 @@ ligne que ce produit ne franchit pas.
 | Donnée | Où | Durée | Pourquoi |
 |---|---|---|---|
 | Identifiant/mot de passe (hash argon2), prénom, niveau | `accounts` | Tant que le compte existe | Authentification, personnalisation |
-| Photos de cours | `RAILWAY_VOLUME_MOUNT_PATH/photos/`, table `pages` | **Tant que le cours existe** — décidé : le lecteur les affiche, le tuteur peut les citer | Fonctionnement du lecteur et du tuteur, pas seulement l'extraction |
+| Photos de cours | `RAILWAY_VOLUME_MOUNT_PATH/photos/`, table `pages` | **Jusqu'à la confirmation du cours** — supprimées (fichiers et lignes) quand l'enfant confirme ou refuse le cours, quand le cours ou le compte est supprimé, ou après 7 jours pour un cours jamais confirmé ni refusé (arbitrage du 2026-10-04, qui remplace « tant que le cours existe ») | L'extraction seule : elle est asynchrone, peut être relancée et porte sur plusieurs pages, donc a besoin des photos jusqu'à la confirmation. Le lecteur et le tuteur n'affichent ni ne citent de photo |
 | Texte extrait, items, exercices | `extractions`, `items`, `exercises` | Tant que le cours existe | Fonctionnement du lecteur et des jeux |
 | Tentatives de jeu (correct/incorrect, horodatage) | `attempts` | Tant que le compte existe | Calcul des étoiles (`progress`) |
 | Conversations et messages du tuteur, y compris `distress` | `conversations`, `messages` | Tant que le cours existe | Continuité du chat, consultation possible par l'adulte titulaire |
@@ -287,6 +287,8 @@ garantissent au niveau base de données, à condition que la suppression des
 fichiers sur le volume (photos) soit bien déclenchée par le même appel
 applicatif, jamais seulement la ligne SQL (même règle que la suppression
 de cours dans `docs/modules/ingestion.md`, vérifiée par un test dédié).
+Depuis le 2026-10-04, un cours confirmé n'a de toute façon plus de photo :
+elles partent à la confirmation (voir "Données conservées").
 
 ---
 

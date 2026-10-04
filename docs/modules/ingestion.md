@@ -15,12 +15,20 @@ dépose que des photos), un niveau qui n'est jamais deviné par le modèle
 (hérité du compte), et un refus qui efface le cours plutôt que de proposer
 une édition (pas d'éditeur de texte, cf. `docs/ui.md`).
 
-**Les photos originales sont conservées, pas seulement le texte extrait**
-— décision actée (`docs/securite.md`) : le lecteur les affiche
-(`docs/modules/reader.md`) et le tuteur peut les citer. Elles ne sont
-supprimées qu'en cascade avec le cours, jamais indépendamment de lui. Une
-version précédente de ce document envisageait de les supprimer une fois le
-cours confirmé, par minimisation ; ce n'est plus la décision retenue.
+**Les photos ne servent qu'à l'extraction** (`docs/securite.md`) : elles
+restent stockées tant que le cours n'est pas confirmé (l'extraction est
+asynchrone, peut être relancée et porte sur plusieurs pages), puis sont
+supprimées, fichiers et lignes `pages` : à la confirmation, au refus, à la
+suppression du cours ou du compte, et après 7 jours pour un cours jamais
+confirmé ni refusé. Le lecteur et le tuteur n'en affichent ni n'en citent
+aucune.
+
+*Historique de la décision.* Une première version de ce document
+supprimait les photos à la confirmation, par minimisation. Pendant le
+cadrage, la décision est devenue « conservées tant que le cours existe »
+(le lecteur les affichait, le tuteur pouvait les citer). Le 2026-10-04,
+Alexandre est revenu à la suppression à la confirmation (arbitrage
+produit) ; `pnpm photos:purge` retire celles des cours confirmés avant.
 
 Vocabulaire : voir `docs/glossaire.md` pour la correspondance entre les
 termes de prose (cours, matière, confirmé...) et les identifiants anglais
@@ -119,7 +127,13 @@ chaque méthode prenant un `userId` (`CLAUDE.md`, règle 1).
 supprime d'abord (lignes et fichiers) tout cours non confirmé existant du
 compte. L'accueil peut ainsi toujours ramener l'enfant vers le cours en
 attente (un seul, en bandeau), et une photo abandonnée ne survit jamais
-au cours suivant — pas de nettoyage différé à programmer.
+au cours suivant. **Un cours que l'enfant ne reprend jamais** (pas de
+nouvelle capture) est purgé, photos comprises, **7 jours après sa
+création** (`purgeAbandonedCourse`, `ABANDONED_COURSE_MAX_AGE_DAYS`,
+décidé le 2026-10-04) : le worker passe sur tous les comptes au démarrage
+puis toutes les heures. Sept jours laissent au bandeau « Tu n'as pas fini
+tes photos » le temps d'une semaine d'école, sans garder des photos
+indéfiniment.
 
 Fonctions pures de domaine :
 
@@ -297,7 +311,12 @@ règles enfreintes (les `issues` Zod), pas le message générique du SDK.
 - `confirmCourse(userId, courseId, now)` — l'enfant appuie sur "Oui, c'est
   ça !" : `confirmed = true`, uniquement pour un cours `ready`
   (`not-ready` sinon). Seul un cours `confirmed` est listé sur
-  l'accueil et ouvrable dans le lecteur.
+  l'accueil et ouvrable dans le lecteur. **Supprime ensuite les photos du
+  cours** (fichiers, puis lignes `pages`). Un fichier qui ne s'efface pas
+  ne fait jamais échouer la confirmation : l'échec est remonté
+  (`onPhotoRemovalFailure`) et journalisé par la route avec l'id du cours
+  et le message d'erreur seulement, jamais de contenu ; les lignes `pages`
+  restent alors, pour que `pnpm photos:purge` retrouve les fichiers.
 - `rejectCourse(userId, courseId, now)` — l'enfant appuie sur "Je reprends
   la photo", depuis l'écran de validation ou depuis le message d'une photo
   inexploitable : équivaut à `deleteCourse`, rien n'est conservé (un cours
@@ -309,7 +328,12 @@ règles enfreintes (les `issues` Zod), pas le message générique du SDK.
 - `getCourse`, `listConfirmedCourses` (triés par `lastAccessedAt` décroissant,
   pour la reprise sur l'accueil — `docs/modules/progress.md`),
   `getUnconfirmedCourse` (le cours en attente du compte, ou aucun — pour
-  le bandeau de l'accueil), `readPageFile`
+  le bandeau de l'accueil), `readPageFile` (seulement pour un cours non
+  confirmé : écran de capture et écran de validation)
+- `purgeAbandonedCourse(userId, now)` — supprime le cours non confirmé du
+  compte s'il a plus de 7 jours (worker)
+- `removeConfirmedCoursePhotos(userId, courseId, { dryRun })` — mesure puis
+  supprime les photos qu'un cours confirmé a encore (`pnpm photos:purge`)
 - `recordAccess(userId, courseId, now)` — met à jour `lastAccessedAt` ;
   appelé à l'ouverture du lecteur ou de l'écran jeux, jamais depuis
   l'accueil lui-même (l'ouvrir depuis la liste ne compte pas comme un accès
@@ -406,7 +430,7 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 | `GET /api/courses` | Liste des cours confirmés du compte, avec couleur. **À partir de M3** : le nombre de jeux prêts par cours (`exerciseCount`), affiché sur l'accueil (`docs/design/accueil.png` : "12 jeux prêts"), **ajouté par la route API** qui compose `ingestion` et `exercise-generator` : `ingestion` n'importe jamais `exercise-generator`, qui dépend déjà de lui (cycle interdit) |
 | `GET /api/courses/unconfirmed` | Le cours non confirmé du compte (au plus un), ou `null` — bandeau de l'accueil |
 | `GET /api/courses/:id` | Détail, y compris statut d'extraction, `extractionStarted` (faux pour un cours `pending` sans aucun job `extract-course` : photos prises, lecture jamais lancée) et propositions titre/matière |
-| `GET /api/courses/:id/pages/:index/file` | Lecture de fichier authentifiée |
+| `GET /api/courses/:id/pages/:index/file` | Lecture de fichier authentifiée, **seulement pour un cours non confirmé** (capture, validation) ; 404 ensuite |
 | `POST /api/courses/:id/confirm` | Bouton "Oui, c'est ça !" |
 | `POST /api/courses/:id/reject` | Bouton "Je reprends la photo" (supprime) |
 | `POST /api/courses/:id/retry` | Ré-enfile après un échec technique |
@@ -590,6 +614,15 @@ cours (`docs/securite.md` exclut la télémétrie comportementale).
   `CourseNamer` n'est jamais appelé
 - Intégration : créer un cours supprime le cours non confirmé précédent
   du compte, fichiers compris, et ne touche jamais aux cours confirmés
+- Unitaire et intégration : **après confirmation comme après refus, plus
+  aucune photo sur le volume ni ligne `pages`** ; un fichier qui ne
+  s'efface pas ne fait pas échouer la confirmation et l'échec est remonté
+  sans contenu ; une photo n'est plus servie après confirmation
+  (`photo-retention.unit.test.ts`, `photo-retention.int.test.ts`,
+  `routes/courses.int.test.ts`)
+- Intégration : la purge des cours abandonnés (7 jours, tous les comptes,
+  fichiers compris) ; `pnpm photos:purge` et son `--dry-run` (fichiers et
+  octets)
 - Intégration : un job `extract-course` épuisé rend le cours `failed` à
   la lecture ; un job encore en attente de retry le laisse `running`
 - **Intégration : supprimer un cours supprime aussi ses fichiers photo sur

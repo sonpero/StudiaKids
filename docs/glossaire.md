@@ -98,6 +98,9 @@ compatibles anglais/français ou déjà en anglais).
 | lancer la lecture (bouton "C'est tout !") | `startExtraction` | Sans effet si la lecture est déjà lancée : même succès, aucun nouveau job. |
 | supprimer un cours | `deleteCourse` | Lignes et fichiers, dans le même appel. |
 | supprimer les photos d'un compte | `deleteAccountFiles` (`FileStore`) | Tout `photos/{userId}`, pour `accounts:delete`. |
+| supprimer les photos d'un cours | `removeCoursePhotos` | Fichiers puis lignes `pages` ; à la confirmation (`confirmCourse`). |
+| cours abandonné | `purgeAbandonedCourse` (`ABANDONED_COURSE_MAX_AGE_DAYS`) | Non confirmé depuis 7 jours : supprimé avec ses photos par le worker. |
+| purge des photos des cours confirmés | `removeConfirmedCoursePhotos`, CLI `pnpm photos:purge` | Les photos gardées avant le 2026-10-04. |
 | taille native (d'une photo) | `nativePhotoSize` (`packages/contracts`) | La plus grande taille que le modèle voit sans la réduire ; le navigateur réencode à cette taille. |
 | tâche de lecture d'un cours | job `extract-course` (`EXTRACT_COURSE_JOB`, `extractCourseJobHandler`) | Enregistrée par le worker au démarrage. |
 | adaptateur fixture | `FixturePhotoExtractor` / `FixtureCourseNamer` | Choisis par le worker avec `LLM_ADAPTER=fixture` ; aucune requête réseau. |

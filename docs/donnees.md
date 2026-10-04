@@ -105,11 +105,14 @@ M3) : l'issue du découpage est stockée dans `course_generations`,
 propriété d'`exercise-generator`, et le reste du statut est dérivé des
 jobs (`docs/modules/exercise-generator.md`).
 
-**Les photos (`pages`, et les fichiers qu'elles référencent) sont
-conservées tant que le cours existe** — décision actée, `docs/securite.md`
-— et supprimées uniquement par `ON DELETE CASCADE` avec `courses`, en même
-temps que leurs fichiers sur le volume (l'application doit supprimer les
-deux dans le même appel, `docs/modules/ingestion.md`).
+**Les photos (`pages`, et les fichiers qu'elles référencent) ne sont
+conservées que jusqu'à la confirmation du cours** — arbitrage du
+2026-10-04, `docs/securite.md`. À la confirmation, l'application supprime
+les fichiers puis les lignes `pages` du cours (un cours confirmé n'a donc
+plus de `pages`, et son `pageCount` vaut 0) ; au refus, à la suppression
+du cours ou du compte, et après 7 jours pour un cours jamais confirmé,
+elles partent avec le cours (`ON DELETE CASCADE`), fichiers compris, dans
+le même appel (`docs/modules/ingestion.md`).
 
 ## `exercise-generator` (`docs/modules/exercise-generator.md`)
 
@@ -283,8 +286,11 @@ RAILWAY_VOLUME_MOUNT_PATH/backups/studiakids-{date ISO}.db
 
 Voir `docs/inventaire-studia.md`, §5, pour le détail du volume Railway et
 la règle "jamais servi en statique". Les fichiers sous `photos/` sont
-supprimés dans le même appel applicatif que la suppression du cours ou du
-compte correspondant, jamais par un nettoyage séparé.
+supprimés dans le même appel applicatif que leurs lignes `pages` — à la
+confirmation ou au refus du cours, à la suppression du cours ou du compte,
+ou par la purge des cours abandonnés (worker, `docs/modules/ingestion.md`) ;
+jamais un fichier effacé sans sa ligne, ni l'inverse. `pnpm photos:purge`
+retire ceux que des cours confirmés ont encore (avant le 2026-10-04).
 
 ---
 

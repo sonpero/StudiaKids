@@ -247,10 +247,10 @@ Décidé, tranchant le point ouvert que cette section soulevait initialement :
 - Les chemins `uploads/{userId}/{documentId}/...` deviennent
   `photos/{userId}/{courseId}/...` — renommé (uploads → photos) et
   document → cours ; `userId` reste `userId` puisqu'un compte égale un
-  enfant (voir §4). **Contrairement à StudIA**, les fichiers ne sont pas
-  nettoyés une fois l'extraction faite : ils restent tant que le cours
-  existe, parce que le lecteur les affiche et le tuteur peut les citer
-  (`docs/securite.md`).
+  enfant (voir §4). Comme dans StudIA, les fichiers ne servent qu'à
+  l'extraction : ils sont supprimés à la confirmation du cours (arbitrage
+  du 2026-10-04, `docs/securite.md`, qui remplace « tant que le cours
+  existe »).
 - **Chemin racine lu depuis `RAILWAY_VOLUME_MOUNT_PATH`** (positionné
   automatiquement par Railway quand un volume est monté), repli sur
   `./data` en local — décidé, StudiaKids n'utilise pas la variable

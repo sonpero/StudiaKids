@@ -415,12 +415,14 @@ Les fichiers uploadés ne sont jamais servis en statique. Toute lecture passe
 par une route authentifiée qui vérifie que le cours appartient au compte
 demandeur. Chaque page est hachée en SHA-256, unique par cours : la même
 photo ne peut pas être ajoutée deux fois au même cours, mais peut
-légitimement apparaître dans deux cours différents. **Les photos du cours
-sont conservées tant que le cours existe** (telles que stockées :
-réencodées par le navigateur et sans métadonnées, jamais le fichier
-d'origine de l'appareil) (le lecteur les affiche, le
-tuteur peut les citer) et supprimées uniquement en cascade avec le cours —
-voir `docs/modules/ingestion.md` et `docs/securite.md`.
+légitimement apparaître dans deux cours différents. **Les photos ne
+servent qu'à l'extraction** (telles que stockées : réencodées par le
+navigateur et sans métadonnées, jamais le fichier d'origine de
+l'appareil) : gardées tant que le cours n'est pas confirmé, supprimées
+(fichiers et lignes `pages`) à la confirmation, au refus, à la
+suppression du cours ou du compte, et 7 jours après la création d'un
+cours jamais confirmé (arbitrage du 2026-10-04) — voir
+`docs/modules/ingestion.md` et `docs/securite.md`.
 
 ---
 
@@ -440,6 +442,7 @@ pnpm accounts:create <username> <firstName> <grade>  # CLI, crée un compte (mot
 pnpm accounts:reset-password <username>  # CLI, change le mot de passe d'un compte existant, invalide ses sessions
 pnpm accounts:delete <username>          # CLI, supprime un compte et tout ce qui en dépend en cascade
 pnpm tutor:history <username> [--json]   # CLI, exporte l'historique du tuteur d'un compte pour l'adulte titulaire (docs/securite.md)
+pnpm photos:purge [--dry-run]            # CLI, supprime les photos que des cours confirmés ont encore (avant le 2026-10-04) ; --dry-run affiche le nombre de fichiers et l'espace libéré
 pnpm exercises:regenerate-maths <username> [--dry-run]   # CLI, régénère les cours de maths d'un compte sous les règles par matière, sans perdre d'étoile (coûte de l'argent sans --dry-run, voir docs/modules/exercise-generator.md)
 ```
 

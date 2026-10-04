@@ -254,8 +254,9 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
   quand il y en a.
 - **Lecteur** : bouton **« Écouter »** en haut (devient **« Stop »**
   pendant la lecture) — la voix ne démarre **jamais d'office**, seulement
-  au premier appui de l'enfant ; le texte du cours (18 px) ; les photos
-  du cours en vignettes, agrandies d'un appui ; en bas, **« Créer mes
+  au premier appui de l'enfant ; le texte du cours (18 px), **sans photo**
+  (supprimées à la confirmation depuis le 2026-10-04, `docs/securite.md`) ;
+  en bas, **« Créer mes
   jeux »** et un bouton **« Accueil »**. La barre d'onglets arrive avec
   l'écran « Jouer » (M4), le seul autre écran qui en aurait besoin.
 - **Création des jeux** (`docs/modules/exercise-generator.md`), portée par
@@ -271,7 +272,7 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
   et la carte de l'accueil montre les jeux prêts à son retour.
 
 Textes ajoutés à l'implémentation, **validés le 2026-09-26** : « J'ouvre
-ton cours… » (chargement du lecteur), « Fermer » (photo agrandie), « 2 sur
+ton cours… » (chargement du lecteur), « 2 sur
 5 » (avancement), « Prendre une autre photo » (cours trop court), « 12 jeux
 prêts » / « 1 jeu prêt » (carte). La pose `joy` est dessinée depuis M3,
 recopiée de `docs/design/mascotte-etats.html`.
