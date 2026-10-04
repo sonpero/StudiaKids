@@ -16,6 +16,7 @@ import {
   uuidV7Generator,
   type JobHandler,
 } from "@studiakids/core";
+import { purgeAbandonedCourses } from "./abandoned-courses.js";
 import { openDatabase } from "./db/connection.js";
 import { runMigrations } from "./db/migrate.js";
 import { resolveDataDirs } from "./data-dirs.js";
@@ -38,6 +39,20 @@ const handlers = new Map<string, JobHandler>([
   [GENERATE_EXERCISES_JOB, generateExercisesJobHandler({ ...generation, generator: adapters.generator })],
 ]);
 
+// Abandoned courses (unconfirmed for 7 days) go with their photos
+// (docs/securite.md): at startup, then every hour. A failure is logged and
+// tried again at the next run, never fatal to the worker.
+const PURGE_INTERVAL_MS = 60 * 60 * 1000;
+function purge(): void {
+  purgeAbandonedCourses({ db, volumeRoot: root }, systemClock.now())
+    .then((purged) => {
+      if (purged > 0) console.log(`[worker] purged ${String(purged)} abandoned course(s)`);
+    })
+    .catch((error: unknown) => console.error("[worker] abandoned courses purge failed", error instanceof Error ? error.message : String(error)));
+}
+purge();
+const purgeTimer = setInterval(purge, PURGE_INTERVAL_MS);
+
 const signal = { stopped: false };
 console.log(`[worker] started, handling: ${[...handlers.keys()].join(", ")}`);
 void runWorkerLoop({ jobQueue, handlers, clock: systemClock }, signal).catch((error: unknown) => {
@@ -48,6 +63,7 @@ void runWorkerLoop({ jobQueue, handlers, clock: systemClock }, signal).catch((er
 function shutdown(signalName: string): void {
   console.log(`[worker] ${signalName} received, exiting`);
   signal.stopped = true;
+  clearInterval(purgeTimer);
   process.exit(0);
 }
 

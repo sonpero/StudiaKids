@@ -31,6 +31,19 @@ export class SqliteAccountRepository implements AccountRepository {
     });
   }
 
+  // Every account, for the background clean-ups that go account by account
+  // (docs/securite.md). On this class only: no use case needs it.
+  listAccountIds(): Promise<string[]> {
+    return Promise.resolve(
+      this.db
+        .select({ id: accountsTable.id })
+        .from(accountsTable)
+        .orderBy(accountsTable.createdAt)
+        .all()
+        .map((row) => row.id),
+    );
+  }
+
   findById(id: string): ReturnType<AccountRepository["findById"]> {
     const row = this.db.select().from(accountsTable).where(eq(accountsTable.id, id)).get();
     if (!row) return Promise.resolve(null);

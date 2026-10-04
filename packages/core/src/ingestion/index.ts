@@ -43,3 +43,5 @@ export { generateWithRetry } from "./infra/generate-with-retry.js";
 // Exported alongside the other modules' tables (drizzle-kit itself reads
 // infra/schema.ts by glob).
 export { coursesTable, pagesTable, extractionsTable } from "./infra/schema.js";
+export { purgeAbandonedCourse, ABANDONED_COURSE_MAX_AGE_DAYS, type PurgeAbandonedCourseDeps } from "./application/purge-abandoned-course.js";
+export { removeConfirmedCoursePhotos, type RemoveCoursePhotosDeps } from "./application/remove-course-photos.js";
