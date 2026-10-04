@@ -12,6 +12,10 @@ export interface AttemptRepository {
   listForExercises(userId: string, exerciseIds: string[]): Promise<AttemptRecord[]>;
   // Every attempt of the account, in order: what progress derives from (M5).
   listByUser(userId: string): Promise<AttemptRecord[]>;
+  // Before a confirmed course is deleted: its exercises' attempts stay, for
+  // the stars and the streak, without their game type nor unit
+  // (docs/modules/game-engine.md, "Tentatives détachées").
+  detach(userId: string, exerciseIds: string[]): Promise<void>;
 }
 
 // exercise-generator's exercises, through its index only.

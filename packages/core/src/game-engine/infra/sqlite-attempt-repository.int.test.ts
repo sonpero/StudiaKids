@@ -87,13 +87,16 @@ describe("SqliteAttemptRepository", () => {
     expect(count(db, "user_id = 'u2'")).toBe(1);
   });
 
-  it("deleting an exercise deletes its attempts", async () => {
+  // Changed on 2026-10-04 (deleting a confirmed course): an attempt
+  // outlives its exercise, so that no star is ever lost.
+  it("deleting an exercise, or its whole course, keeps its attempts", async () => {
     const { db, repo } = setup();
     await repo.record("u1", [attempt("a1", "e1", "0", true)], now);
 
     db.run(sql`DELETE FROM exercises WHERE id = 'e1'`);
+    db.run(sql`DELETE FROM courses WHERE id = 'c-e1'`);
 
-    expect(count(db)).toBe(0);
+    expect(db.all(sql`SELECT exercise_id FROM attempts`)).toEqual([{ exercise_id: "e1" }]);
   });
 
   it("rejects an unknown game type at the database level", () => {

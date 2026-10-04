@@ -7,7 +7,8 @@ import { attemptsTable } from "./schema.js";
 
 export type GameEngineDb = ReturnType<typeof drizzle>;
 
-// Append-only: rows are only ever inserted (docs/modules/game-engine.md).
+// Append-only: rows are only ever inserted, except detach() before a
+// course is deleted (docs/modules/game-engine.md).
 export class SqliteAttemptRepository implements AttemptRepository {
   constructor(private readonly db: GameEngineDb) {}
 
@@ -40,6 +41,17 @@ export class SqliteAttemptRepository implements AttemptRepository {
         .orderBy(attemptsTable.attemptedAt, attemptsTable.id)
         .all(),
     );
+  }
+
+  detach(userId: string, exerciseIds: string[]): Promise<void> {
+    if (exerciseIds.length > 0) {
+      this.db
+        .update(attemptsTable)
+        .set({ type: null, unitId: null })
+        .where(and(eq(attemptsTable.userId, userId), inArray(attemptsTable.exerciseId, exerciseIds)))
+        .run();
+    }
+    return Promise.resolve();
   }
 
   listForExercises(userId: string, exerciseIds: string[]): Promise<AttemptRecord[]> {

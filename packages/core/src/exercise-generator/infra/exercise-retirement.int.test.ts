@@ -94,7 +94,9 @@ describe("an exercise that was played is never deleted", () => {
     expect(rows(db)).toEqual([]);
   });
 
-  it("deleting the course still takes every exercise and attempt with it", async () => {
+  // Since 2026-10-04 the attempts outlive their course (detached, for the
+  // stars, docs/modules/game-engine.md); the exercises still go.
+  it("deleting the course still takes every exercise with it, never the attempts", async () => {
     const { db, repo } = await setup();
     await repo.applyExercises("u1", { remove: [], insert: [copy("e-played", "i0")] });
     played(db, "e-played", "delayed_copy");
@@ -103,6 +105,6 @@ describe("an exercise that was played is never deleted", () => {
     db.run(sql`DELETE FROM courses WHERE id = 'c1'`);
 
     expect(rows(db)).toEqual([]);
-    expect(attempts(db)).toEqual([]);
+    expect(attempts(db)).toEqual(["e-played"]);
   });
 });

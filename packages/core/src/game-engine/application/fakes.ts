@@ -4,8 +4,10 @@ import { err, ok } from "../../shared/index.js";
 import type { AttemptRecord } from "../domain/play.js";
 import type { Attempt, AttemptRepository, ExerciseSource } from "../domain/ports.js";
 
-export function fakeAttemptRepository(): AttemptRepository & { rows: (Attempt & { userId: string; attemptedAt: string })[] } {
-  const rows: (Attempt & { userId: string; attemptedAt: string })[] = [];
+type FakeAttemptRow = Omit<Attempt, "type" | "unitId"> & { type: Attempt["type"] | null; unitId: string | null; userId: string; attemptedAt: string };
+
+export function fakeAttemptRepository(): AttemptRepository & { rows: FakeAttemptRow[] } {
+  const rows: FakeAttemptRow[] = [];
   return {
     rows,
     record: (userId, attempts, now) => {
@@ -14,6 +16,10 @@ export function fakeAttemptRepository(): AttemptRepository & { rows: (Attempt & 
     },
     listByUser: (userId) =>
       Promise.resolve(rows.filter((row) => row.userId === userId).map(({ exerciseId, attemptedAt, correct, starEligible }): AttemptRecord => ({ exerciseId, attemptedAt, correct, starEligible }))),
+    detach: (userId, exerciseIds) => {
+      for (const row of rows) if (row.userId === userId && exerciseIds.includes(row.exerciseId)) Object.assign(row, { type: null, unitId: null });
+      return Promise.resolve();
+    },
     listForExercises: (userId, exerciseIds) =>
       Promise.resolve(
         rows
