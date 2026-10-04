@@ -15,7 +15,6 @@ import {
   addPage,
   confirmCourse,
   createCourse,
-  deleteCourse,
   getCourse,
   getUnconfirmedCourse,
   listConfirmedCourses,
@@ -32,6 +31,8 @@ import {
   type IdGenerator,
   type ItemRepository,
   type JobQueue,
+  type NotFound,
+  type Result,
 } from "@studiakids/core";
 import type { FastifyPluginCallback, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
@@ -46,6 +47,9 @@ export interface CourseRoutesOptions {
   jobQueue: JobQueue;
   idGenerator: IdGenerator;
   clock: Clock;
+  // A course and everything of it, never a star (course-deletion.ts):
+  // composed in app.ts, across modules.
+  deleteCourse: (userId: string, courseId: string) => Promise<Result<void, NotFound>>;
 }
 
 type DomainError = AddPageError | "no-pages" | "not-ready" | "already-confirmed" | "not-failed";
@@ -212,7 +216,7 @@ export const courseRoutes: FastifyPluginCallback<CourseRoutesOptions> = (fastify
   });
 
   app.delete("/api/courses/:id", { schema: { params: courseParamsSchema, response: { 204: empty, ...errors } } }, async (request, reply) => {
-    const result = await deleteCourse({ repo, fileStore }, request.user!.id, request.params.id);
+    const result = await opts.deleteCourse(request.user!.id, request.params.id);
     if (!result.ok) return sendError(reply, result.error);
     return reply.code(204).send();
   });

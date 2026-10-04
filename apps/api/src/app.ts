@@ -24,6 +24,7 @@ import { runMigrations } from "./db/migrate.js";
 import { authPlugin } from "./plugins/auth.js";
 import { dbPlugin } from "./plugins/db.js";
 import { authRoutes } from "./routes/auth.js";
+import { deleteCourseWithContent } from "./course-deletion.js";
 import { courseRoutes } from "./routes/courses.js";
 import { generationRoutes } from "./routes/generation.js";
 import { healthRoutes } from "./routes/health.js";
@@ -97,6 +98,7 @@ export function buildApp(opts: BuildAppOptions) {
     itemRepo: itemRepository,
     fileStore: new LocalFileStore(opts.dataDir),
     jobQueue,
+    deleteCourse: (userId: string, courseId: string) => deleteCourseWithContent({ db, volumeRoot: opts.dataDir }, userId, courseId),
     idGenerator: uuidV7Generator,
     clock: systemClock,
   });
