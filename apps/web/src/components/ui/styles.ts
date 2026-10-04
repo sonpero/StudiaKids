@@ -13,16 +13,22 @@ export const button = {
 
 export const iconButton = "flex h-11 w-11 shrink-0 items-center justify-center rounded-bouton border-3 border-ink bg-white text-ink shadow-petite";
 
-export const card = "rounded-carte border-3 border-ink bg-white shadow-moyenne";
+// Any text the child must read in full, whatever its length: it wraps
+// inside a word when it has to (anywhere, so a flex or centred parent never
+// sizes to the word), hyphenated in French (lang="fr" on <html>), never
+// smaller and never cut. Its box grows with it (no fixed height).
+export const readable = "min-w-0 wrap-anywhere hyphens-auto";
+
+export const card = `${readable} rounded-carte border-3 border-ink bg-white shadow-moyenne`;
 
 export const field = "h-14 w-full rounded-carte border-3 border-ink bg-white px-4 font-text text-corps-l text-ink placeholder:text-ink-soft focus:border-mandarine focus:outline-none";
 
-export const bubble = "rounded-carte border-3 border-ink px-4 py-3 font-text text-corps text-ink";
+export const bubble = `${readable} rounded-carte border-3 border-ink px-4 py-3 font-text text-corps text-ink`;
 
 export const title = "font-display text-titre font-bold text-ink";
-export const text = "font-text text-corps text-ink-soft";
+export const text = `${readable} font-text text-corps text-ink-soft`;
 
 // A tappable answer; the chosen one takes the active peach (tokens.md: the
 // sun is for stars and the mascot).
 export const choice = (chosen: boolean) =>
-  `min-h-14 w-full rounded-carte border-3 border-ink px-4 py-2 text-left font-text text-corps-l text-ink shadow-petite ${chosen ? "bg-peche" : "bg-white"}`;
+  `${readable} min-h-14 w-full rounded-carte border-3 border-ink px-4 py-2 text-left font-text text-corps-l text-ink shadow-petite ${chosen ? "bg-peche" : "bg-white"}`;
