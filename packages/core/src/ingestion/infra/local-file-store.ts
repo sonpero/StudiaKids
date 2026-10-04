@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { FileStore } from "../domain/ports.js";
 
@@ -44,6 +44,14 @@ export class LocalFileStore implements FileStore {
   // The whole course directory at once: a photo never outlives its course.
   async deleteCourse(userId: string, courseId: string): Promise<void> {
     await rm(path.join(this.volumeRoot, this.courseDir(userId, courseId)), { recursive: true, force: true });
+  }
+
+  async measureCourse(userId: string, courseId: string): Promise<{ files: number; bytes: number }> {
+    const dir = path.join(this.volumeRoot, this.courseDir(userId, courseId));
+    const names = await readdir(dir).catch(() => [] as string[]);
+    let bytes = 0;
+    for (const name of names) bytes += (await stat(path.join(dir, name))).size;
+    return { files: names.length, bytes };
   }
 
   async deleteAccountFiles(userId: string): Promise<void> {

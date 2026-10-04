@@ -101,6 +101,10 @@ export function fakeCourseRepository(): CourseRepository & { courses: Course[]; 
       if (course) course.lastAccessedAt = now.toISOString();
       return Promise.resolve();
     },
+    deletePages: (userId, courseId) => {
+      if (owned(userId, courseId)) removeWhere(pages, (p) => p.courseId === courseId);
+      return Promise.resolve();
+    },
     deleteCourse: (userId, courseId) => {
       const existed = Boolean(owned(userId, courseId));
       removeWhere(pages, (p) => p.courseId === courseId && existed);
@@ -132,6 +136,10 @@ export function fakeFileStore(): FileStore & { files: Map<string, Uint8Array>; c
       for (const path of [...files.keys()]) if (path.startsWith(`photos/${userId}/${courseId}/`)) files.delete(path);
       calls.push(`deleteCourse ${userId}/${courseId}`);
       return Promise.resolve();
+    },
+    measureCourse: (userId, courseId) => {
+      const inCourse = [...files.entries()].filter(([path]) => path.startsWith(`photos/${userId}/${courseId}/`));
+      return Promise.resolve({ files: inCourse.length, bytes: inCourse.reduce((sum, [, bytes]) => sum + bytes.byteLength, 0) });
     },
     deleteAccountFiles: (userId) => {
       for (const path of [...files.keys()]) if (path.startsWith(`photos/${userId}/`)) files.delete(path);

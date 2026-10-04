@@ -191,7 +191,10 @@ export const courseRoutes: FastifyPluginCallback<CourseRoutesOptions> = (fastify
   });
 
   app.post("/api/courses/:id/confirm", { schema: { params: courseParamsSchema, response: { 204: empty, ...errors } } }, async (request, reply) => {
-    const result = await confirmCourse({ repo }, request.user!.id, request.params.id, opts.clock.now());
+    // A photo left on the volume is logged, never the course's content; the
+    // confirmation succeeds all the same (docs/securite.md).
+    const onPhotoRemovalFailure = ({ courseId, message }: { courseId: string; message: string }) => request.log.warn({ courseId, error: message }, "course photos not removed at confirmation");
+    const result = await confirmCourse({ repo, fileStore, onPhotoRemovalFailure }, request.user!.id, request.params.id, opts.clock.now());
     if (!result.ok) return sendError(reply, result.error);
     return reply.code(204).send();
   });

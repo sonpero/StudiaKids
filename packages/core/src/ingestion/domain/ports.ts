@@ -5,8 +5,11 @@ import type { Course, Extraction, Page, StoredExtractionStatus } from "./types.j
 export interface FileStore {
   put(userId: string, courseId: string, pageIndex: number, bytes: Uint8Array): Promise<string>;
   read(storedPath: string): Promise<Uint8Array>;
-  // Removes the whole course directory: a photo never outlives its course.
+  // Removes the whole course directory: a photo never outlives its course,
+  // nor its confirmation (docs/securite.md).
   deleteCourse(userId: string, courseId: string): Promise<void>;
+  // What the course directory holds, files and bytes (purge --dry-run).
+  measureCourse(userId: string, courseId: string): Promise<{ files: number; bytes: number }>;
   // Removes the account's whole photos directory (accounts:delete), orphans
   // included: a photo never outlives its account.
   deleteAccountFiles(userId: string): Promise<void>;
@@ -57,6 +60,8 @@ export interface CourseRepository {
   getExtraction(userId: string, courseId: string): Promise<Extraction | null>;
   confirmCourse(userId: string, courseId: string): Promise<void>;
   touchCourse(userId: string, courseId: string, now: Date): Promise<void>;
+  // The course's page rows only, once its photos are gone.
+  deletePages(userId: string, courseId: string): Promise<void>;
   // Rows only (pages and extraction cascade); returns whether it existed.
   deleteCourse(userId: string, courseId: string): Promise<boolean>;
 }

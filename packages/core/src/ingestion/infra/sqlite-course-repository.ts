@@ -207,6 +207,11 @@ export class SqliteCourseRepository implements CourseRepository {
   }
 
   // Pages and extraction follow by ON DELETE CASCADE.
+  deletePages(userId: string, courseId: string): Promise<void> {
+    if (this.isOwned(userId, courseId)) this.db.delete(pagesTable).where(eq(pagesTable.courseId, courseId)).run();
+    return Promise.resolve();
+  }
+
   deleteCourse(userId: string, courseId: string): Promise<boolean> {
     const result = this.db.delete(coursesTable).where(this.owned(userId, courseId)).run();
     return Promise.resolve(result.changes > 0);

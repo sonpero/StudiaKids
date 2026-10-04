@@ -323,6 +323,22 @@ describe("course routes", () => {
     expect((await app.inject({ method: "GET", url: "/api/courses/unconfirmed", headers: { cookie: lea } })).json()).toEqual({ course: null });
   });
 
+  // docs/securite.md (2026-10-04): the photos only serve the extraction.
+  it("confirming deletes the course's photo files and rows, and its photo is no longer served", async () => {
+    const id = await createCourse(lea);
+    await upload(lea, id, jpeg(1));
+    await app.inject({ method: "POST", url: `/api/courses/${id}/extract`, headers: { cookie: lea } });
+    const handlers = new Map([["extract-course", extractCourseHandler(db, volume, legibleExtractor, mathsNamer)]]);
+    await runWorkerTick({ jobQueue: new SqliteJobQueue(db, uuidV7Generator), handlers }, new Date());
+    expect((await app.inject({ method: "GET", url: `/api/courses/${id}/pages/0/file`, headers: { cookie: lea } })).statusCode).toBe(200);
+
+    expect((await app.inject({ method: "POST", url: `/api/courses/${id}/confirm`, headers: { cookie: lea } })).statusCode).toBe(204);
+
+    expect(existsSync(path.join(volume, "photos", userId("lea"), id))).toBe(false);
+    expect(pageRows()).toEqual([]);
+    expect((await app.inject({ method: "GET", url: `/api/courses/${id}/pages/0/file`, headers: { cookie: lea } })).statusCode).toBe(404);
+  });
+
   it("confirming a course that is not ready is refused", async () => {
     const id = await createCourse(lea);
 
