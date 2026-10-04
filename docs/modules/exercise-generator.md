@@ -343,6 +343,12 @@ requête liée, comme `courses` pour la propriété) :
 Conséquence assumée : `regenerateItem` ne change plus un exercice déjà
 joué.
 
+*Depuis le 2026-10-04* (suppression d'un cours confirmé, migration 0008),
+une tentative survit de toute façon à son exercice
+(`docs/modules/game-engine.md`) : supprimer un exercice joué ne retirerait
+plus d'étoile. La règle ci-dessus est gardée telle quelle : un exercice
+retiré reste caché sans perdre son emplacement.
+
 ## Persistance
 
 ```sql

@@ -756,3 +756,25 @@ voir la mascotte proposer de jouer sur le cours entier à la place.
 
 **Hors périmètre** — tout jeu éphémère hors des tables normales du produit,
 tout traitement différent des étoiles gagnées par ce chemin.
+
+---
+
+## Hors jalon — Supprimer un cours confirmé (2026-10-04)
+
+Arbitrage d'Alexandre, réalisé hors jalon pendant que M6 est ouvert :
+l'enfant supprime un cours confirmé depuis l'écran du cours, après une
+question de la mascotte (`docs/ui.md`, « Lire un cours ») ; le cours et
+tout son contenu disparaissent, aucune étoile n'est perdue (tentatives
+détachées, `docs/modules/game-engine.md`). Migration 0008.
+
+**Acceptation**
+- [ ] Unitaire et intégration : étoiles et série identiques avant et après
+      la suppression d'un cours joué (`detach-attempts.unit.test.ts`,
+      `course-deletion.int.test.ts`)
+- [ ] Intégration : plus aucune ligne liée au cours (texte, items,
+      exercices, conversations, messages, jobs) ; aucune donnée de cours
+      dans les tentatives gardées
+- [ ] Sécurité : le cours confirmé d'un autre compte n'est jamais supprimé,
+      même 404 qu'un identifiant inconnu
+- [ ] Playwright à 375px : annulation puis confirmation
+      (`e2e/course-deletion.spec.ts`)

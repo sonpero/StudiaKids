@@ -270,6 +270,20 @@ Décidé à l'ouverture de M3, en l'absence de maquette du lecteur (textes
     réessaie ».
 - L'enfant peut quitter le lecteur pendant la création : elle continue,
   et la carte de l'accueil montre les jeux prêts à son retour.
+- **Supprimer le cours** (décidé le 2026-10-04) : sous le texte, un bouton
+  discret **« Supprimer ce cours »** (souligné, cible de 44 px) — jamais
+  d'effacement en un seul appui. Il ouvre un écran de question : mascotte
+  `idle`, « Le cours « *titre* » et ses jeux vont disparaître. Tes
+  étoiles, elles, restent ! », puis **« Je garde mon cours »** en action
+  principale (mandarine, en premier) et **« Supprimer le cours »** en
+  action secondaire discrète (bordure en pointillés, `button.dashed`).
+  Garder ramène au lecteur. Supprimer ramène à l'accueil, où la mascotte
+  dit dans sa bulle « C'est fait, le cours est supprimé. Tes étoiles sont
+  toujours là ! » ; plus aucune trace du cours (accueil, reprise, Jouer,
+  tuteur). Échec : `glitch`, « Oh, quelque chose a coincé. On réessaie
+  ? », bouton « Réessaie ». Un jeu resté ouvert sur un autre appareil se
+  ferme sans message à la réponse suivante, comme tout écran dont le cours
+  a disparu. Textes *à valider*.
 
 Textes ajoutés à l'implémentation, **validés le 2026-09-26** : « J'ouvre
 ton cours… » (chargement du lecteur), « 2 sur
@@ -556,6 +570,7 @@ jamais une exception ni un élément vide.
 | Bonne réponse à un jeu, série, fin de session | `joy` | Une seule pose de joie ; une réponse simple et un bonus de série se différencient par la phrase et l'intensité de l'animation, pas par un second dessin |
 | Réponse incorrecte à un jeu | `waiting` | Décision délibérée de réutiliser une pose calme plutôt qu'une huitième pose ; jamais `sorry`/`glitch`, qui qualifient un problème du système, pas une réponse d'enfant |
 | Refus du tuteur (question hors cours) | `refusal` | |
+| Question avant de supprimer un cours, puis « c'est fait » à l'accueil | `idle` | Rien ne va mal : jamais `sorry` ni `glitch` ; les étoiles restent, la phrase le dit |
 
 Voir `docs/modules/mascot.md` pour la table de décision complète
 (source de vérité pour l'implémentation) — celle-ci n'en est qu'un miroir.

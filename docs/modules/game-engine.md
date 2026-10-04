@@ -243,9 +243,9 @@ table `attempts` grandit.
 CREATE TABLE attempts (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-  exercise_id TEXT NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  unit_id TEXT NOT NULL,             -- '0' pour un exercice à réponse unique
+  exercise_id TEXT NOT NULL,         -- sans REFERENCES depuis 0008 : survit à son exercice
+  type TEXT,                         -- null une fois détachée
+  unit_id TEXT,                      -- '0' pour un exercice à réponse unique ; null une fois détachée
   correct INTEGER NOT NULL,
   star_eligible INTEGER NOT NULL DEFAULT 1,
   attempted_at TEXT NOT NULL
@@ -261,10 +261,25 @@ l'éligibilité et l'horodatage. La colonne `given_answer_json` d'abord
 prévue est retirée. `user_id` en `ON DELETE CASCADE` : `accounts:delete`
 efface les tentatives (testé).
 
-**Append-only.** Aucune ligne n'est jamais modifiée ou supprimée après
-écriture (sauf cascade sur suppression de l'exercice parent). C'est le
-journal que `progress` lit pour dériver les compteurs — même principe
-que les `reviews` de StudIA, jamais un compteur incrémenté directement.
+**Append-only.** Aucune ligne n'est jamais supprimée après écriture
+(sauf avec le compte), ni modifiée, sauf par le détachement ci-dessous.
+C'est le journal que `progress` lit pour dériver les compteurs — même
+principe que les `reviews` de StudIA, jamais un compteur incrémenté
+directement.
+
+**Tentatives détachées (décidé le 2026-10-04, suppression d'un cours
+confirmé).** Une tentative **survit à son exercice** : `exercise_id` n'a
+plus de `REFERENCES exercises(id) ON DELETE CASCADE` (migration 0008,
+toutes les lignes existantes recopiées telles quelles) et reste une clé
+opaque — elle sert à la règle « une étoile par exercice et par jour » et à
+la fête de reprise. Avant la suppression d'un cours, `detachAttempts`
+(`AttemptRepository.detach`) met à `null` le type de jeu et l'unité des
+tentatives de ses exercices : il ne reste que ce qui sert aux étoiles et à
+la série (compte, clé d'exercice, juste/faux, éligibilité, horodatage),
+aucun contenu de cours (la réponse n'a jamais été stockée). Ainsi la
+suppression d'un cours, comme toute suppression d'exercice, ne retire
+jamais une étoile (`docs/modules/progress.md`). Les tentatives détachées
+partent avec le compte.
 
 ## API
 

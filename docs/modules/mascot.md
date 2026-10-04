@@ -117,6 +117,8 @@ forçant une valeur hors du type au moyen d'un cast — voir Tests clés.
 | `tutor-unavailable` | `glitch` — un vrai échec technique ; « Oups, je n'ai pas pu lire ta question. Tu peux la reposer ? » (*à valider*) |
 | `tutor-daily-limit` | `idle` — « Tu as posé beaucoup de questions aujourd'hui ! On continue demain ? » (*à valider*) ; jamais pour la détresse |
 | `tutor-disclosure` | `idle` — le texte de `docs/securite.md` (« Ce que tu écris ici, un grand de chez toi peut le relire… ») |
+| `course-delete-confirm` (`title?`) | `idle` — « Le cours « *titre* » et ses jeux vont disparaître. Tes étoiles, elles, restent ! » (« Ce cours » sans titre) (*à valider*, 2026-10-04) |
+| `course-deleted` | `idle` — « C'est fait, le cours est supprimé. Tes étoiles sont toujours là ! » (*à valider*, 2026-10-04) |
 
 **Pose `refusal` (M6)** : aucun dessin de référence n'existait ; brouillon
 provisoire dérivé des tracés d'`idle` (comme `sorry` et `glitch`), à

@@ -108,6 +108,15 @@ stocké**.
 Aucune table propre. `progress` ne fait que lire la table `attempts`
 détenue par `game-engine`, exclusivement via son `index.ts`.
 
+**Suppression d'un cours (décidé le 2026-10-04)** : ses tentatives
+survivent, détachées de leurs exercices (`docs/modules/game-engine.md`),
+avec tout ce que `deriveProgress` lit (clé d'exercice, horodatage,
+juste/faux, éligibilité). Le total d'étoiles, la série et la meilleure
+série sont donc identiques avant et après — « le total ne décroît jamais »
+reste vrai, testé de bout en bout (`apps/api/src/course-deletion.int.test.ts`).
+Le décompte « étoiles depuis » d'une session passée sur un cours supprimé
+n'a plus à être affichable.
+
 ## API
 
 | Route | Rôle |

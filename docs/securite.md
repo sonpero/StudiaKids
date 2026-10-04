@@ -246,7 +246,7 @@ ligne que ce produit ne franchit pas.
 | Identifiant/mot de passe (hash argon2), prénom, niveau | `accounts` | Tant que le compte existe | Authentification, personnalisation |
 | Photos de cours | `RAILWAY_VOLUME_MOUNT_PATH/photos/`, table `pages` | **Jusqu'à la confirmation du cours** — supprimées (fichiers et lignes) quand l'enfant confirme ou refuse le cours, quand le cours ou le compte est supprimé, ou après 7 jours pour un cours jamais confirmé ni refusé (arbitrage du 2026-10-04, qui remplace « tant que le cours existe ») | L'extraction seule : elle est asynchrone, peut être relancée et porte sur plusieurs pages, donc a besoin des photos jusqu'à la confirmation. Le lecteur et le tuteur n'affichent ni ne citent de photo |
 | Texte extrait, items, exercices | `extractions`, `items`, `exercises` | Tant que le cours existe | Fonctionnement du lecteur et des jeux |
-| Tentatives de jeu (correct/incorrect, horodatage) | `attempts` | Tant que le compte existe | Calcul des étoiles (`progress`) |
+| Tentatives de jeu (correct/incorrect, horodatage) | `attempts` | Tant que le compte existe, **y compris après la suppression de leur cours** (décidé le 2026-10-04) : détachées, elles ne gardent que la clé opaque de l'exercice, juste/faux, l'éligibilité et l'horodatage — ni type de jeu, ni unité, aucun contenu de cours | Calcul des étoiles et de la série (`progress`) : supprimer un cours ne retire jamais une étoile |
 | Conversations et messages du tuteur, y compris `distress` | `conversations`, `messages` | Tant que le cours existe | Continuité du chat, consultation possible par l'adulte titulaire |
 
 **Aucune donnée n'est conservée "juste au cas où".** Toute table ou colonne
@@ -289,6 +289,13 @@ applicatif, jamais seulement la ligne SQL (même règle que la suppression
 de cours dans `docs/modules/ingestion.md`, vérifiée par un test dédié).
 Depuis le 2026-10-04, un cours confirmé n'a de toute façon plus de photo :
 elles partent à la confirmation (voir "Données conservées").
+
+**Supprimer un cours** (l'enfant, depuis l'écran du cours, décidé le
+2026-10-04) efface définitivement son texte, ses items, ses exercices,
+ses conversations avec le tuteur et ses jobs ; seules ses tentatives
+restent, détachées et sans contenu, pour les étoiles. Un compte ne peut
+jamais supprimer le cours d'un autre : même `404` qu'un identifiant
+inconnu (testé).
 
 ---
 

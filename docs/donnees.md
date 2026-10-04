@@ -30,7 +30,7 @@ erDiagram
   courses ||--o| extractions : "produit"
   courses ||--o{ items : "découpé en"
   items ||--o{ exercises : "génère"
-  exercises ||--o{ attempts : "reçoit"
+  exercises |o..o{ attempts : "reçoit (sans clé étrangère depuis 0008)"
   courses ||--o{ conversations : "sujet de"
   conversations ||--o{ messages : "contient"
   accounts ||--o{ attempts : "produit"
@@ -170,9 +170,9 @@ ne touche jamais aux items déjà présents) — voir
 CREATE TABLE attempts (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-  exercise_id TEXT NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  unit_id TEXT NOT NULL,             -- '0' pour un exercice à réponse unique
+  exercise_id TEXT NOT NULL,         -- sans REFERENCES depuis 0008 : survit à son exercice
+  type TEXT,                         -- null une fois détachée
+  unit_id TEXT,                      -- '0' pour un exercice à réponse unique ; null une fois détachée
   correct INTEGER NOT NULL,
   star_eligible INTEGER NOT NULL DEFAULT 1,
   attempted_at TEXT NOT NULL
@@ -181,8 +181,11 @@ CREATE INDEX idx_attempts_user ON attempts(user_id, attempted_at);
 CREATE INDEX idx_attempts_exercise ON attempts(exercise_id);
 ```
 
-Append-only : aucune ligne n'est modifiée après écriture, sauf suppression
-en cascade si son exercice parent est supprimé (régénération). `progress`
+Append-only : aucune ligne n'est supprimée après écriture, sauf avec le
+compte. **Une tentative survit à son exercice et à son cours** (décidé le
+2026-10-04, migration 0008) : avant la suppression d'un cours, ses
+tentatives sont détachées — type de jeu et unité mis à `null`, seul reste
+ce qui sert aux étoiles et à la série (`docs/modules/game-engine.md`). `progress`
 lit cette table exclusivement via l'`index.ts` de `game-engine`, jamais en
 SQL direct — aucune table propre à `progress` (`docs/modules/progress.md`).
 

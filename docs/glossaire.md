@@ -273,6 +273,8 @@ Liste fermée, sept poses :
 | jour calendaire de Paris | `calendarDay(instant, "Europe/Paris")` | Au plus une étoile de plus par exercice et par jour. |
 | fête (danse de la joie) | `Celebration` : `streak-bonus`, `comeback` | `comeback` = première réussite d'un exercice d'abord manqué (réussite marquante). |
 | session de jeu | `since` (instant d'entrée dans Jouer) | Jusqu'à « J'ai fini » ou la fin de la liste ; aucune table. |
+| tentative détachée | `detachAttempts` (`AttemptRepository.detach`) | Tentative d'un cours supprimé : gardée pour les étoiles, sans type de jeu ni unité (`game-engine`). |
+| supprimer un cours (et tout son contenu) | `deleteCourseWithContent` (`apps/api`), route `DELETE /api/courses/:id` | Texte, items, exercices, conversations, jobs, photos ; tentatives détachées. Écran `DeleteCourseScreen`. |
 | récapitulatif de session | `SessionSummary` (écran) | Étoiles gagnées et bonnes réponses, jamais d'échec. |
 | dernier cours ouvert | `lastAccessedAt` le plus récent | Proposé par l'accueil (« reprise »). |
 | valide (statut d'un cours) | `confirmed` | |

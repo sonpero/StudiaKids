@@ -341,6 +341,19 @@ règles enfreintes (les `issues` Zod), pas le message générique du SDK.
 - `deleteCourse(userId, courseId, now)` — ligne, pages, fichiers, en cascade
   et dans le même appel applicatif (jamais seulement la ligne SQL — voir
   Tests clés)
+- **Supprimer un cours confirmé** (décidé le 2026-10-04 : l'enfant le fait
+  depuis l'écran du cours, après une question de la mascotte,
+  `docs/ui.md`) — `DELETE /api/courses/:id`, composé dans `apps/api`
+  (`deleteCourseWithContent`), car il traverse les modules : (1) les
+  tentatives des exercises du cours, retirés compris, sont détachées
+  (`game-engine`) ; (2) ses jobs, quel que soit leur statut, sont
+  supprimés (requête liée : `jobs` est gelé ; un job en cours trouve un
+  cours absent et se termine sans rien écrire) ; (3) `deleteCourse`. Le
+  texte, les items, les exercices, les issues de découpage, les
+  conversations et messages du tuteur suivent par `ON DELETE CASCADE`.
+  Définitif ; aucune étoile perdue, série intacte
+  (`docs/modules/progress.md`). Un cours d'un autre compte répond le même
+  404 qu'un identifiant inconnu, avant toute écriture
 
 **Le handler d'extraction doit être idempotent** : `completeExtraction`
 remplace toute extraction existante dans la même transaction qui passe le
@@ -434,7 +447,7 @@ séparé, pour qu'une photo ne survive jamais à la suppression de son cours.
 | `POST /api/courses/:id/confirm` | Bouton "Oui, c'est ça !" |
 | `POST /api/courses/:id/reject` | Bouton "Je reprends la photo" (supprime) |
 | `POST /api/courses/:id/retry` | Ré-enfile après un échec technique |
-| `DELETE /api/courses/:id` | Ligne, pages, fichiers |
+| `DELETE /api/courses/:id` | Un cours, confirmé ou non, et tout son contenu (texte, items, exercices, conversations, jobs, photos) ; ses tentatives détachées, jamais supprimées ; `204`, `404` uniforme |
 
 **Les fichiers ne sont jamais servis en statique.** Toute lecture passe par
 la route ci-dessus, qui vérifie l'appartenance au compte en premier (404
