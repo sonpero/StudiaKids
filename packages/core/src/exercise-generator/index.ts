@@ -21,6 +21,7 @@ export { handleSplittingJob, type HandleSplittingJobDeps } from "./application/h
 export { handleGenerationJob, type HandleGenerationJobDeps } from "./application/handle-generation-job.js";
 export { getGenerationStatus, type GetGenerationStatusDeps } from "./application/get-generation-status.js";
 export { regenerateItem, type RegenerateItemDeps } from "./application/regenerate-item.js";
+export { regenerateCourse, type RegenerateCourseDeps } from "./application/regenerate-course.js";
 export { splitItemsJobHandler, generateExercisesJobHandler } from "./application/job-handlers.js";
 export { SPLIT_ITEMS_JOB, GENERATE_EXERCISES_JOB, type SplitItemsPayload, type GenerateExercisesPayload } from "./application/jobs.js";
 

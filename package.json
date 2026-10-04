@@ -21,7 +21,8 @@
     "fixtures:record": "pnpm --filter @studiakids/api run fixtures:record",
     "eval": "pnpm --filter @studiakids/api run eval",
     "eval:tutor": "pnpm --filter @studiakids/api run eval:tutor",
-    "tutor:history": "pnpm --filter @studiakids/api run tutor:history"
+    "tutor:history": "pnpm --filter @studiakids/api run tutor:history",
+    "exercises:regenerate-maths": "pnpm --filter @studiakids/api run exercises:regenerate-maths"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

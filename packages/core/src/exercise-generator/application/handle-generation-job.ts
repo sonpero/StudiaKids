@@ -45,20 +45,25 @@ function validExercises(raw: unknown[], items: Item[], type: GenerateExercisesPa
 // One call for the type and every item carrying it; regenerated once below
 // the threshold; written with a comparison first, so that an unchanged
 // exercise keeps its id — and, from M4, its attempts and stars.
-export async function handleGenerationJob(deps: HandleGenerationJobDeps, payload: GenerateExercisesPayload, ctx: JobContext): Promise<Result<void, JobError>> {
-  const text = await deps.courses.read(ctx.userId, payload.courseId);
+export function handleGenerationJob(deps: HandleGenerationJobDeps, payload: GenerateExercisesPayload, ctx: JobContext): Promise<Result<void, JobError>> {
+  return generateForType(deps, ctx.userId, payload, ctx.now);
+}
+
+// The job's work, also run outside the jobs kernel (regenerateCourse).
+export async function generateForType(deps: HandleGenerationJobDeps, userId: string, payload: GenerateExercisesPayload, now: Date): Promise<Result<void, JobError>> {
+  const text = await deps.courses.read(userId, payload.courseId);
   if (!text.ok) return ok(undefined);
-  const items = (await deps.repo.listItems(ctx.userId, payload.courseId)).filter(
+  const items = (await deps.repo.listItems(userId, payload.courseId)).filter(
     (item) => item.applicableGameTypes.includes(payload.type) && (payload.itemIds === undefined || payload.itemIds.includes(item.id)),
   );
   if (items.length === 0) return ok(undefined);
-  const subject = await deps.courses.readSubject(ctx.userId, payload.courseId);
+  const subject = await deps.courses.readSubject(userId, payload.courseId);
 
   // A type forbidden for the subject is never asked of the model; what an
   // earlier generation made of it goes.
   if (!isGameTypeAllowed(subject, payload.type)) {
-    const forbidden = await deps.repo.listExercises(ctx.userId, items.map((item) => item.id), payload.type);
-    if (forbidden.length > 0) await deps.repo.applyExercises(ctx.userId, { remove: forbidden.map((exercise) => exercise.id), insert: [] });
+    const forbidden = await deps.repo.listExercises(userId, items.map((item) => item.id), payload.type);
+    if (forbidden.length > 0) await deps.repo.applyExercises(userId, { remove: forbidden.map((exercise) => exercise.id), insert: [] });
     return ok(undefined);
   }
 
@@ -75,7 +80,7 @@ export async function handleGenerationJob(deps: HandleGenerationJobDeps, payload
     }
   }
 
-  const existing = await deps.repo.listExercises(ctx.userId, items.map((item) => item.id), payload.type);
+  const existing = await deps.repo.listExercises(userId, items.map((item) => item.id), payload.type);
   const remove: string[] = [];
   const insert: Exercise[] = [];
   for (const [index, content] of valid) {
@@ -83,11 +88,11 @@ export async function handleGenerationJob(deps: HandleGenerationJobDeps, payload
     const current = existing.find((exercise) => exercise.itemId === item.id);
     if (current && canonical(current.content) === canonical(content)) continue;
     if (current) remove.push(current.id);
-    insert.push({ id: deps.idGenerator.next(), itemId: item.id, userId: ctx.userId, type: payload.type, content, createdAt: ctx.now.toISOString() });
+    insert.push({ id: deps.idGenerator.next(), itemId: item.id, userId: userId, type: payload.type, content, createdAt: now.toISOString() });
   }
   // Made before the subject's rules and forbidden by them: it goes, even
   // with nothing new in its place.
   for (const current of existing) if (!remove.includes(current.id) && subjectProblem(subject, current.content) !== null) remove.push(current.id);
-  if (remove.length > 0 || insert.length > 0) await deps.repo.applyExercises(ctx.userId, { remove, insert });
+  if (remove.length > 0 || insert.length > 0) await deps.repo.applyExercises(userId, { remove, insert });
   return ok(undefined);
 }

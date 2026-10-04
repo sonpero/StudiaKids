@@ -14,7 +14,8 @@
     "fixtures:record": "tsx --env-file-if-exists=../../.env src/cli/fixtures-record/main.ts",
     "eval": "tsx --env-file-if-exists=../../.env src/cli/eval/main.ts",
     "eval:tutor": "tsx --env-file-if-exists=../../.env src/cli/eval/tutor.ts",
-    "tutor:history": "tsx src/cli/tutor-history.ts"
+    "tutor:history": "tsx src/cli/tutor-history.ts",
+    "exercises:regenerate-maths": "tsx --env-file-if-exists=../../.env src/cli/regenerate-maths.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
